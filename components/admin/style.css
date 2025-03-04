@@ -1,0 +1,15 @@
+.menu {
+  list-style: none;
+  padding: 0;
+}
+
+.menu .active {
+  background-color: red; /* Red background for active items */
+  color: white; /* Ensure contrast for readability */
+  border-radius: 4px; /* Optional: Rounded corners */
+  padding: 4px 8px; /* Optional: Padding for a clean look */
+}
+
+.menu li {
+  margin: 0;
+}

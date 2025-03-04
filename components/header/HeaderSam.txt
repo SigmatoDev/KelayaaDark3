@@ -1,0 +1,205 @@
+      <header className="bg-[#FFF6F8] text-gray-800 w-full">
+        {/* ✅ New Top Bar for Social Media & Create Dream Jewellery */}
+        <div className="bg-[#fde8ed] text-black py-2 sm:px-8 lg:px-12">
+          <div className="max-w-[1600px] mx-auto flex justify-center items-center px-4">
+            <div></div>
+
+
+            {/* Promotional Snackbar */}
+            <p className="text-[12px] uppercase tracking-[1px] text-[#b9536f] font-medium transition-opacity duration-500 animate-fade">
+              {currentPromo}
+            </p>
+
+          </div>
+        </div>
+
+        {/* Parent Div 1 - Search & Logo Section */}
+        <div className="w-full px-4 sm:px-8 lg:px-12">
+          <div className="flex items-center justify-between py-3 max-w-[1600px] mx-auto">
+            {/* Logo */}
+            <div className="flex justify-center  w-[200px] h-[60px] md:w-[250px] md:h-[60px] overflow-hidden">
+              <Link href="/">
+                <img
+                  src="/kelayaa-3.png"
+                  alt="Kelayaa Logo"
+                  className="w-full h-full object-cover"
+                />
+              </Link>
+            </div>
+
+            {/* Search Bar */}
+            <div className="hidden md:flex w-full max-w-lg relative">
+              <input
+                type="text"
+                placeholder={`Search in Kelayaa... ${currentKeyword}`}
+                className="w-full p-2 pl-12 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all shadow-sm placeholder:text-[14px]"
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+              />
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-300" />
+            </div>
+
+            {/* Right Icons */}
+            <div className="flex items-center gap-6">
+              <Link
+                href={""}
+                onClick={() => setIsSignInOpen(true)}
+                className="flex flex-col items-center text-center"
+              >
+                <User className="w-4 h-4 text-gray-700 hover:text-pink-500 transition" />
+                <p className="text-[10px] font-medium mt-1 text-[#807f7f]">
+                  SIGN IN
+                </p>
+              </Link>
+
+              <Link
+                href="/wishlist"
+                className="flex flex-col items-center text-center"
+              >
+                <Heart className="w-4 h-4 text-gray-700 hover:text-pink-500 transition" />
+                <p className="text-[10px] font-medium mt-1 text-[#807f7f]">
+                  WISHLIST
+                </p>
+              </Link>
+
+              <Link
+                href="/cart"
+                className="relative flex flex-col items-center text-center"
+              >
+                <ShoppingCart className="w-4 h-4 text-gray-700 hover:text-pink-500 transition" />
+                <span className="absolute -top-3 -right-0.5 bg-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                  0
+                </span>
+                <p className="text-[10px] font-medium mt-1 text-[#807f7f]">
+                  MY CART
+                </p>
+              </Link>
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Search Bar */}
+        <div className="md:hidden px-4 py-2">
+          <div className="relative w-full">
+            <input
+              type="text"
+              placeholder={`Search in Kelayaa... ${currentKeyword}`}
+              className="w-full p-3 pl-12 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all shadow-sm"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
+          </div>
+        </div>
+
+        {/* Parent Div 2 - Full-Width Navigation Menu */}
+        <div
+          className="w-full"
+          style={{
+            background:
+              "linear-gradient(90.25deg, #f76999 36.97%, #fb8d92 101.72%)",
+          }}
+        >
+          <nav className="text-white w-full">
+            <div className="flex items-center justify-center max-w-[1600px] mx-auto px-4">
+              {/* Mobile Menu */}
+              <div className="flex items-center gap-4">
+                <label
+                  htmlFor="my-drawer"
+                  className="btn btn-square btn-ghost text-white md:hidden"
+                >
+                  <AlignJustify />
+                </label>
+              </div>
+
+              {/* Navigation Links */}
+              <div className="relative z-50">
+                <div
+                  className="hidden md:flex space-x-8 uppercase mx-auto p-2 relative"
+                  onMouseLeave={() => setIsOpen(false)}
+                >
+                  {Object.keys(menuData).map((key) => (
+                    <Link
+                      key={key}
+                      href={`/${key}`}
+                      className="relative text-white transition-all duration-300 ease-in-out hover:text-pink-300"
+                      onMouseEnter={() => {
+                        setActiveMenu(key);
+                        setIsOpen(true);
+                      }}
+                    >
+                      {key.replace("-", " ")}
+                      <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-pink-500 transition-all duration-300 ease-in-out hover:w-full shadow-[0_0_8px_#ec4899]"></span>
+                    </Link>
+                  ))}
+                </div>
+
+                {/* Dynamic Dropdown */}
+                {isOpen && activeMenu && (
+                  <motion.div
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3, ease: "easeOut" }}
+                    className="absolute left-0 top-full w-full h-[250px] bg-white shadow-lg rounded-b-2xl p-6 grid grid-cols-3 gap-6 border border-gray-200 z-50"
+                    onMouseEnter={() => setIsOpen(true)}
+                    onMouseLeave={() => setIsOpen(false)}
+                  >
+                    {/* Column 1: Subitems */}
+                    <div className="flex flex-col space-y-2">
+                      {menuData[activeMenu].subitems.map((subitem, idx) => (
+                        <Link
+                          key={idx}
+                          href={"/search"}
+                          className="text-gray-500 uppercase hover:text-pink-500 text-sm font-[300]"
+                        >
+                          {subitem.label}
+                        </Link>
+                      ))}
+                    </div>
+
+                    {/* Column 2: Image 1 */}
+                    <div className="relative w-full h-42">
+                      <Image
+                        src={menuData[activeMenu].images[0]}
+                        alt="Promo 1"
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-lg shadow-sm"
+                      />
+                    </div>
+
+                    {/* Column 3: Image 2 */}
+                    <div className="relative w-full h-42">
+                      <Image
+                        src={menuData[activeMenu].images[1]}
+                        alt="Promo 2"
+                        layout="fill"
+                        objectFit="cover"
+                        className="rounded-lg shadow-sm"
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+            </div>
+          </nav>
+        </div>
+
+        {/* Apply Global Styles */}
+        <style jsx global>{`
+          .nav-link {
+            font-weight: 400 !important;
+            font-size: 14px !important;
+            // line-height: 24px !important;
+            letter-spacing: 1px !important;
+            text-align: right !important;
+            transition: color 0.3s ease-in-out;
+            padding: 10px 5px;
+          }
+
+          .nav-link:hover {
+            color: #ffe4e6 !important; /* Light pink hover effect */
+          }
+        `}</style>
+      </header>
