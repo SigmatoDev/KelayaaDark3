@@ -12,8 +12,8 @@ const ProductItem = async ({ product }: { product: Product }) => {
   const { base64 } = await getPlaiceholder(buffer);
 
   return (
-    <div className="card mb-4 rounded-none w-[300px] h-[333px] md:w-[400px] md:h-[433px]">
-      <figure className="w-[300px] h-[333px] md:w-[400px] md:h-[433px] overflow-hidden">
+    <div className="card mb-4 rounded-none w-[300px] h-[333px] xl:w-[300px] xl:h-[333px] 2xl:w-[400px] 2xl:h-[433px] md:w-[200px] md:h-[233px] lg:w-[250px] lg:h-[270px]">
+      <figure className="w-[300px] h-[333px] xl:w-[300px] xl:h-[333px] md:w-[200px] md:h-[233px] 2xl:w-[400px] 2xl:h-[433px] overflow-hidden lg:w-[250px] lg:h-[270px]">
         <Link href={`/product/${product.slug}`} className="relative w-full h-full block">
           <Image
             src={product?.image}

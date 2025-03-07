@@ -161,9 +161,14 @@ const Header = () => {
           isScrolled
             ? "bg-[#000] backdrop-blur-sm"
             : pathname === "/"
-              ? "xl:bg-[#0000006d] xl:backdrop-blur-cm bg-black hover:bg-[#Fff]"
-              : "bg-black"
+              ? "bg-gradient-to-b from-black/70 via-black/50 to-transparent xl:backdrop-blur-sm hover:bg-[#Fff]"
+              : "bg-gradient-to-b from-black/70 via-black/50 to-transparent"
         } transition-all duration-1000 ${!isScrolled ? "group" : ""}`}
+        style={{
+          background: pathname === "/" && !isScrolled
+            ? "linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.5) 31.77%, rgba(0, 0, 0, 0.3) 81.77%, rgba(0, 0, 0, 0) 91.15%)"
+            : isScrolled ? "#000" : "linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.5) 31.77%, rgba(0, 0, 0, 0.3) 81.77%, rgba(0, 0, 0, 0) 91.15%)"
+        }}
       >
         <div className="w-screen flex justify-around items-center py-2">
           <div>
