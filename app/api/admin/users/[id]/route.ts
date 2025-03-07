@@ -84,7 +84,7 @@ export const DELETE = auth(async (...args: any) => {
     await dbConnect();
     const user = await UserModel.findById(params.id);
     if (user) {
-      if (user.isAdmin)
+      if (user?.isAdmin)
         return Response.json(
           { message: 'User is admin' },
           {

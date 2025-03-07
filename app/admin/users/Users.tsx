@@ -74,7 +74,7 @@ export default function Users() {
                 <td>{user.email}</td>
                 <td
                   className={`${
-                    user.isAdmin ? 'text-green-500' : 'text-red-500'
+                    user?.isAdmin ? 'text-green-500' : 'text-red-500'
                   }`}
                 >
                   {user.isAdmin ? 'YES' : 'NO'}
