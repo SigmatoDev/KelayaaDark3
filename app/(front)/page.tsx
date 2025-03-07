@@ -19,10 +19,10 @@ import ProductShips from "@/components/products/ProductShips";
 import CardGrid from "@/components/special-collections/SpecialCollections";
 
 export const metadata: Metadata = {
-  title: process.env.NEXT_PUBLIC_APP_NAME || "Fullstack Next.js Store",
+  title: process.env.NEXT_PUBLIC_APP_NAME || "Kelayaa",
   description:
     process.env.NEXT_PUBLIC_APP_DESC ||
-    "Fullstack Next.js Store - Server Components, MongoDB, Next Auth, Tailwind, Zustand",
+    "Kelayaa – your ultimate destination for gold and diamond jewellery",
 };
 
 const HomePage = () => {

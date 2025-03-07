@@ -128,7 +128,7 @@ const Header = () => {
     }
   }, []);
 
-  if (session?.user?.isAdmin) {
+  if (session?.user.isAdmin) {
     return (
       <header>
         <nav>
@@ -165,7 +165,28 @@ const Header = () => {
               : "bg-black"
         } transition-all duration-1000 ${!isScrolled ? "group" : ""}`}
       >
-        <div className="w-screen flex justify-around items-center py-2">
+        <motion.div 
+          className={`w-screen flex justify-around items-center py-2 ${pathname !== "/" ? "" : "overflow-hidden"}`}
+          initial={false}
+          animate={{
+            height: pathname === "/" && isScrolled ? 0 : "auto",
+            y: pathname === "/" && isScrolled ? -50 : 0,
+            opacity: pathname === "/" && isScrolled ? 0 : 1,
+          }}
+          transition={{
+            height: {
+              duration: 0.3,
+              ease: "easeInOut"
+            },
+            y: {
+              type: "spring",
+              stiffness: 100,
+              damping: 20,
+              duration: 0.5
+            },
+            opacity: { duration: 0.3 }
+          }}
+        >
           <div>
             <p className={`text-[10px] text-[#fff] ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} transition-colors duration-300`}>Stores</p>
           </div>
@@ -199,9 +220,9 @@ const Header = () => {
               />
             </Link>
           </div>
-        </div>
+        </motion.div>
         <motion.div 
-          className={`w-screen flex items-center justify-center overflow-hidden xl:pt-3 ${pathname !== "/" ? "hidden" : ""}`}
+          className={`w-screen flex items-center justify-center overflow-hidden ${pathname !== "/" ? "hidden" : ""}`}
           initial={false}
           animate={{
             height: isScrolled ? 0 : "auto",
@@ -211,8 +232,8 @@ const Header = () => {
             ease: "easeInOut",
           }}
         >
-          <div className="flex justify-center w-[200px] h-[60px] md:w-[550px] md:h-[120px] relative xl:p-10">
-            <Link href="/">
+          <div className="flex items-center justify-center w-[200px] h-[60px] md:w-[350px] md:h-[120px] relative">
+            <Link href="/" className="flex items-center justify-center w-screen h-full">
               <motion.div
                 initial={false}
                 animate={{
@@ -228,29 +249,28 @@ const Header = () => {
                   },
                   opacity: { duration: 0.5 },
                 }}
+                className="flex items-center justify-center relative w-full h-full"
               >
                 <motion.img
-                  src="/kelayaa-3.webp"
+                  src="/Kelayaa - logo.webp"
                   alt="Kelayaa Logo"
-                  className={`w-[80%] h-full object-cover absolute top-0 left-0 ${!isScrolled ? "group-hover:opacity-0" : ""}`}
-                  transition={{
-                    duration: 0.3,
-                  }}
+                  className={`w-[75%] h-full object-contain transition-all duration-300 ${
+                    !isScrolled ? "group-hover:opacity-0" : ""
+                  }`}
                 />
                 <motion.img
-                  src="/kelayaa-logo-2.webp"
+                  src="/Kelayaa - logo.webp"
                   alt="Kelayaa Logo Black"
-                  className={`w-[80%] h-full object-cover absolute top-0 left-0 ${!isScrolled ? "opacity-0 group-hover:opacity-100" : "opacity-0"}`}
-                  transition={{
-                    duration: 0.3,
-                  }}
+                  className={`w-[75%] h-full object-contain absolute top-0 left-1/2 -translate-x-1/2 transition-all duration-300 ${
+                    !isScrolled ? "opacity-0 group-hover:opacity-100" : "opacity-0"
+                  }`}
                 />
               </motion.div>
             </Link>
           </div>
         </motion.div>
         <header
-          className={`text-gray-800 w-full xl:h-[100px] transition-[margin] xl:flex xl:justify-center items-center duration-1000 ease-in-out ${isScrolled ? " mt-0" : " mt-4"}`}
+          className={`text-gray-800 w-full xl:h-[80px] transition-[margin] xl:flex xl:justify-center items-center duration-1000 ease-in-out ${isScrolled ? " mt-0" : " mt-4"}`}
         >
           {/* Parent Div 1 - Search & Logo Section */}
           <div className="w-full px-4 sm:px-8 lg:px-12 ">
@@ -266,7 +286,7 @@ const Header = () => {
               >
                 <Link href="/">
                   <img
-                    src="/Kelayaa-3.png"
+                    src="/Kelayaa - logo.webp"
                     alt="Kelayaa Logo"
                     className="w-full h-full object-cover"
                   />
