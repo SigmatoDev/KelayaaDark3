@@ -12,7 +12,7 @@ import {
 
 import image1 from "../../public/images/featured/featured-1.1.webp";
 import image2 from "../../public/images/featured/featured-2.webp";
-import image3 from "../../public/images/featured/featured-3.webp";
+import image3 from "../../public/images/featured/featured-1.1.webp";
 
 const images = [image1, image2, image3];
 
