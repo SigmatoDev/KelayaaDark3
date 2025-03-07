@@ -230,7 +230,7 @@ const Header = () => {
                 }}
               >
                 <motion.img
-                  src="/Kelayaa-3.png"
+                  src="/Kelayaa-3.webp"
                   alt="Kelayaa Logo"
                   className={`w-[80%] h-full object-cover absolute top-0 left-0 ${!isScrolled ? "group-hover:opacity-0" : ""}`}
                   transition={{
@@ -238,7 +238,7 @@ const Header = () => {
                   }}
                 />
                 <motion.img
-                  src="/kelayaa-logo-2.png"
+                  src="/kelayaa-logo-2.webp"
                   alt="Kelayaa Logo Black"
                   className={`w-[80%] h-full object-cover absolute top-0 left-0 ${!isScrolled ? "opacity-0 group-hover:opacity-100" : "opacity-0"}`}
                   transition={{
