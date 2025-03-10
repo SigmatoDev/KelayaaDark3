@@ -19,19 +19,20 @@ interface Product {
   countInStock: number;
   reviewsCount: number;
   tags: string[];
+  images: string[];
 }
 
 // Add shared product fetching function
 async function getProduct(slug: string): Promise<Product> {
-  const product = await productService.getBySlug(slug) as Partial<Product>;
-  
+  const product = (await productService.getBySlug(slug)) as Partial<Product>;
+
   if (!product) {
     notFound();
   }
-  
+
   return {
     ...product,
-    _id: product._id || '', // Ensure _id is never undefined
+    _id: product._id || "", // Ensure _id is never undefined
     reviewsCount: product.reviewsCount ?? 0,
     tags: product.tags ?? [],
   } as Product;

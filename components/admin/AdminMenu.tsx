@@ -11,6 +11,7 @@ import {
   FileText,
   Shield,
   BadgeIndianRupee,
+  UploadIcon,
 } from "lucide-react";
 
 const menuItems = [
@@ -35,6 +36,11 @@ const menuItems = [
   { name: "Help Center", href: "/admin/help-center", icon: HelpCircle },
   { name: "FAQ", href: "/admin/faq", icon: FileText },
   { name: "Privacy Policy", href: "/admin/privacy-policy", icon: Shield },
+  {
+    name: "Bulk Image Upload",
+    href: "/admin/bulk-image-upload",
+    icon: UploadIcon,
+  },
 ];
 
 const AdminMenu = ({ activeItem }: { activeItem: string }) => {

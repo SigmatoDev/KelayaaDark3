@@ -82,12 +82,54 @@ export default function UploadProductExcelFile() {
           }
         }, 500);
 
-        // Prepare products for batch creation with sheetName as productCategory
-        const productData = products.map((product: any) => ({
-          ...product,
-          productCategory: sheetName, // Assign sheet name as product category
-          image: product.image || "", // Ensure image is present or default to empty
-        }));
+        // // Prepare products for batch creation with sheetName as productCategory
+        // const productData = products.map((product: any) => ({
+        //   ...product,
+        //   productCategory: sheetName, // Assign sheet name as product category
+        //   image: product.image || "", // Ensure image is present or default to empty
+        // }));
+
+        // Prepare products for batch creation with multiple images
+        // const productData = products.map((product: any) => ({
+        //   ...product,
+        //   productCategory: sheetName,
+        //   image: product.image ? product.image.split(",")[0].trim() : "", // Ensure first image is extracted
+        //   images: product.image
+        //     ? product.image.split(",").map((img: string) => img.trim())
+        //     : [],
+        // }));
+        const S3_BUCKET_URL =
+          "https://kelayaaimages.s3.ap-south-1.amazonaws.com/uploads/";
+
+        const productData = products.map((product: any) => {
+          const firstImage = product.image
+            ? `${S3_BUCKET_URL}${product.image.split(",")[0].trim()}.JPG`
+            : "";
+          const allImages = product.image
+            ? product.image
+                .split(",")
+                .map((img: string) => `${S3_BUCKET_URL}${img.trim()}.JPG`)
+            : [];
+
+          console.log("=========================================");
+          console.log("Original Product Data:", product);
+          console.log("Original Image Field:", product.image);
+          console.log("S3 First Image URL:", firstImage);
+          console.log("S3 All Images URLs:", allImages);
+          console.log("=========================================");
+
+          return {
+            ...product,
+            productCategory: sheetName,
+            image: firstImage, // First image as main image
+            images: allImages, // All images in array
+          };
+        });
+
+        console.log(
+          "Final Processed Product Data:",
+          JSON.stringify(productData, null, 2)
+        );
 
         // Simulate delay and then trigger the API call
         setTimeout(async () => {

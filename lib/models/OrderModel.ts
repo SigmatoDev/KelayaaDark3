@@ -105,6 +105,8 @@ export type Order = {
 };
 
 export type OrderItem = {
+  prodcutCategory: string;
+  category: string;
   name: string;
   slug: string;
   qty: number;

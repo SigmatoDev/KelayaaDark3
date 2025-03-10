@@ -1,13 +1,14 @@
 "use client";
 import Image from "next/image";
 import Link from "next/link";
-import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import useCartService from "@/lib/hooks/useCartStore";
-import useLayoutService from "@/lib/hooks/useLayout";
-import { Tag } from "lucide-react";
 
+import useLayoutService from "@/lib/hooks/useLayout";
+import useCartService from "@/lib/hooks/useCartStore";
+import { Tag } from "lucide-react";
+import toast from "react-hot-toast";
+import EmptyCart from "./EmptyCart";
 
 const CartDetails = () => {
   const {
@@ -54,10 +55,7 @@ const CartDetails = () => {
       </h1>
       {items.length === 0 ? (
         <div>
-          <p className="mb-2 text-gray-600">Cart is empty :(</p>
-          <Link href="/" className="btn btn-primary">
-            Go shopping
-          </Link>
+          <EmptyCart />
         </div>
       ) : (
         <div className="grid md:grid-cols-4 md:gap-6">
@@ -87,7 +85,7 @@ const CartDetails = () => {
                       Size: {item?.size || 18}
                     </span>
                     <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded">
-                      Category: {(item as { category?: string })?.category || "Ring"}
+                      Category: {item?.prodcutCategory || "Ring"}
                     </span>
                   </div>
                   <div className="flex items-center border border-[#17183B] w-max">

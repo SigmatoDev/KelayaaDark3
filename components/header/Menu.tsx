@@ -69,7 +69,7 @@ const Menu = () => {
                 tabIndex={0}
                 className="menu dropdown-content z-[1] w-52 rounded-box bg-base-300 p-2 shadow "
               >
-                {session?.user?.isAdmin && (
+                {session.user.isAdmin && (
                   <li onClick={handleClick}>
                     <Link href="/admin/dashboard">Admin Dashboard</Link>
                   </li>

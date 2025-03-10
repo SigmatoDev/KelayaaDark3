@@ -1,10 +1,20 @@
 "use client";
-import { AlignJustify, Heart, ShoppingCart, User, Search } from "lucide-react";
+import {
+  AlignJustify,
+  Heart,
+  ShoppingCart,
+  User,
+  Search,
+  ChevronDown,
+  LogOut,
+  History,
+  User2,
+} from "lucide-react";
 import Link from "next/link";
 import { useState, useEffect, Suspense } from "react";
 import { FaFacebookF, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 import Banner from "./Banner";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import { SearchBox } from "./SearchBox";
 import Menu from "./Menu";
 import HeroSection from "../hero-section/HeroSection";
@@ -14,6 +24,7 @@ import { motion } from "framer-motion";
 import Image from "next/image";
 import CardGrid from "../category-box/CategoryBox";
 import SignInPopup from "../signin/SignIn";
+import useCartService from "@/lib/hooks/useCartStore";
 
 const keywords = ["Gold", "Diamond", "Silver", "Platinum", "Special"];
 const promotions = [
@@ -32,9 +43,15 @@ interface MenuItem {
 const menuData: Record<string, MenuItem> = {
   silver: {
     subitems: [
+      { href: "/silver-pendants", label: "Pendants" },
       { href: "/silver-rings", label: "Rings" },
       { href: "/silver-necklaces", label: "Necklaces" },
       { href: "/silver-earrings", label: "Earrings" },
+      { href: "/silver-bangles", label: "Bangles" },
+      { href: "/silver-bracelets", label: "Bracelets" },
+      { href: "/silver-sets", label: "Sets" },
+      { href: "/silver-toe-rings", label: "Toe Rings" },
+      { href: "/silver-chains", label: "Chains" },
     ],
     images: [
       "/images/hovermenu/bangles1.webp",
@@ -91,6 +108,15 @@ const Header = () => {
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [isOpen, setIsOpen] = useState<boolean>(false);
   const [activeMenu, setActiveMenu] = useState<string | null>(null);
+  const { totalCartQuantity } = useCartService();
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  const signOutHandler = async () => {
+    await signOut({ redirect: false }); // Prevent full page reload
+    setMenuOpen(false); // Close menu on logout
+  };
+
+  const handleClick = () => setMenuOpen(false); // Close menu on link click
 
   useEffect(() => {
     let keywordIndex = 0;
@@ -128,7 +154,7 @@ const Header = () => {
     }
   }, []);
 
-  if (session?.user?.isAdmin) {
+  if (session?.user.isAdmin) {
     return (
       <header>
         <nav>
@@ -165,7 +191,7 @@ const Header = () => {
               : "bg-black"
         } transition-all duration-1000 ${!isScrolled ? "group" : ""}`}
       >
-        <motion.div 
+        <motion.div
           className={`w-screen flex justify-around items-center py-2 ${pathname !== "/" ? "" : "overflow-hidden"}`}
           initial={false}
           animate={{
@@ -176,40 +202,93 @@ const Header = () => {
           transition={{
             height: {
               duration: 0.3,
-              ease: "easeInOut"
+              ease: "easeInOut",
             },
             y: {
               type: "spring",
               stiffness: 100,
               damping: 20,
-              duration: 0.5
+              duration: 0.5,
             },
-            opacity: { duration: 0.3 }
+            opacity: { duration: 0.3 },
           }}
         >
           <div>
-            <p className={`text-[10px] text-[#fff] ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} transition-colors duration-300`}>Stores</p>
+            <p
+              className={`text-[10px] text-[#fff] ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} transition-colors duration-300`}
+            >
+              Stores
+            </p>
           </div>
           <div>
-            <p className={`text-[10px] text-white uppercase tracking-[1px] w-[300px] text-center font-medium transition-all duration-500 animate-fade ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""}`}>
+            <p
+              className={`text-[10px] text-white uppercase tracking-[1px] w-[300px] text-center font-medium transition-all duration-500 animate-fade ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""}`}
+            >
               {currentPromo}
             </p>
           </div>
           <div className="flex flex-row items-center text-center">
-            <Link
-              href={""}
-              onClick={() => setIsSignInOpen(true)}
-              className="flex flex-row items-center text-center w-[70px]"
-            >
-              <User
-                className={`w-4 h-4 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} hover:text-pink-500 transition`}
-              />
-              <p
-                className={`text-[10px] font-sm mt-1 text-[#ffffff] ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""}`}
-              >
-                SIGN IN
-              </p>
-            </Link>
+            <div className="relative">
+              {session && session.user ? (
+                <li className="list-none">
+                  <div className="relative">
+                    <button
+                      onClick={() => setMenuOpen(!menuOpen)}
+                      className="flex items-center px-3 py-2 text-white bg-transparent rounded-lg hover:bg-gray-800 transition"
+                    >
+                      <User className="h-4 w-4 mr-1" /> {session.user.name}
+                      <ChevronDown className="ml-2 w-4 h-4" />
+                    </button>
+
+                    {menuOpen && (
+                      <ul className="absolute right-0 z-[999] mt-2 w-52 rounded-lg bg-white/10 backdrop-blur-md p-2 shadow-lg border border-white/20">
+                        <li
+                          onClick={handleClick}
+                          className="flex items-center px-3 py-2 hover:bg-white/20 rounded-md"
+                        >
+                          <History className="w-4 h-4 text-white" />
+                          <Link
+                            href="/order-history"
+                            className="text-white ml-2"
+                          >
+                            Order History
+                          </Link>
+                        </li>
+
+                        <li
+                          onClick={handleClick}
+                          className="flex items-center px-3 py-2 hover:bg-white/20 rounded-md"
+                        >
+                          <User className="w-4 h-4 text-white" />
+                          <Link href="/profile" className="text-white ml-2">
+                            Profile
+                          </Link>
+                        </li>
+
+                        <li>
+                          <button
+                            type="button"
+                            onClick={signOutHandler}
+                            className="flex items-center w-full px-3 py-2 text-white bg-pink-700 hover:bg-pink-500 rounded-md"
+                          >
+                            <LogOut className="w-4 h-4 text-white" />
+                            <span className="ml-2">Sign Out</span>
+                          </button>
+                        </li>
+                      </ul>
+                    )}
+                  </div>
+                </li>
+              ) : (
+                <button
+                  onClick={() => setIsSignInOpen(true)}
+                  className="flex flex-row items-center text-center w-[70px]"
+                >
+                  <User className="w-4 h-4 text-white hover:text-pink-500 transition" />
+                  <p className="text-[10px] font-sm mt-1 text-white">SIGN IN</p>
+                </button>
+              )}
+            </div>
 
             <Link
               href="/wishlist"
@@ -221,7 +300,7 @@ const Header = () => {
             </Link>
           </div>
         </motion.div>
-        <motion.div 
+        <motion.div
           className={`w-screen flex items-center justify-center overflow-hidden ${pathname !== "/" ? "hidden" : ""}`}
           initial={false}
           animate={{
@@ -233,7 +312,10 @@ const Header = () => {
           }}
         >
           <div className="flex items-center justify-center w-[200px] h-[60px] md:w-[350px] md:h-[120px] relative">
-            <Link href="/" className="flex items-center justify-center w-screen h-full">
+            <Link
+              href="/"
+              className="flex items-center justify-center w-screen h-full"
+            >
               <motion.div
                 initial={false}
                 animate={{
@@ -262,7 +344,9 @@ const Header = () => {
                   src="/Kelayaa - logo.webp"
                   alt="Kelayaa Logo Black"
                   className={`w-[75%] h-full object-contain absolute top-0 left-1/2 -translate-x-1/2 transition-all duration-300 ${
-                    !isScrolled ? "opacity-0 group-hover:opacity-100" : "opacity-0"
+                    !isScrolled
+                      ? "opacity-0 group-hover:opacity-100"
+                      : "opacity-0"
                   }`}
                 />
               </motion.div>
@@ -279,8 +363,10 @@ const Header = () => {
 
               <div
                 className={`flex absolute left-0 justify-center w-[200px] h-[60px] md:w-[250px] md:h-[60px] overflow-hidden transition-all duration-1000 ease-out ${
-                  pathname === "/" 
-                    ? isScrolled ? "opacity-100 scale-100" : "opacity-0 scale-95"
+                  pathname === "/"
+                    ? isScrolled
+                      ? "opacity-100 scale-100"
+                      : "opacity-0 scale-95"
                     : "opacity-100 scale-100"
                 }`}
               >
@@ -309,8 +395,6 @@ const Header = () => {
                       </label>
                     </div>
 
-                   
-
                     {/* Navigation Links */}
                     <div className="relative z-50">
                       <div
@@ -320,7 +404,8 @@ const Header = () => {
                         {Object.keys(menuData).map((key) => (
                           <Link
                             key={key}
-                            href={`/${key}`}
+                            // href={`/${key}`}
+                            href={`/search`}
                             className={`w-[140px] text-center text-white ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} transition-all duration-300 ease-in-out hover:text-pink-300 text-xs`}
                             onMouseEnter={() => {
                               setActiveMenu(key);
@@ -339,7 +424,7 @@ const Header = () => {
                             className={`w-[50px] h-4 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} hover:text-pink-500 transition`}
                           />
                           <span className="absolute -top-3 -right-0.5 bg-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                            0
+                            {totalCartQuantity || 0}
                           </span>
                         </Link>
                       </div>
@@ -351,7 +436,7 @@ const Header = () => {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
                           transition={{ duration: 0.3, ease: "easeOut" }}
-                          className="absolute  left-0 top-full w-full h-[250px] bg-white  rounded-b-2xl p-6 grid grid-cols-3 gap-6  z-50"
+                          className="absolute  left-0 top-full w-full h-[270px] bg-white  rounded-b-2xl p-6 grid grid-cols-3 gap-6  z-50"
                           onMouseEnter={() => setIsOpen(true)}
                           onMouseLeave={() => setIsOpen(false)}
                         >
@@ -398,7 +483,6 @@ const Header = () => {
                 </nav>
               </div>
 
-              
               {/* <div className="flex xl:gap-7 gap-1 justify-center">
                 <Link
                   href="/cart"

@@ -7,42 +7,7 @@ import PriceFilter from "./priceFilter";
 import RatingFilter from "./ratingFilter";
 
 const sortOrders = ["newest", "lowest", "highest", "rating"];
-
-export async function generateMetadata({
-  searchParams: {
-    q = "all",
-    productCategory = "all",
-    price = "all",
-    rating = "all",
-  },
-}: {
-  searchParams: {
-    q: string;
-    productCategory: string;
-    price: string;
-    rating: string;
-    sort: string;
-    page: string;
-  };
-}) {
-  if (
-    (q !== "all" && q !== "") ||
-    productCategory !== "all" ||
-    rating !== "all" ||
-    price !== "all"
-  ) {
-    return {
-      title: `Search ${q !== "all" ? q : ""}
-          ${productCategory !== "all" ? ` : ProductCategory ${productCategory}` : ""}
-          ${price !== "all" ? ` : Price ${price}` : ""}
-          ${rating !== "all" ? ` : Rating ${rating}` : ""}`,
-    };
-  } else {
-    return {
-      title: "Search Products",
-    };
-  }
-}
+const pageSize = 10; // Default to 10 products per page
 
 export default async function SearchPage({
   searchParams: {
@@ -63,6 +28,9 @@ export default async function SearchPage({
     page: string;
   };
 }) {
+  const currentPage = Number(page);
+
+  // Function to construct filter URLs
   const getFilterUrl = ({
     c,
     s,
@@ -91,15 +59,19 @@ export default async function SearchPage({
     q,
     price,
     rating,
-    page,
+    page: currentPage,
     sort,
+    pageSize,
   });
 
+  // Pagination Logic: Show only 3 page numbers at a time
+  const startPage = Math.max(1, currentPage - 1);
+  const endPage = Math.min(pages, startPage + 2);
+
   return (
-    <div className="grid md:grid-cols-5 gap-6 p-6 ">
+    <div className="grid md:grid-cols-5 gap-6 p-6">
       {/* Filters Section */}
       <div className="space-y-6">
-        {/* Categories */}
         <CategoryDropdown
           categories={categories}
           selectedCategory={productCategory}
@@ -110,7 +82,6 @@ export default async function SearchPage({
           sort={sort}
           page={page}
         />
-        {/* Prices */}
         <PriceFilter
           selectedPrice={price}
           q={q}
@@ -119,7 +90,6 @@ export default async function SearchPage({
           sort={sort}
           page={page}
         />
-        {/* Ratings */}
         <RatingFilter
           selectedRating={rating}
           q={q}
@@ -167,20 +137,44 @@ export default async function SearchPage({
         </div>
 
         {/* Pagination */}
-        <div className="mt-8 flex justify-center">
-          {Array.from(Array(pages).keys()).map((p) => (
+        <div className="mt-8 flex justify-center items-center gap-2">
+          {/* Previous Button */}
+          {currentPage > 1 && (
+            <Link
+              href={getFilterUrl({ pg: `${currentPage - 1}` })}
+              className="px-4 py-2 rounded-md border border-pink-500 text-pink-500"
+            >
+              {"<<"}
+            </Link>
+          )}
+
+          {/* Page Numbers (3 at a time) */}
+          {Array.from(
+            { length: endPage - startPage + 1 },
+            (_, i) => i + startPage
+          ).map((p) => (
             <Link
               key={p}
-              href={getFilterUrl({ pg: `${p + 1}` })}
-              className={`px-4 py-2 mx-1 rounded-md ${
-                Number(page) === p + 1
-                  ? "bg-blue-500 text-white"
-                  : "hover:bg-blue-100 text-blue-500"
+              href={getFilterUrl({ pg: `${p}` })}
+              className={`px-4 py-2 rounded-md ${
+                currentPage === p
+                  ? "bg-pink-500 text-white"
+                  : "hover:bg-pink-100 text-pink-500"
               }`}
             >
-              {p + 1}
+              {p}
             </Link>
           ))}
+
+          {/* Next Button */}
+          {currentPage < pages && (
+            <Link
+              href={getFilterUrl({ pg: `${currentPage + 1}` })}
+              className="px-4 py-2 rounded-md border border-pink-500 text-pink-500"
+            >
+              {">>"}
+            </Link>
+          )}
         </div>
       </div>
     </div>

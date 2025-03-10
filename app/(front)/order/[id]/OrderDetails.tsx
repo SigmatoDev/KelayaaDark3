@@ -194,7 +194,7 @@ const OrderDetails = ({ orderId, paypalClientId }: IOrderDetails) => {
                     </PayPalScriptProvider>
                   </li>
                 )}
-                {session?.user?.isAdmin && (
+                {session?.user.isAdmin && (
                   <li>
                     <button
                       className='btn my-2 w-full'

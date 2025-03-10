@@ -1,10 +1,9 @@
-'use client';
+"use client";
 
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { useEffect } from 'react';
-import { SubmitHandler, useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
+import { useSession } from "next-auth/react";
+import { useEffect } from "react";
+import { SubmitHandler, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 type Inputs = {
   name: string;
@@ -13,9 +12,8 @@ type Inputs = {
   confirmPassword: string;
 };
 
-const Form = () => {
+const Profile = () => {
   const { data: session, update } = useSession();
-  const router = useRouter();
 
   const {
     register,
@@ -23,150 +21,102 @@ const Form = () => {
     getValues,
     setValue,
     formState: { errors, isSubmitting },
-  } = useForm<Inputs>({
-    defaultValues: {
-      name: '',
-      email: '',
-      password: '',
-    },
-  });
+  } = useForm<Inputs>();
 
   useEffect(() => {
     if (session && session.user) {
-      setValue('name', session.user.name!);
-      setValue('email', session.user.email!);
+      setValue("name", session.user.name!);
+      setValue("email", session.user.email!);
     }
-  }, [router, session, setValue]);
+  }, [session, setValue]);
 
   const formSubmit: SubmitHandler<Inputs> = async (form) => {
     const { name, email, password } = form;
     try {
-      const res = await fetch('/api/auth/profile', {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name,
-          email,
-          password,
-        }),
+      const res = await fetch("/api/auth/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
       });
       if (res.status === 200) {
-        toast.success('Profile updated successfully');
-        const newSession = {
-          ...session,
-          user: {
-            ...session?.user,
-            name,
-            email,
-          },
-        };
-        await update(newSession);
+        toast.success("Profile updated successfully");
+        await update({ ...session, user: { ...session?.user, name, email } });
       } else {
         const data = await res.json();
-        toast.error(data.message || 'error');
+        toast.error(data.message || "Error updating profile");
       }
-    } catch (err: any) {
-      const error =
-        err.response && err.response.data && err.response.data.message
-          ? err.response.data.message
-          : err.message;
-      toast.error(error);
+    } catch (err) {
+      toast.error("An error occurred");
     }
   };
 
   return (
-    <div className='card mx-auto my-4 max-w-sm bg-base-300'>
-      <div className='card-body'>
-        <h1 className='card-title'>Profile</h1>
-        <form onSubmit={handleSubmit(formSubmit)}>
-          <div className='my-2'>
-            <label className='label' htmlFor='name'>
-              Name
-            </label>
-            <input
-              type='text'
-              id='name'
-              {...register('name', {
-                required: 'Name is required',
-              })}
-              className='input input-bordered w-full max-w-sm'
-            />
-            {errors.name?.message && (
-              <div className='text-error'>{errors.name.message}</div>
-            )}
-          </div>
-          <div className='my-2'>
-            <label className='label' htmlFor='email'>
-              Email
-            </label>
-            <input
-              type='text'
-              id='email'
-              {...register('email', {
-                required: 'Email is required',
-                pattern: {
-                  value: /[a-z0-9]+@[a-z]+\.[a-z]{2,3}/,
-                  message: 'Email is invalid',
-                },
-              })}
-              className='input input-bordered w-full max-w-sm'
-            />
-            {errors.email?.message && (
-              <div className='text-error'>{errors.email.message}</div>
-            )}
-          </div>
-          <div className='my-2'>
-            <label className='label' htmlFor='password'>
-              New Password
-            </label>
-            <input
-              type='password'
-              id='password'
-              {...register('password', {})}
-              className='input input-bordered w-full max-w-sm'
-            />
-            {errors.password?.message && (
-              <div className='text-error'>{errors.password.message}</div>
-            )}
-          </div>
-          <div className='my-2'>
-            <label className='label' htmlFor='confirmPassword'>
-              Confirm New Password
-            </label>
-            <input
-              type='password'
-              id='confirmPassword'
-              {...register('confirmPassword', {
-                validate: (value) => {
-                  const { password } = getValues();
-                  return password === value || 'Passwords should match!';
-                },
-              })}
-              className='input input-bordered w-full max-w-sm'
-            />
-            {errors.confirmPassword?.message && (
-              <div className='text-error'>{errors.confirmPassword.message}</div>
-            )}
-          </div>
+    <div className="max-w-lg mx-auto mt-10 p-6 bg-white shadow-md rounded-md">
+      <h2 className="text-2xl font-semibold text-center mb-6">Profile</h2>
 
-          <div className='my-2'>
-            <button
-              type='submit'
-              disabled={isSubmitting}
-              className='btn btn-primary w-full'
-            >
-              {isSubmitting && (
-                <span className='loading loading-spinner'></span>
-              )}
-              Update
-            </button>
-          </div>
-        </form>
-      </div>
+      <form className="space-y-4" onSubmit={handleSubmit(formSubmit)}>
+        <div>
+          <label className="text-gray-700 text-sm font-semibold">NAME</label>
+          <input
+            type="text"
+            {...register("name", { required: "Name is required" })}
+            className="w-full mt-1 p-2 border rounded-md bg-gray-100"
+          />
+          {errors.name && <p className="text-error">{errors.name.message}</p>}
+        </div>
+
+        <div>
+          <label className="text-gray-700 text-sm font-semibold">EMAIL</label>
+          <input
+            type="email"
+            {...register("email", { required: "Email is required" })}
+            className="w-full mt-1 p-2 border rounded-md bg-gray-100"
+          />
+          {errors.email && <p className="text-error">{errors.email.message}</p>}
+        </div>
+
+        <div>
+          <label className="text-gray-700 text-sm font-semibold">
+            NEW PASSWORD
+          </label>
+          <input
+            type="password"
+            {...register("password")}
+            className="w-full mt-1 p-2 border rounded-md bg-gray-100"
+          />
+        </div>
+
+        <div>
+          <label className="text-gray-700 text-sm font-semibold">
+            CONFIRM PASSWORD
+          </label>
+          <input
+            type="password"
+            {...register("confirmPassword", {
+              validate: (value) =>
+                getValues("password") === value || "Passwords do not match",
+            })}
+            className="w-full mt-1 p-2 border rounded-md bg-gray-100"
+          />
+          {errors.confirmPassword && (
+            <p className="text-error">{errors.confirmPassword.message}</p>
+          )}
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="w-full py-2 bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold rounded-md"
+        >
+          {isSubmitting ? (
+            <span className="loading loading-spinner"></span>
+          ) : (
+            "UPDATE"
+          )}
+        </button>
+      </form>
     </div>
   );
 };
 
-export default Form;
+export default Profile;

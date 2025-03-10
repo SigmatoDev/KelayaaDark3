@@ -49,7 +49,8 @@ export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
       setError("Invalid email or password");
     } else {
       setIsOpen(false);
-      router.push("/dashboard"); // Redirect after successful login
+      console.log("res", res);
+      router.push("/"); // Redirect after successful login
     }
   };
 
@@ -74,14 +75,18 @@ export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
         <form className="space-y-4" onSubmit={handleSubmit(formSubmit)}>
           {isRegistering && (
             <div>
-              <label className="text-gray-700 text-sm font-semibold">FULL NAME</label>
+              <label className="text-gray-700 text-sm font-semibold">
+                FULL NAME
+              </label>
               <input
                 type="text"
                 {...register("fullName", { required: "Full name is required" })}
                 placeholder="John Doe"
                 className="w-full mt-1 p-2 border rounded-md bg-gray-100"
               />
-              {errors.fullName && <p className="text-error">{errors.fullName.message}</p>}
+              {errors.fullName && (
+                <p className="text-error">{errors.fullName.message}</p>
+              )}
             </div>
           )}
 
@@ -93,18 +98,24 @@ export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
               placeholder="Enter Your Email Here"
               className="w-full mt-1 p-2 border rounded-md bg-gray-100"
             />
-            {errors.email && <p className="text-error">{errors.email.message}</p>}
+            {errors.email && (
+              <p className="text-error">{errors.email.message}</p>
+            )}
           </div>
 
           <div>
-            <label className="text-gray-700 text-sm font-semibold">PASSWORD</label>
+            <label className="text-gray-700 text-sm font-semibold">
+              PASSWORD
+            </label>
             <input
               type="password"
               {...register("password", { required: "Password is required" })}
               placeholder="Enter Your Password"
               className="w-full mt-1 p-2 border rounded-md bg-gray-100"
             />
-            {errors.password && <p className="text-error">{errors.password.message}</p>}
+            {errors.password && (
+              <p className="text-error">{errors.password.message}</p>
+            )}
           </div>
 
           <button
@@ -112,12 +123,20 @@ export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
             disabled={isSubmitting}
             className="w-full py-2 bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold rounded-md"
           >
-            {isSubmitting ? <span className="loading loading-spinner"></span> : isRegistering ? "CREATE ACCOUNT" : "SIGN IN"}
+            {isSubmitting ? (
+              <span className="loading loading-spinner"></span>
+            ) : isRegistering ? (
+              "CREATE ACCOUNT"
+            ) : (
+              "SIGN IN"
+            )}
           </button>
         </form>
 
         <p className="text-center text-gray-600 mt-4">
-          {isRegistering ? "Already have an account?" : "Don't have an account?"}{" "}
+          {isRegistering
+            ? "Already have an account?"
+            : "Don't have an account?"}{" "}
           <span
             className="text-pink-500 cursor-pointer"
             onClick={() => setIsRegistering(!isRegistering)}
@@ -136,7 +155,8 @@ export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
           onClick={() => signIn("google")}
           className="flex items-center justify-center w-full py-2 border rounded-md shadow-sm hover:bg-gray-100"
         >
-          <FcGoogle className="mr-2" size={20} /> {isRegistering ? "Sign Up" : "Sign In"} With Google
+          <FcGoogle className="mr-2" size={20} />{" "}
+          {isRegistering ? "Sign Up" : "Sign In"} With Google
         </button>
       </div>
     </div>

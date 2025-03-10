@@ -9,6 +9,7 @@ export type Product = {
   info: string;
   slug: string;
   image: string;
+  images: string[]; // ✅ Changed from `image: string` to `images: string[]`
   price: number;
   description: string;
   category: string;
@@ -26,15 +27,14 @@ const productSchema = new mongoose.Schema(
     slug: { type: String, required: true, unique: true },
     category: { type: String },
     productCategory: { type: String, required: true },
-    image: { type: String },
+    image: { type: String }, // Keeping single image for backward compatibility
+    images: { type: [String], default: [] }, // ✅ Add this for multiple images
     price: { type: Number, required: true },
     description: { type: String, required: true },
-    countInStock: { type: Number, required: true, default: 0 },
+    countInStock: { type: Number, default: 0 },
     isFeatured: { type: Boolean, default: false },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 const ProductModel =

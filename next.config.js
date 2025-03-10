@@ -1,11 +1,13 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   images: {
-    domains: ['res.cloudinary.com'],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "kelayaaimages.s3.ap-south-1.amazonaws.com",
+      },
+    ],
   },
-}
+};
 
-module.exports = nextConfig 
+module.exports = nextConfig;
