@@ -154,7 +154,7 @@ const Header = () => {
     }
   }, []);
 
-  if (session?.user.isAdmin) {
+  if (session?.user?.isAdmin) {
     return (
       <header>
         <nav>

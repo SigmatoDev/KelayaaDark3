@@ -34,7 +34,7 @@ const Form = () => {
   useEffect(() => {
     if (session && session.user) {
       // Check if the user is an admin
-      if (session.user.isAdmin) {
+      if (session?.user?.isAdmin) {
         router.push("/admin/dashboard"); // Redirect to admin dashboard if user is an admin
       } else {
         router.push(callbackUrl); // Otherwise, redirect to the callback URL or home
