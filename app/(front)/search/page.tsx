@@ -44,7 +44,7 @@ export default async function SearchPage({
     r?: string;
     pg?: string;
   }) => {
-    const params = { q, productCategory, price, rating, sort, page };
+    const params: any = { q, productCategory, price, rating, sort, page };
     if (c) params.productCategory = c;
     if (p) params.price = p;
     if (r) params.rating = r;
@@ -59,9 +59,8 @@ export default async function SearchPage({
     q,
     price,
     rating,
-    page: currentPage,
+    page: currentPage.toString(),
     sort,
-    pageSize,
   });
 
   // Pagination Logic: Show only 3 page numbers at a time
@@ -120,7 +119,7 @@ export default async function SearchPage({
                 href={getFilterUrl({ s })}
                 className={`px-3 py-1 text-[12px] rounded-md ${
                   sort === s
-                    ? "bg-pink-100 text-pink-500 "
+                    ? "bg-pink-100 text-pink-500"
                     : "hover:bg-pink-100 text-pink-500"
                 }`}
               >
@@ -141,21 +140,18 @@ export default async function SearchPage({
           {/* Previous Button */}
           {currentPage > 1 && (
             <Link
-              href={getFilterUrl({ pg: `${currentPage - 1}` })}
+              href={getFilterUrl({ pg: String(currentPage - 1) })}
               className="px-4 py-2 rounded-md border border-pink-500 text-pink-500"
             >
               {"<<"}
             </Link>
           )}
 
-          {/* Page Numbers (3 at a time) */}
-          {Array.from(
-            { length: endPage - startPage + 1 },
-            (_, i) => i + startPage
-          ).map((p) => (
+          {/* Page Numbers */}
+          {Array.from({ length: endPage - startPage + 1 }, (_, i) => i + startPage).map((p) => (
             <Link
               key={p}
-              href={getFilterUrl({ pg: `${p}` })}
+              href={getFilterUrl({ pg: String(p) })}
               className={`px-4 py-2 rounded-md ${
                 currentPage === p
                   ? "bg-pink-500 text-white"
@@ -169,7 +165,7 @@ export default async function SearchPage({
           {/* Next Button */}
           {currentPage < pages && (
             <Link
-              href={getFilterUrl({ pg: `${currentPage + 1}` })}
+              href={getFilterUrl({ pg: String(currentPage + 1) })}
               className="px-4 py-2 rounded-md border border-pink-500 text-pink-500"
             >
               {">>"}

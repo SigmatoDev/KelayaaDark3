@@ -10,14 +10,14 @@ import useLayoutService from "@/lib/hooks/useLayout";
 import { SearchBox } from "./SearchBox";
 
 const Menu = () => {
-  const { items, init } = useCartService();
+  const { items } = useCartService();
   const { data: session } = useSession();
   const { theme, toggleTheme } = useLayoutService();
 
   const signOutHandler = () => {
     // signOut({ callbackUrl: "/signin" });
     signOut({ callbackUrl: "/" });
-    init();
+    //init();
   };
 
   const handleClick = () => {
