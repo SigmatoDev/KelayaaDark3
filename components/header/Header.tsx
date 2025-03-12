@@ -187,7 +187,7 @@ const Header = () => {
           isScrolled
             ? "bg-[#000] backdrop-blur-sm"
             : pathname === "/"
-              ? "xl:bg-[#0000006d] xl:backdrop-blur-cm bg-black hover:bg-[#Fff]"
+              ? "xl:bg-[#0000006d] xl:backdrop-blur-md bg-black hover:bg-[#ffffffe1]"
               : "bg-black"
         } transition-all duration-1000 ${!isScrolled ? "group" : ""}`}
       >
@@ -284,8 +284,8 @@ const Header = () => {
                   onClick={() => setIsSignInOpen(true)}
                   className="flex flex-row items-center text-center w-[70px]"
                 >
-                  <User className="w-4 h-4 text-white hover:text-pink-500 transition" />
-                  <p className="text-[10px] font-sm mt-1 text-white">SIGN IN</p>
+                  <User className="w-4 h-4 text-white hover:text-pink-500 transition group-hover:text-black" />
+                  <p className="text-[10px] font-sm mt-1 text-white group-hover:text-black">SIGN IN</p>
                 </button>
               )}
             </div>

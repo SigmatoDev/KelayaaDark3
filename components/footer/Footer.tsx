@@ -6,7 +6,7 @@ import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
 const Footer = () => {
   const router = useRouter();
   return (
-    <footer className="w-full bg-[#FFF6F6] text-black mt-2">
+    <footer className="w-full bg-[#FFF6F6] text-black">
       {/* Main Footer Content */}
       <div className="container mx-auto py-[100px]">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-2">
