@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
+import { Inter, Marko_One } from 'next/font/google';
 import './globals.css';
 
 import DrawerButton from '@/components/DrawerButton';
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
   return (
     <html lang='en'>
-      <body className={inter.className}>
+      <body className={`${inter.className} `}>
         <Providers>
           <div className='drawer'>
             <DrawerButton />
