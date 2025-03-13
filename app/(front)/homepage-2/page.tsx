@@ -62,7 +62,7 @@ const HomePage = () => {
         <BlogsImage src="/images/banners/blog.png" alt="Blogs" height={200} />
       </div> */}
       <div className="w-full">
-        <ProductShips src="/images/productship.png" alt="Blogs" height={200} />
+        <ProductShips />
       </div>
 
       {/* Back to Container for Other Content

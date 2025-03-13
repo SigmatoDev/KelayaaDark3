@@ -9,15 +9,15 @@ interface ProductShipsImageProps {
   height?: number;
   className?: string;
 }
-const features = [
-  { icon: '/images/la_shopping-cart.svg', title: 'FREE DELIVERY', description: 'Lorem ipsum dolor sit amet, consectetur adipi elit.' },
-  { icon: '/images/la_user-check.svg', title: '100% SECURE PAYMENT', description: 'Lorem ipsum dolor sit amet, consectetur adipi elit.' },
-  { icon: '/images/la_tag.svg', title: 'DAILY OFFERS', description: 'Lorem ipsum dolor sit amet, consectetur adipi elit.' },
-  { icon: '/images/la_award.svg', title: 'QUALITY GUARANTEE', description: 'Lorem ipsum dolor sit amet, consectetur adipi elit.' },
-];
-const ProductShips: React.FC<ProductShipsImageProps> = ({
 
-}) => {
+export default function ProductShips() {
+  const features = [
+    { icon: '/images/la_shopping-cart.svg', title: 'FREE DELIVERY', description: 'Lorem ipsum dolor sit amet, consectetur adipi elit.' },
+    { icon: '/images/la_user-check.svg', title: '100% SECURE PAYMENT', description: 'Lorem ipsum dolor sit amet, consectetur adipi elit.' },
+    { icon: '/images/la_tag.svg', title: 'DAILY OFFERS', description: 'Lorem ipsum dolor sit amet, consectetur adipi elit.' },
+    { icon: '/images/la_award.svg', title: 'QUALITY GUARANTEE', description: 'Lorem ipsum dolor sit amet, consectetur adipi elit.' },
+  ];
+
   return (
     <div className="bg-pink-50 xl:h-[317px] py-10 md:py-14 mt-10 xl:mt-20">
       <div className="w-full h-full flex items-center justify-center">
@@ -53,9 +53,7 @@ const ProductShips: React.FC<ProductShipsImageProps> = ({
       </div>
     </div>
   );
-};
-
-export default ProductShips;
+}
 
 
 
