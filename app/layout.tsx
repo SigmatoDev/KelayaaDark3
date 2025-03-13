@@ -13,6 +13,12 @@ const inter = Inter({ subsets: ['latin'], display: 'swap' });
 export const metadata: Metadata = {
   title: 'Kelayaa',
   description: 'Kelayaa – your ultimate destination for gold and diamond jewellery',
+  icons: {
+    icon: '/favicon.ico',        // /public/favicon.ico
+    shortcut: '/favicon.ico',    // /public/favicon.ico
+    apple: '/favicon.ico',    // /public/apple-icon.png
+   
+  },
 };
 
 const RootLayout = ({ children }: { children: React.ReactNode }) => {
