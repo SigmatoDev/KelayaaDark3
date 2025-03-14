@@ -2,77 +2,54 @@ import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
-import dbConnect from './dbConnect';
-import UserModel from './models/UserModel';
+import dbConnect from '@/lib/dbConnect';
+import UserModel from '@/lib/models/UserModel';
 
-export const config = {
+export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
   providers: [
     CredentialsProvider({
+      id: 'credentials',
+      name: 'Credentials',
       credentials: {
-        email: {
-          type: 'email',
-        },
-        password: {
-          type: 'password',
-        },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log("credentials",credentials)
         await dbConnect();
-        if (credentials === null) return null;
-
-        const user = await UserModel.findOne({ email: credentials.email });
-console.log("user",user)
-        if (user) {
-          const isMatch = await bcrypt.compare(
-            credentials.password as string,
-            user.password,
-          );
-          if (isMatch) {
-            return user;
+        
+        if (credentials?.email && credentials.password) {
+          const user = await UserModel.findOne({ email: credentials.email });
+          if (user && bcrypt.compareSync(credentials.password, user.password)) {
+            return {
+              id: user._id.toString(),
+              name: user.name,
+              email: user.email,
+              isAdmin: user.isAdmin,
+            };
           }
         }
         return null;
-      },
-    }),
+      }
+    })
   ],
-  // custom pages for sign in and register
   pages: {
-    signIn: '/signin',
-    newUser: '/register',
-    error: '/error',
+    signIn: '/auth/signin',
+    error: '/auth/error',
   },
   callbacks: {
-    async jwt({ user, trigger, session, token }: any) {
+    async jwt({ token, user }) {
       if (user) {
-        token.user = {
-          _id: user._id,
-          email: user.email,
-          name: user.name,
-          isAdmin: user.isAdmin,
-        };
-      }
-      if (trigger === 'update' && session) {
-        token.user = {
-          ...token.user,
-          email: session.user.email,
-          name: session.user.name,
-        };
+        token.id = user.id;
+        token.isAdmin = user.isAdmin;
       }
       return token;
     },
-    session: async ({ session, token }: any) => {
+    async session({ session, token }) {
       if (token) {
-        session.user = token.user;
+        session.user.id = token.id;
+        session.user.isAdmin = token.isAdmin;
       }
       return session;
-    },
-  },
-};
-
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth(config);
+    }
+  }
+});
