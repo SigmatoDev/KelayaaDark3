@@ -36,11 +36,10 @@ export default function CustomOrdersPage() {
           orderNumber: order.orderNumber,
           createdAt: order.createdAt,
           customer: order.user?.name || 'Unknown',
-          contactNumber: order.contactNumber,
-          customImage: order.customImage,
           designType: order.designType,
           budget: order.budget,
           status: order.status,
+          contactNumber: order.contactNumber,
         }));
         
         console.log("Formatted orders:", formattedOrders);

@@ -11,31 +11,17 @@ export const GET = auth(async (req: any, { params }: { params: { orderNumber: st
 
   try {
     await dbConnect();
-    console.log("Fetching custom design:", params.orderNumber);
-    
     const design = await CustomDesignModel.findOne({ orderNumber: params.orderNumber })
       .populate('user', 'name email')
       .lean();
 
     if (!design) {
-      console.log("Design not found:", params.orderNumber);
       return Response.json({ message: "Design not found" }, { status: 404 });
     }
 
-    console.log("Found design:", {
-      orderNumber: design.orderNumber,
-      contactNumber: design.contactNumber,
-      customImage: design.customImage,
-      user: design.user
-    });
-
     return Response.json(serialize(design));
   } catch (error: any) {
-    console.error("Error fetching custom design:", error);
-    return Response.json({ 
-      message: error.message,
-      stack: error.stack 
-    }, { status: 500 });
+    return Response.json({ message: error.message }, { status: 500 });
   }
 }) as any;
 

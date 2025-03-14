@@ -14,31 +14,15 @@ export const POST = auth(async (req: any) => {
     const data = await req.json();
     
     console.log('Received form data:', {
-      gender: data.gender,
       contactNumber: data.contactNumber,
       customImage: data.customImage,
-      designType: data.designType,
-      metalType: data.metalType,
-      budget: data.budget,
+      // ... other fields for debugging
     });
-    
-    console.log('Auth user:', {
-      id: req.auth.user.id,
-      name: req.auth.user.name,
-      email: req.auth.user.email
-    });
-
-    // Validate phone number
-    if (!data.contactNumber) {
-      return Response.json({ 
-        message: "Contact number is required" 
-      }, { status: 400 });
-    }
 
     // Validate required fields
     const requiredFields = [
       'gender',
-      'contactNumber',
+      'contactNumber', // Make sure this is required
       'designType',
       'metalType',
       'materialKarat',
@@ -58,28 +42,19 @@ export const POST = auth(async (req: any) => {
       }, { status: 400 });
     }
 
-    // Calculate prices
-    const subtotal = data.budget;
-    const gst = subtotal * 0.18;
-    const deliveryCharge = 0;
-    const totalPayable = subtotal + gst + deliveryCharge;
-
-    // Generate order number
-    const orderNumber = `CD${nanoid(8).toUpperCase()}`;
-
     // Create custom design object
     const customDesign = new CustomDesignModel({
       orderNumber: `CD${nanoid(8).toUpperCase()}`,
       user: req.auth.user.id,
+      contactNumber: data.contactNumber, // Ensure this is being set
+      customImage: data.customImage, // Store the full image URL
       gender: data.gender,
-      contactNumber: data.contactNumber.toString(),
       designType: data.designType,
       metalType: data.metalType,
       materialKarat: data.materialKarat,
       budget: data.budget,
       designMethod: data.designMethod,
       stoneType: data.stoneType || null,
-      customImage: data.customImage || null,
       occasion: data.occasion,
       size: data.size,
       additionalDetails: data.additionalDetails || "",
@@ -103,29 +78,17 @@ export const POST = auth(async (req: any) => {
     });
 
     console.log('Saving custom design with data:', {
-      orderNumber: customDesign.orderNumber,
       contactNumber: customDesign.contactNumber,
-      customImage: customDesign.customImage
+      customImage: customDesign.customImage,
     });
 
     const savedDesign = await customDesign.save();
-    console.log('Successfully saved custom design:', {
-      id: savedDesign._id,
-      orderNumber: savedDesign.orderNumber,
-      userId: savedDesign.user
-    });
-
     return Response.json({ 
       success: true, 
       design: serialize(savedDesign)
     }, { status: 201 });
   } catch (error: any) {
     console.error('Custom design creation error:', error);
-    console.error('Full error details:', {
-      message: error.message,
-      errors: error.errors,
-      stack: error.stack
-    });
     return Response.json({ 
       message: error.message || "Failed to create custom design",
       error: error.errors || error.message
@@ -133,6 +96,7 @@ export const POST = auth(async (req: any) => {
   }
 }) as any;
 
+// Update the GET route to include image and contact number in the response
 export const GET = auth(async (req: any) => {
   if (!req.auth) {
     return Response.json({ message: "unauthorized" }, { status: 401 });
@@ -140,18 +104,20 @@ export const GET = auth(async (req: any) => {
 
   try {
     await dbConnect();
-    console.log('Fetching custom designs for user:', req.auth.user.id);
-    
-    const designs = await CustomDesignModel.find({ user: req.auth.user.id })
+    const designs = await CustomDesignModel.find()
       .populate('user', 'name email')
       .sort({ createdAt: -1 })
       .lean();
 
-    console.log(`Found ${designs.length} designs for user`);
-    
-    return Response.json(serialize(designs));
+    // Add image URL to the response
+    const designsWithImageUrls = designs.map(design => ({
+      ...design,
+      imageUrl: design.customImage,
+      contactNumber: design.contactNumber
+    }));
+
+    return Response.json(serialize(designsWithImageUrls));
   } catch (error: any) {
-    console.error('Error fetching user designs:', error);
     return Response.json({ message: error.message }, { status: 500 });
   }
 }) as any; 

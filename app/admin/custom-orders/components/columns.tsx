@@ -1,25 +1,13 @@
 "use client";
 
 import { ColumnDef } from "@tanstack/react-table";
-import { ArrowUpDown, Eye } from "lucide-react";
+import { ArrowUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import Image from "next/image";
 import Link from "next/link";
 
-export type CustomOrderColumn = {
-  id: string;
-  orderNumber: string;
-  createdAt: string;
-  customer: string;
-  designType: string;
-  budget: number;
-  status: string;
-  contactNumber: string;
-  customImage: string;
-};
-
-export const columns: ColumnDef<CustomOrderColumn>[] = [
+export const columns: ColumnDef<any>[] = [
   {
     accessorKey: "orderNumber",
     header: ({ column }) => {
@@ -51,34 +39,24 @@ export const columns: ColumnDef<CustomOrderColumn>[] = [
   {
     accessorKey: "contactNumber",
     header: "Contact",
-    cell: ({ row }) => {
-      const contact = row.getValue("contactNumber");
-      return contact || "N/A";
-    },
+    cell: ({ row }) => row.getValue("contactNumber") || "N/A",
   },
   {
     accessorKey: "customImage",
     header: "Design Image",
     cell: ({ row }) => {
       const imageUrl = row.getValue("customImage");
-      if (!imageUrl) return "No image";
-      
-      return (
-        <div className="relative w-10 h-10 group">
+      return imageUrl ? (
+        <div className="relative w-16 h-16">
           <Image
             src={imageUrl}
             alt="Design"
             fill
-            className="object-cover rounded"
+            className="object-cover rounded-md"
           />
-          <Link
-            href={imageUrl}
-            target="_blank"
-            className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 opacity-0 group-hover:opacity-100 transition-opacity rounded"
-          >
-            <Eye className="w-4 h-4 text-white" />
-          </Link>
         </div>
+      ) : (
+        <span className="text-gray-400">No image</span>
       );
     },
   },

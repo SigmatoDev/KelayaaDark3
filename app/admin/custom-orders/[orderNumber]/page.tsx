@@ -20,10 +20,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Heading } from "@/components/ui/heading";
-import { Separator } from "@/components/ui/separator";
-import Image from "next/image";
-import { StatusBadge } from "@/components/ui/status-badge";
 
 const statusOptions = [
   { value: "pending", label: "Pending", className: "bg-yellow-100 text-yellow-800" },
@@ -33,35 +29,35 @@ const statusOptions = [
   { value: "cancelled", label: "Cancelled", className: "bg-red-100 text-red-800" }
 ];
 
-export default function CustomOrderDetail({ params }: { params: { orderNumber: string } }) {
-  const [loading, setLoading] = useState(true);
+export default function OrderDetailsPage() {
+  const params = useParams();
+  const router = useRouter();
   const [order, setOrder] = useState<any>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
   const [status, setStatus] = useState("");
   const [adminNotes, setAdminNotes] = useState("");
   const [updating, setUpdating] = useState(false);
 
   useEffect(() => {
-    const fetchOrderDetails = async () => {
+    const fetchOrder = async () => {
       try {
-        const response = await fetch(`/api/admin/custom-designs/${params.orderNumber}`);
-        if (!response.ok) {
-          throw new Error("Failed to fetch order details");
-        }
+        const response = await fetch(
+          `/api/admin/custom-designs/${params.orderNumber}`
+        );
+        if (!response.ok) throw new Error("Failed to fetch order");
         const data = await response.json();
-        console.log("Fetched order details:", data); // Debug log
         setOrder(data);
         setStatus(data.status);
         setAdminNotes(data.adminNotes || "");
       } catch (error) {
-        console.error("Error:", error);
-        setError("Failed to load order details");
+        console.error("Error fetching order:", error);
+        toast.error("Failed to load order details");
       } finally {
         setLoading(false);
       }
     };
 
-    fetchOrderDetails();
+    fetchOrder();
   }, [params.orderNumber]);
 
   const handleUpdate = async () => {
@@ -87,164 +83,82 @@ export default function CustomOrderDetail({ params }: { params: { orderNumber: s
     }
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (error) return <div>Error: {error}</div>;
-  if (!order) return <div>Order not found</div>;
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900" />
+      </div>
+    );
+  }
+
+  if (!order) {
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold">Order not found</h1>
+      </div>
+    );
+  }
 
   return (
-    <div className="flex-col">
-      <div className="flex-1 space-y-4 p-8 pt-6">
-        <div className="flex items-center justify-between">
-          <Heading
-            title={`Order ${order.orderNumber}`}
-            description="Custom Design Order Details"
-          />
-          <StatusBadge status={order.status} />
-        </div>
-        <Separator />
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Customer Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium">Name</p>
-                <p className="text-sm">{order.user?.name || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Email</p>
-                <p className="text-sm">{order.user?.email || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Contact Number</p>
-                <p className="text-sm">{order.contactNumber || 'N/A'}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Gender</p>
-                <p className="text-sm capitalize">{order.gender || 'N/A'}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Design Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Design Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium">Design Type</p>
-                <p className="text-sm capitalize">{order.designType}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Metal Type</p>
-                <p className="text-sm capitalize">{order.metalType}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Material Karat</p>
-                <p className="text-sm">{order.materialKarat}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Stone Type</p>
-                <p className="text-sm capitalize">{order.stoneType || 'No stone'}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Custom Image */}
-          {order.customImage && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Custom Design Image</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="relative h-[200px] w-full">
-                  <Image
-                    src={order.customImage}
-                    alt="Custom Design"
-                    fill
-                    className="object-contain rounded-md"
-                  />
-                </div>
-                <a 
-                  href={order.customImage}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-blue-600 hover:underline mt-2 block"
-                >
-                  View Full Image
-                </a>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Price Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Price Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium">Budget</p>
-                <p className="text-sm">₹{order.budget?.toLocaleString('en-IN')}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">GST (18%)</p>
-                <p className="text-sm">₹{order.gst?.toLocaleString('en-IN')}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Total Payable</p>
-                <p className="text-sm font-bold">₹{order.totalPayable?.toLocaleString('en-IN')}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Additional Details */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Additional Details</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <p className="text-sm font-medium">Occasion</p>
-                <p className="text-sm capitalize">{order.occasion}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Size</p>
-                <p className="text-sm">{order.size}</p>
-              </div>
-              <div>
-                <p className="text-sm font-medium">Timeline</p>
-                <p className="text-sm">{order.timeline}</p>
-              </div>
-              {order.additionalDetails && (
-                <div>
-                  <p className="text-sm font-medium">Additional Notes</p>
-                  <p className="text-sm whitespace-pre-wrap">{order.additionalDetails}</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-2xl font-bold">
+          Order Details - #{order.orderNumber}
+        </h1>
+        <Badge
+          className={`text-lg px-4 py-2 ${
+            statusOptions.find((opt) => opt.value === order.status)?.className
+          }`}
+        >
+          {order.status.replace("_", " ").toUpperCase()}
+        </Badge>
       </div>
 
-      <div className="p-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">
-            Order Management
-          </h1>
-        </div>
-
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Update Status</CardTitle>
-            </CardHeader>
-            <CardContent>
+      <div className="grid md:grid-cols-2 gap-6">
+        <Card>
+          <CardHeader>
+            <CardTitle>Customer Information</CardTitle>
+            <CardDescription>
+              Order placed on {format(new Date(order.createdAt), "PPP")}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-4">
               <div>
+                <h3 className="font-semibold">Contact Details</h3>
+                <p>Name: {order.user.name}</p>
+                <p>Email: {order.user.email}</p>
+                <p>Phone: {order.specifications.contactNumber}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold">Design Requirements</h3>
+                <p>Type: {order.designType}</p>
+                <p>Metal: {order.metalType}</p>
+                <p>Karat: {order.specifications.materialKarat}K</p>
+                <p>Gender: {order.specifications.gender}</p>
+                <p>Size: {order.specifications.size}</p>
+                <p>Occasion: {order.specifications.occasion}</p>
+              </div>
+              <div>
+                <h3 className="font-semibold">Budget Details</h3>
+                <p>Budget: ₹{order.budget.toLocaleString()}</p>
+                <p>GST (18%): ₹{order.gst.toLocaleString()}</p>
+                <p>Total: ₹{order.totalPayable.toLocaleString()}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle>Order Management</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Update Status
+                </label>
                 <Select value={status} onValueChange={setStatus}>
                   <SelectTrigger>
                     <SelectValue placeholder="Select status" />
@@ -258,15 +172,11 @@ export default function CustomOrderDetail({ params }: { params: { orderNumber: s
                   </SelectContent>
                 </Select>
               </div>
-            </CardContent>
-          </Card>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Admin Notes</CardTitle>
-            </CardHeader>
-            <CardContent>
               <div>
+                <label className="block text-sm font-medium mb-2">
+                  Admin Notes
+                </label>
                 <Textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
@@ -274,17 +184,17 @@ export default function CustomOrderDetail({ params }: { params: { orderNumber: s
                   placeholder="Add notes about this order..."
                 />
               </div>
-            </CardContent>
-          </Card>
 
-          <Button
-            onClick={handleUpdate}
-            disabled={updating}
-            className="w-full"
-          >
-            {updating ? "Updating..." : "Update Order"}
-          </Button>
-        </div>
+              <Button
+                onClick={handleUpdate}
+                disabled={updating}
+                className="w-full"
+              >
+                {updating ? "Updating..." : "Update Order"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
 
       {order.imageUrls?.length > 0 && (

@@ -2,10 +2,10 @@ import bcrypt from 'bcryptjs';
 import NextAuth from 'next-auth';
 import CredentialsProvider from 'next-auth/providers/credentials';
 
-import dbConnect from '@/lib/dbConnect';
-import UserModel from '@/lib/models/UserModel';
+import dbConnect from './dbConnect';
+import UserModel from './models/UserModel';
 
-export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
+export const { handlers: { GET, POST }, auth } = NextAuth({
   providers: [
     CredentialsProvider({
       id: 'credentials',
@@ -17,18 +17,28 @@ export const { handlers: { GET, POST }, auth, signIn, signOut } = NextAuth({
       async authorize(credentials) {
         await dbConnect();
         
-        if (credentials?.email && credentials.password) {
-          const user = await UserModel.findOne({ email: credentials.email });
-          if (user && bcrypt.compareSync(credentials.password, user.password)) {
-            return {
-              id: user._id.toString(),
-              name: user.name,
-              email: user.email,
-              isAdmin: user.isAdmin,
-            };
-          }
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Invalid credentials');
         }
-        return null;
+
+        const user = await UserModel.findOne({ email: credentials.email });
+        
+        if (!user) {
+          throw new Error('No user found');
+        }
+
+        const isValid = await bcrypt.compare(credentials.password, user.password);
+        
+        if (!isValid) {
+          throw new Error('Invalid password');
+        }
+
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          isAdmin: user.isAdmin,
+        };
       }
     })
   ],

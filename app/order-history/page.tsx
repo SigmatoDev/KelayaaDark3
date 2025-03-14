@@ -1,87 +1,56 @@
 "use client";
 import { useEffect, useState } from "react";
-import { useSession } from "next-auth/react";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import { StatusBadge } from "@/components/ui/status-badge";
-import { Metadata } from 'next';
-import React from 'react';
 
-export const metadata: Metadata = {
-  title: 'Order History',
-};
+interface Order {
+  _id: string;
+  orderNumber: string;
+  createdAt: string;
+  items: Array<{
+    name: string;
+    price: number;
+    qty: number;
+    image: string;
+  }>;
+  totalPrice: number;
+  isPaid: boolean;
+  isDelivered: boolean;
+  paidAt?: string;
+  deliveredAt?: string;
+  status: string;
+}
 
 export default function OrderHistory() {
-  const { data: session, status } = useSession();
-  const [orders, setOrders] = useState<any[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchOrders = async () => {
-      if (status === "loading") return;
-      
-      if (!session) {
-        setLoading(false);
-        return;
-      }
-
       try {
         const response = await fetch('/api/orders/mine');
+        if (!response.ok) throw new Error('Failed to fetch orders');
         const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to fetch orders');
-        }
-        
+        console.log('Fetched orders:', data); // Debug log
         setOrders(data);
       } catch (error) {
         console.error('Error fetching orders:', error);
-        setError(error.message);
       } finally {
         setLoading(false);
       }
     };
 
     fetchOrders();
-  }, [session, status]);
+  }, []);
 
-  if (status === "loading") {
+  if (loading) {
     return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="flex justify-center items-center min-h-[400px]">
-          Loading...
-        </div>
-      </div>
-    );
-  }
-
-  if (!session) {
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="text-center py-10">
-          <h3 className="text-lg font-medium">Please sign in to view your orders</h3>
-          <Link 
-            href="/signin" 
-            className="inline-block mt-4 px-4 py-2 bg-primary text-white rounded-md"
-          >
-            Sign In
-          </Link>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="container mx-auto py-8 px-4">
-        <div className="text-center py-10 text-red-600">
-          <h3 className="text-lg font-medium">Error loading orders</h3>
-          <p>{error}</p>
-        </div>
+      <div className="flex justify-center items-center min-h-[400px]">
+        Loading...
       </div>
     );
   }
@@ -94,17 +63,13 @@ export default function OrderHistory() {
       />
       <Separator className="my-6" />
 
-      {loading ? (
-        <div className="flex justify-center items-center min-h-[400px]">
-          Loading orders...
-        </div>
-      ) : orders.length === 0 ? (
+      {orders.length === 0 ? (
         <div className="text-center py-10">
           <h3 className="text-lg font-medium">No orders found</h3>
           <p className="text-gray-500 mt-2">Start shopping to see your orders here!</p>
           <Link 
             href="/products"
-            className="inline-block mt-4 px-4 py-2 bg-primary text-white rounded-md"
+            className="inline-block mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
           >
             Browse Products
           </Link>
@@ -112,7 +77,7 @@ export default function OrderHistory() {
       ) : (
         <div className="space-y-6">
           {orders.map((order) => (
-            <Card key={order._id || order.orderNumber}>
+            <Card key={order._id}>
               <CardContent className="p-6">
                 <div className="flex flex-col md:flex-row justify-between gap-6">
                   {/* Order Info */}
@@ -135,29 +100,27 @@ export default function OrderHistory() {
                       />
                     </div>
                     <p className="text-sm text-gray-500">
-                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : 'Date not available'}
+                      Placed on {new Date(order.createdAt).toLocaleDateString()}
                     </p>
                   </div>
 
                   {/* Order Items Preview */}
                   <div className="flex-1">
                     <div className="flex flex-wrap gap-4">
-                      {order.items?.map((item: any, index: number) => (
+                      {order.items.map((item, index) => (
                         <div key={index} className="flex items-center gap-3">
-                          {item.image && (
-                            <div className="relative w-16 h-16">
-                              <Image
-                                src={item.image}
-                                alt={item.name || 'Product'}
-                                fill
-                                className="object-cover rounded-md"
-                              />
-                            </div>
-                          )}
+                          <div className="relative w-16 h-16">
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              className="object-cover rounded-md"
+                            />
+                          </div>
                           <div>
-                            <p className="text-sm font-medium">{item.name || 'Product'}</p>
+                            <p className="text-sm font-medium">{item.name}</p>
                             <p className="text-sm text-gray-500">
-                              Qty: {item.qty} × ₹{(item.price || 0).toLocaleString('en-IN')}
+                              Qty: {item.qty} × ₹{item.price.toLocaleString('en-IN')}
                             </p>
                           </div>
                         </div>
@@ -170,7 +133,7 @@ export default function OrderHistory() {
                     <div className="text-right">
                       <p className="text-sm font-medium">Total Amount</p>
                       <p className="text-lg font-bold">
-                        ₹{(order.totalPrice || 0).toLocaleString('en-IN')}
+                        ₹{order.totalPrice.toLocaleString('en-IN')}
                       </p>
                     </div>
                     <Link
@@ -181,6 +144,31 @@ export default function OrderHistory() {
                     </Link>
                   </div>
                 </div>
+
+                {/* Order Status Timeline */}
+                <div className="mt-6 pt-6 border-t">
+                  <div className="flex items-center justify-between max-w-2xl">
+                    <div className="flex flex-col items-center">
+                      <div className={`w-4 h-4 rounded-full ${order.isPaid ? 'bg-green-500' : 'bg-gray-300'}`} />
+                      <p className="text-sm mt-2">Order Placed</p>
+                      {order.paidAt && (
+                        <p className="text-xs text-gray-500">
+                          {new Date(order.paidAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <div className={`flex-1 h-0.5 ${order.isPaid ? 'bg-green-500' : 'bg-gray-300'}`} />
+                    <div className="flex flex-col items-center">
+                      <div className={`w-4 h-4 rounded-full ${order.isDelivered ? 'bg-green-500' : 'bg-gray-300'}`} />
+                      <p className="text-sm mt-2">Delivered</p>
+                      {order.deliveredAt && (
+                        <p className="text-xs text-gray-500">
+                          {new Date(order.deliveredAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                </div>
               </CardContent>
             </Card>
           ))}
@@ -188,4 +176,4 @@ export default function OrderHistory() {
       )}
     </div>
   );
-}
+} 

@@ -9,7 +9,10 @@ const customDesignSchema = new mongoose.Schema({
   },
   // Step 1 fields
   gender: { type: String, enum: ['male', 'female'], required: true },
-  contactNumber: { type: String, required: true },
+  contactNumber: {
+    type: String,
+    required: true,
+  },
   designType: { 
     type: String, 
     enum: ['Rings', 'Bracelets', 'Bangles', 'Necklaces', 'Earings'], 
@@ -22,7 +25,10 @@ const customDesignSchema = new mongoose.Schema({
   // Step 2 fields
   designMethod: { type: String, enum: ['details', 'image'], required: true },
   stoneType: { type: String, enum: ['diamond', 'gemstone', 'no stone'] },
-  customImage: { type: String }, // URL of uploaded image
+  customImage: {
+    type: String,
+    required: false,
+  },
   occasion: { type: String, enum: ['wedding', 'engagement'], required: true },
   size: { type: Number, min: 7, max: 20, required: true },
   additionalDetails: { type: String },

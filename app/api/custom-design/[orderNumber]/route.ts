@@ -12,7 +12,7 @@ export const GET = auth(async (req: any, { params }: { params: { orderNumber: st
     await dbConnect();
     const order = await CustomDesignModel.findOne({
       orderNumber: params.orderNumber,
-      user: req.auth.user.id
+      user: req.auth.user._id
     }).lean();
 
     if (!order) {
