@@ -20,12 +20,12 @@ interface Card {
   textColor: string;
   buttonColor: string;
   type: "double-image" | "single-image";
-  bgImage?: string;
-  fgImage?: string;
-  image?: string;
+  bgImage: string;
+  fgImage: string;
+  image: string;
 }
 
-const cards = [
+const cards: Card[] = [
   {
     title: "Create Your Dream Jewellery",
     description:
@@ -36,7 +36,8 @@ const cards = [
     buttonColor: "bg-gradient-to-r from-pink-500 to-orange-400",
     bgImage: "/blob.svg",
     fgImage: "/phone.png",
-    type: "double-image"
+    image: "",
+    type: "double-image" as const
   },
   {
     title: "Best Sellers And New Arrivals",
@@ -46,14 +47,17 @@ const cards = [
     bgColor: "bg-[#EFEFEC]",
     textColor: "text-gray-700",
     buttonColor: "bg-gradient-to-r from-pink-500 to-orange-400",
+    bgImage: "",
+    fgImage: "",
     image: "/flower1.svg",
-    type: "single-image"
+    type: "single-image" as const
   },
 ];
 
 const HeroSection = () => {
   const renderImage = (card: Card) => {
     if (card.type === "double-image") {
+      if (!card.bgImage || !card.fgImage) return null;
       return (
         <motion.div
           className="relative w-[50%] h-full"
