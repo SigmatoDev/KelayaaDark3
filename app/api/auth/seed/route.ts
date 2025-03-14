@@ -8,7 +8,7 @@ export async function GET() {
     await dbConnect();
 
     // Check if admin user already exists
-    const existingUser = await UserModel.findOne({ email: 'admin@example.com' });
+    const existingUser = await UserModel.findOne({ email: 'rudresh96@gmail.com' });
     if (existingUser) {
       return NextResponse.json({ message: 'Admin user already exists' });
     }
@@ -16,8 +16,8 @@ export async function GET() {
     // Create admin user
     const hashedPassword = await bcrypt.hash('123456', 10);
     const newUser = new UserModel({
-      name: 'Admin User',
-      email: 'admin@example.com',
+      name: 'Rudresh',
+      email: 'rudresh96@gmail.com',
       password: hashedPassword,
       isAdmin: true,
     });

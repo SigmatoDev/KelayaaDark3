@@ -22,28 +22,15 @@ export const GET = auth(async (req: any) => {
       .sort({ createdAt: -1 })
       .lean();
 
-    console.log(`Admin: Found ${designs.length} custom designs`);
-    
-    // Log each design for debugging
-    designs.forEach((design, index) => {
-      console.log(`Design ${index + 1}:`, {
-        orderNumber: design.orderNumber,
-        userId: design.user?._id,
-        userName: design.user?.name,
-        status: design.status,
-        createdAt: design.createdAt
-      });
-    });
+    console.log("Found designs:", designs.map(d => ({
+      orderNumber: d.orderNumber,
+      customImage: d.customImage,
+      contactNumber: d.contactNumber
+    })));
 
     return Response.json(serialize(designs));
   } catch (error: any) {
-    console.error("Admin: Error fetching custom designs:", {
-      message: error.message,
-      stack: error.stack
-    });
-    return Response.json({ 
-      message: error.message,
-      stack: error.stack 
-    }, { status: 500 });
+    console.error("Error fetching designs:", error);
+    return Response.json({ message: error.message }, { status: 500 });
   }
 }) as any; 

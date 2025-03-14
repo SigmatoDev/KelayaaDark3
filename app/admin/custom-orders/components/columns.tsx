@@ -6,6 +6,32 @@ import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import Image from "next/image";
 import Link from "next/link";
+import { useState } from "react";
+
+const ImageWithFallback = ({ src, alt }: { src: string; alt: string }) => {
+  const [error, setError] = useState(false);
+
+  if (error || !src) {
+    return (
+      <div className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center">
+        <span className="text-xs text-gray-500">No image</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-10 h-10">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="object-cover rounded-md"
+        sizes="40px"
+        onError={() => setError(true)}
+      />
+    </div>
+  );
+};
 
 export const columns: ColumnDef<any>[] = [
   {
@@ -45,19 +71,8 @@ export const columns: ColumnDef<any>[] = [
     accessorKey: "customImage",
     header: "Design Image",
     cell: ({ row }) => {
-      const imageUrl = row.getValue("customImage");
-      return imageUrl ? (
-        <div className="relative w-16 h-16">
-          <Image
-            src={imageUrl}
-            alt="Design"
-            fill
-            className="object-cover rounded-md"
-          />
-        </div>
-      ) : (
-        <span className="text-gray-400">No image</span>
-      );
+      const imageUrl = row.original.customImage;
+      return <ImageWithFallback src={imageUrl} alt="Design" />;
     },
   },
   {
@@ -66,7 +81,17 @@ export const columns: ColumnDef<any>[] = [
   },
   {
     accessorKey: "budget",
-    header: "Budget",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Budget
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const amount = parseFloat(row.getValue("budget"));
       const formatted = new Intl.NumberFormat("en-IN", {
@@ -85,10 +110,20 @@ export const columns: ColumnDef<any>[] = [
   },
   {
     accessorKey: "createdAt",
-    header: "Created At",
+    header: ({ column }) => {
+      return (
+        <Button
+          variant="ghost"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        >
+          Created At
+          <ArrowUpDown className="ml-2 h-4 w-4" />
+        </Button>
+      );
+    },
     cell: ({ row }) => {
       const date = new Date(row.getValue("createdAt"));
-      return date.toLocaleString('en-IN', {
+      return date.toLocaleString("en-IN", {
         day: '2-digit',
         month: 'short',
         year: 'numeric',

@@ -241,10 +241,10 @@ const Header = () => {
                     </button>
 
                     {menuOpen && (
-                      <ul className="absolute right-0 z-[999] mt-2 w-52 rounded-lg bg-white/10 backdrop-blur-md p-2 shadow-lg border border-white/20">
+                      <ul className="absolute right-0 z-[9999] mt-2 w-52 rounded-lg bg-white/10 backdrop-blur-md p-2 shadow-lg border border-white/20">
                         <li
                           onClick={handleClick}
-                          className="flex items-center px-3 py-2 hover:bg-white/20 rounded-md"
+                          className="flex items-center z-[9999] px-3 py-2 hover:bg-white/20 rounded-md"
                         >
                           <History className="w-4 h-4 text-white" />
                           <Link
@@ -262,6 +262,19 @@ const Header = () => {
                           <User className="w-4 h-4 text-white" />
                           <Link href="/profile" className="text-white ml-2">
                             Profile
+                          </Link>
+                        </li>
+
+                        <li
+                          onClick={handleClick}
+                          className="flex items-center px-3 py-2 hover:bg-white/20 rounded-md"
+                        >
+                          <History className="w-4 h-4 text-white" />
+                          <Link
+                            href="/custom-order-history"
+                            className="text-white ml-2"
+                          >
+                            Custom Orders
                           </Link>
                         </li>
 

@@ -104,20 +104,30 @@ export const GET = auth(async (req: any) => {
 
   try {
     await dbConnect();
-    const designs = await CustomDesignModel.find()
-      .populate('user', 'name email')
+    const designs = await CustomDesignModel.find({ user: req.auth.user.id })
       .sort({ createdAt: -1 })
       .lean();
 
-    // Add image URL to the response
-    const designsWithImageUrls = designs.map(design => ({
-      ...design,
-      imageUrl: design.customImage,
-      contactNumber: design.contactNumber
+    const formattedDesigns = designs.map(design => ({
+      orderNumber: design.orderNumber,
+      status: design.status,
+      createdAt: design.createdAt,
+      customImage: design.customImage,
+      designType: design.designType,
+      metalType: design.metalType,
+      budget: design.budget,
+      specifications: {
+        size: design.specifications.size,
+        occasion: design.specifications.occasion,
+        stoneType: design.specifications.stoneType,
+      },
+      timeline: design.timeline,
+      adminNotes: design.adminNotes,
     }));
 
-    return Response.json(serialize(designsWithImageUrls));
+    return Response.json(serialize(formattedDesigns));
   } catch (error: any) {
+    console.error('Error fetching user designs:', error);
     return Response.json({ message: error.message }, { status: 500 });
   }
 }) as any; 

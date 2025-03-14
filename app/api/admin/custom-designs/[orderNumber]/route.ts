@@ -11,16 +11,26 @@ export const GET = auth(async (req: any, { params }: { params: { orderNumber: st
 
   try {
     await dbConnect();
+    console.log("Fetching design with orderNumber:", params.orderNumber);
+    
     const design = await CustomDesignModel.findOne({ orderNumber: params.orderNumber })
       .populate('user', 'name email')
       .lean();
 
     if (!design) {
+      console.log("No design found with orderNumber:", params.orderNumber);
       return Response.json({ message: "Design not found" }, { status: 404 });
     }
 
-    return Response.json(serialize(design));
+    // Log the entire design object
+    console.log("Full design object:", JSON.stringify(design, null, 2));
+
+    const serializedDesign = serialize(design);
+    console.log("Serialized design:", JSON.stringify(serializedDesign, null, 2));
+
+    return Response.json(serializedDesign);
   } catch (error: any) {
+    console.error("Error fetching design:", error);
     return Response.json({ message: error.message }, { status: 500 });
   }
 }) as any;
