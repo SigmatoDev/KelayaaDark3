@@ -46,8 +46,8 @@ export default function CustomOrderDetails() {
   useEffect(() => {
     const fetchDesign = async () => {
       try {
-        console.log("Fetching design for orderNumber:", params.orderNumber);
-        const response = await fetch(`/api/admin/custom-designs/${params.orderNumber}`);
+        console.log("Fetching design for orderNumber:", params?.orderNumber);
+        const response = await fetch(`/api/admin/custom-designs/${params?.orderNumber}`);
         
         if (!response.ok) {
           const errorData = await response.json();
@@ -68,16 +68,16 @@ export default function CustomOrderDetails() {
       }
     };
 
-    if (params.orderNumber) {
+    if (params?.orderNumber) {
       fetchDesign();
     }
-  }, [params.orderNumber]);
+  }, [params?.orderNumber]);
 
   const handleUpdate = async () => {
     setUpdating(true);
     try {
       const response = await fetch(
-        `/api/admin/custom-designs/${params.orderNumber}`,
+        `/api/admin/custom-designs/${params?.orderNumber}`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

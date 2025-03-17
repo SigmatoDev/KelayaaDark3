@@ -7,10 +7,28 @@ import { Separator } from "@/components/ui/separator";
 import { toast } from "react-hot-toast";
 import AdminLayout from "@/components/admin/AdminLayout";
 
+
+
+type Order = {
+  id: string;
+  orderNumber: string;
+  createdAt: string;
+  customer: string;
+  contactNumber: string;
+  customImage: string | null;
+  designType: string;
+  budget: number;
+  status: string;
+};
+
 export default function CustomOrdersPage() {
   const [loading, setLoading] = useState(true);
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [error, setError] = useState<string | null>(null);
+
+
+
+  
 
   useEffect(() => {
     const fetchOrders = async () => {

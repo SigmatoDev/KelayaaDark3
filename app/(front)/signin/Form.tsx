@@ -55,14 +55,14 @@ const Form = () => {
     <div className="card mx-auto my-4 max-w-sm bg-base-300">
       <div className="card-body">
         <h1 className="card-title">Sign in</h1>
-        {params.get("error") && (
+        {params?.get("error") && (
           <div className="alert text-error">
             {params.get("error") === "CredentialsSignin"
               ? "Invalid email or password"
               : params.get("error")}
           </div>
         )}
-        {params.get("success") && (
+        {params?.get("success") && (
           <div className="alert text-success">{params.get("success")}</div>
         )}
         <form onSubmit={handleSubmit(formSubmit)}>

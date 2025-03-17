@@ -76,6 +76,7 @@ export default function OrderTrackingPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    if (!params?.orderNumber) return;
     const fetchOrder = async () => {
       try {
         const response = await fetch(`/api/custom-design/${params.orderNumber}`);
@@ -90,7 +91,7 @@ export default function OrderTrackingPage() {
     };
 
     fetchOrder();
-  }, [params.orderNumber]);
+  }, [params?.orderNumber]);
 
   if (loading) {
     return <div className="min-h-screen flex items-center justify-center">

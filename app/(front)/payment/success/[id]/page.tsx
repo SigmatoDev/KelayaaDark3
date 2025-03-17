@@ -9,6 +9,9 @@ import useSWRMutation from "swr/mutation";
 const SuccessPage = () => {
   const router = useRouter();
   const params = useParams();
+
+  const paymentIntentId = params?.paymentIntentId;
+
   const {
     paymentMethod,
     shippingAddress,
@@ -19,7 +22,7 @@ const SuccessPage = () => {
     totalPrice,
     clear,
   } = useCartService();
-  const { paymentIntentId } = params;
+
   console.log("paymentIntentId", paymentIntentId);
 
   // Ref to prevent duplicate API calls

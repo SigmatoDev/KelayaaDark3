@@ -2,7 +2,7 @@
 
 import React from 'react'
 import Link from 'next/link'
-export const page = () => {
+export default function AccountPage ()  {
   return (
     <div>
       <Link 
