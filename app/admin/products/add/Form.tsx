@@ -11,24 +11,46 @@ import { Upload } from "lucide-react";
 
 export default function ProductCreateForm() {
   const router = useRouter();
+  // const { trigger: createProduct, isMutating: isCreating } = useSWRMutation(
+  //   `/api/admin/products`,
+  //   async (url, { arg }) => {
+  //     const res = await fetch(url, {
+  //       method: "POST",
+  //       headers: {
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify(arg),
+  //     });
+  //     const data = await res.json();
+  //     if (!res.ok) return toast.error(data.message);
+
+  //     toast.success("Product created successfully");
+  //     router.push(`/admin/products`);
+  //   }
+  // );
+
+
   const { trigger: createProduct, isMutating: isCreating } = useSWRMutation(
     `/api/admin/products`,
     async (url, { arg }) => {
-      const res = await fetch(url, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(arg),
-      });
-      const data = await res.json();
-      if (!res.ok) return toast.error(data.message);
-
-      toast.success("Product created successfully");
-      router.push(`/admin/products`);
+      try {
+        const res = await fetch(url, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(arg),
+        });
+  
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Failed to create product");
+  
+        toast.success("Product created successfully");
+        router.push(`/admin/products`);
+      } catch (error: any) {
+        toast.error(error.message);
+      }
     }
   );
-
+  
   const {
     register,
     handleSubmit,
@@ -104,7 +126,7 @@ export default function ProductCreateForm() {
     if (selectedProductCategory) {
       setSubcategories(categoryMapping[selectedProductCategory] || []);
     }
-  }, [selectedProductCategory]);
+  }, [selectedProductCategory, categoryMapping]);
 
   useEffect(() => {
     if (selectedProductCategory === "Ring") {
@@ -124,7 +146,9 @@ export default function ProductCreateForm() {
       // Convert the calculated price to string and set it
       setValue("price", parseFloat(calculatedPrice.toFixed(2)));
     }
-  }, [watch("weight"), watch("price_per_gram")]);
+  }, [watch("weight"), watch("price_per_gram"), setValue]);
+
+
 
   const formSubmit = async (formData: any) => {
     // Ensure price is a string when submitting

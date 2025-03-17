@@ -42,7 +42,7 @@ export default function OrderConfirmation({ orderNumber }: OrderConfirmationProp
               Track Order
             </button>
             <button
-              onClick={() => router.push("/account/orders")}
+              onClick={() => router.push("/custom-order-history")}
               className="w-full px-6 py-2 border rounded-lg hover:bg-gray-50"
             >
               View All Orders

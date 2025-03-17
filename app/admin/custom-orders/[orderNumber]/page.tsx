@@ -139,15 +139,15 @@ export default function CustomOrderDetails() {
               <CardTitle>Customer Information</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <div>
+              <div className="flex gap-4">
                 <p className="text-sm font-medium">Name</p>
                 <p className="text-sm">{design.user?.name || 'N/A'}</p>
               </div>
-              <div>
+              <div className="flex gap-4">
                 <p className="text-sm font-medium">Email</p>
                 <p className="text-sm">{design.user?.email || 'N/A'}</p>
               </div>
-              <div>
+              <div className="flex gap-4">
                 <p className="text-sm font-medium">Contact Number</p>
                 <p className="text-sm">{design.contactNumber || 'N/A'}</p>
               </div>
@@ -161,7 +161,7 @@ export default function CustomOrderDetails() {
             </CardHeader>
             <CardContent>
               {design.customImage ? (
-                <div className="relative w-full h-64">
+                <div className="relative w-full h-40">
                   <Image
                     src={design.customImage}
                     alt="Custom Design"
@@ -188,27 +188,27 @@ export default function CustomOrderDetails() {
               <CardTitle>Design Specifications</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <div>
+              <div className="flex gap-4">
                 <p className="text-sm font-medium">Design Type</p>
                 <p className="text-sm">{design.designType || 'N/A'}</p>
               </div>
-              <div>
+              <div className="flex gap-4">
                 <p className="text-sm font-medium">Metal Type</p>
                 <p className="text-sm">{design.metalType || 'N/A'}</p>
               </div>
-              <div>
+              <div className="flex gap-4">
                 <p className="text-sm font-medium">Material Karat</p>
                 <p className="text-sm">{design.materialKarat || 'N/A'}</p>
               </div>
-              <div>
+              <div className="flex gap-4">
                 <p className="text-sm font-medium">Stone Type</p>
                 <p className="text-sm">{design.specifications?.stoneType || 'N/A'}</p>
               </div>
-              <div>
+              <div className="flex gap-4">
                 <p className="text-sm font-medium">Size</p>
                 <p className="text-sm">{design.specifications?.size || 'N/A'}</p>
               </div>
-              <div>
+              <div className="flex gap-4">
                 <p className="text-sm font-medium">Occasion</p>
                 <p className="text-sm">{design.specifications?.occasion || 'N/A'}</p>
               </div>
@@ -221,7 +221,7 @@ export default function CustomOrderDetails() {
               <CardTitle>Price Details</CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              <div>
+              <div className="flex gap-4">
                 <p className="text-sm font-medium">Budget</p>
                 <p className="text-sm">
                   {design.budget
@@ -232,7 +232,7 @@ export default function CustomOrderDetails() {
                     : 'N/A'}
                 </p>
               </div>
-              <div>
+              <div  className="flex gap-4" >
                 <p className="text-sm font-medium">Created At</p>
                 <p className="text-sm">
                   {design.createdAt

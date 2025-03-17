@@ -4,7 +4,7 @@ import Image from "next/image";
 
 export default function AboutUs() {
   return (
-    <div className="max-w-6xl mx-auto p-8 space-y-12">
+    <div className="max-w-5xl mx-auto p-8 space-y-12">
       {/* Company Introduction */}
       <section className="text-center">
         <h1 className="text-4xl font-bold mb-4">The Story of Kelayaa</h1>

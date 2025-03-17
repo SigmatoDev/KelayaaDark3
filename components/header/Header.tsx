@@ -192,7 +192,7 @@ const Header = () => {
         } transition-all duration-1000 ${!isScrolled ? "group" : ""}`}
       >
         <motion.div
-          className={`w-screen flex justify-around items-center py-2 ${pathname !== "/" ? "" : "overflow-hidden"}`}
+          className={`w-screen flex justify-around items-center py-0 ${pathname !== "/" ? "" : "overflow-hidden"}`}
           initial={false}
           animate={{
             height: pathname === "/" && isScrolled ? 0 : "auto",
@@ -367,15 +367,15 @@ const Header = () => {
           </div>
         </motion.div>
         <header
-          className={`text-gray-800 w-full xl:h-[80px] transition-[margin] xl:flex xl:justify-center items-center duration-1000 ease-in-out ${isScrolled ? " mt-0" : " mt-4"}`}
+          className={`text-gray-800 w-full xl:h-[80px] my-0 transition-[margin] xl:flex xl:justify-center items-center duration-1000 ease-in-out ${isScrolled ? " mt-0" : " mt-4"}`}
         >
           {/* Parent Div 1 - Search & Logo Section */}
           <div className="w-full px-4 sm:px-8 lg:px-12 ">
-            <div className="flex relative items-center justify-center py-3 max-w-[1600px] mx-auto">
+            <div className="flex relative items-center justify-center max-w-[1600px] mx-auto ">
               {/* Logo */}
 
               <div
-                className={`flex absolute left-0 justify-center w-[200px] h-[60px] md:w-[250px] md:h-[60px] overflow-hidden transition-all duration-1000 ease-out ${
+                className={`flex absolute left-0  justify-center w-[200px] h-[60px] md:w-[250px] md:h-[60px] overflow-hidden transition-all duration-1000 ease-out ${
                   pathname === "/"
                     ? isScrolled
                       ? "opacity-100 scale-100"
@@ -411,7 +411,7 @@ const Header = () => {
                     {/* Navigation Links */}
                     <div className="relative z-50">
                       <div
-                        className="hidden md:flex space-x-0 uppercase mx-auto px-1 py-3 relative rounded-[30px] items-center justify-center xl:py-[42px]"
+                        className="hidden md:flex space-x-0 uppercase mx-auto px-1 py-2 relative rounded-[30px] items-center justify-center xl:py-[30px]"
                         onMouseLeave={() => setIsOpen(false)}
                       >
                         {Object.keys(menuData).map((key) => (

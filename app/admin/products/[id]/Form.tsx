@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ValidationRule, useForm } from 'react-hook-form';
 import toast from 'react-hot-toast';
 import useSWR from 'swr';
@@ -85,14 +85,58 @@ export default function ProductEditForm({ productId }: { productId: string }) {
     'Minimalist',
   ];
 
-  const categoryMapping: { [key: string]: string[] } = {
-    Men: ['Ring', 'Earring', 'Bracelet'],
-    Women: ['Necklace', 'Earring', 'Bangle', 'Ring'],
-    Children: ['Ring', 'Pendant', 'Charm'],
-  };
+  // const categoryMapping: { [key: string]: string[] } = {
+  //   Men: ['Ring', 'Earring', 'Bracelet'],
+  //   Women: ['Necklace', 'Earring', 'Bangle', 'Ring'],
+  //   Children: ['Ring', 'Pendant', 'Charm'],
+  // };
 
-  const selectedCategory = watch('category');
+  const categoryMapping = useMemo(
+    () => ({
+      Men: ['Ring', 'Earring', 'Bracelet'],
+      Women: ['Necklace', 'Earring', 'Bangle', 'Ring'],
+      Children: ['Ring', 'Pendant', 'Charm'],
+    }),
+    []
+  );
+  
+  type CategoryType = keyof typeof categoryMapping;
+
+  const selectedCategory = watch('category')as CategoryType;
   const selectedProductCategory = watch('productCategory');
+
+  // useEffect(() => {
+  //   if (!product) return;
+  //   setValue('name', product.name);
+  //   setValue('productCode', product.productCode);
+  //   setValue('weight', product.weight);
+  //   setValue('price_per_gram', product.price_per_gram);
+  //   setValue('info', product.info);
+  //   setValue('slug', product.slug);
+  //   setValue('price', product.price);
+  //   setValue('image', product.image);
+  //   setValue('category', product.category);
+  //   setValue('productCategory', product.productCategory);
+  //   setValue('description', product.description);
+  //   if (product.category) {
+  //     setSubcategories(categoryMapping[product.category] || []);
+  //   }
+  // }, [product, setValue]);
+
+  // useEffect(() => {
+  //   if (selectedCategory) {
+  //     setSubcategories(categoryMapping[selectedCategory] || []);
+  //   }
+  // }, [selectedCategory]);
+
+  // useEffect(() => {
+  //   if (selectedProductCategory === 'Ring') {
+  //     setAdditionalFields(['ringSize', 'grossWeight', 'goldWeight']);
+  //   } else {
+  //     setAdditionalFields([]);
+  //   }
+  // }, [selectedProductCategory, categoryMapping]);
+
 
   useEffect(() => {
     if (!product) return;
@@ -108,16 +152,18 @@ export default function ProductEditForm({ productId }: { productId: string }) {
     setValue('productCategory', product.productCategory);
     setValue('description', product.description);
     if (product.category) {
-      setSubcategories(categoryMapping[product.category] || []);
+      setSubcategories(categoryMapping[product.category as keyof typeof categoryMapping] || []);
+
     }
-  }, [product, setValue]);
+  }, [product, setValue]); // ✅ Removed `categoryMapping` from dependencies
+  
 
   useEffect(() => {
     if (selectedCategory) {
-      setSubcategories(categoryMapping[selectedCategory] || []);
+      setSubcategories(categoryMapping[selectedCategory as CategoryType] || []);
     }
-  }, [selectedCategory]);
-
+  }, [selectedCategory, categoryMapping]); // Added categoryMapping
+  
   useEffect(() => {
     if (selectedProductCategory === 'Ring') {
       setAdditionalFields(['ringSize', 'grossWeight', 'goldWeight']);
@@ -127,15 +173,27 @@ export default function ProductEditForm({ productId }: { productId: string }) {
   }, [selectedProductCategory]);
 
   // Dynamically calculate price
-  useEffect(() => {
-    const weight = Number(watch('weight') || 0);
-    const pricePerGram = Number(watch('price_per_gram') || 0);
-    const calculatedPrice = weight * pricePerGram;
+  // useEffect(() => {
+  //   const weight = Number(watch('weight') || 0);
+  //   const pricePerGram = Number(watch('price_per_gram') || 0);
+  //   const calculatedPrice = weight * pricePerGram;
 
+  //   if (!isNaN(calculatedPrice)) {
+  //     setValue('price', Number(calculatedPrice.toFixed(2)));
+  //   }
+  // }, [watch('weight'), watch('price_per_gram'), setValue]);
+
+  const weight = watch('weight');
+  const pricePerGram = watch('price_per_gram');
+  
+  useEffect(() => {
+    const calculatedPrice = Number(weight || 0) * Number(pricePerGram || 0);
+  
     if (!isNaN(calculatedPrice)) {
       setValue('price', Number(calculatedPrice.toFixed(2)));
     }
-  }, [watch('weight'), watch('price_per_gram')]);
+  }, [weight, pricePerGram, setValue]);
+  
 
   const formSubmit = async (formData: any) => {
     await updateProduct(formData);

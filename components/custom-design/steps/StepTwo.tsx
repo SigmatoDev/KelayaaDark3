@@ -24,17 +24,17 @@ export default function StepTwo({ data, onChange, onNext, onBack }: StepTwoProps
   const stoneTypes = [
     {
       type: "diamond",
-      image: "/images/stones/diamond.jpg",
+      image: "/dm.jpg",
       label: "Diamond"
     },
     {
       type: "gemstone",
-      image: "/images/stones/gemstone.jpg",
+      image: "/dm.jpg",
       label: "Gemstone"
     },
     {
       type: "no stone",
-      image: "/images/stones/no-stone.jpg",
+      image: "/dm.jpg",
       label: "No Stone"
     }
   ];

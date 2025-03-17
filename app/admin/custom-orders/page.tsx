@@ -5,6 +5,7 @@ import { columns } from "./components/columns";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "react-hot-toast";
+import AdminLayout from "@/components/admin/AdminLayout";
 
 export default function CustomOrdersPage() {
   const [loading, setLoading] = useState(true);
@@ -81,6 +82,7 @@ export default function CustomOrdersPage() {
   }
 
   return (
+
     <div className="flex-col">
       <div className="flex-1 space-y-4 p-8 pt-6">
         <div className="flex items-center justify-between">
@@ -97,5 +99,6 @@ export default function CustomOrdersPage() {
         />
       </div>
     </div>
+   
   );
 } 

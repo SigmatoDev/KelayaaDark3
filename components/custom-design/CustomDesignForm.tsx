@@ -84,25 +84,59 @@ export default function CustomDesignForm() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="w-[100%] mx-auto ">
       {/* Progress Bar */}
       <div className="mb-8">
-        <div className="flex justify-between">
-          <span className={step >= 1 ? "text-pink-500" : "text-gray-400"}>
-            Start with your idea
-          </span>
-          <span className={step >= 2 ? "text-pink-500" : "text-gray-400"}>
-            Design your concept
-          </span>
-          <span className={step >= 3 ? "text-pink-500" : "text-gray-400"}>
-            Get estimates
-          </span>
-        </div>
-        <div className="mt-2 h-2 bg-gray-200 rounded-full">
-          <div
-            className="h-full bg-pink-500 rounded-full transition-all"
-            style={{ width: `${(step / 3) * 100}%` }}
-          />
+        <div className="relative flex justify-center gap-20">
+          {/* Connecting lines - adjusted width to match new spacing */}
+          <div className="absolute top-4 left-[30%] right-[15%] h-[2px] bg-gray-200" style={{ width: '42%' }}>
+            <div 
+              className="h-full bg-pink-500 transition-all"
+              style={{ width: `${(step - 1) * 50}%` }}
+            />
+          </div>
+
+          {/* Step 1 */}
+          <div className="flex flex-col items-center relative z-10">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              step >= 1 ? "bg-pink-500 text-white" : "bg-gray-200 text-gray-500"
+            }`}>
+              01
+            </div>
+            <span className={`mt-2 text-sm ${
+              step >= 1 ? "text-pink-500" : "text-gray-400"
+            }`}>
+              Start with your idea
+            </span>
+          </div>
+
+          {/* Step 2 */}
+          <div className="flex flex-col items-center relative z-10">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              step >= 2 ? "bg-pink-500 text-white" : "bg-gray-200 text-gray-500"
+            }`}>
+              02
+            </div>
+            <span className={`mt-2 text-sm ${
+              step >= 2 ? "text-pink-500" : "text-gray-400"
+            }`}>
+              Design your concept
+            </span>
+          </div>
+
+          {/* Step 3 */}
+          <div className="flex flex-col items-center relative z-10">
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+              step >= 3 ? "bg-pink-500 text-white" : "bg-gray-200 text-gray-500"
+            }`}>
+              03
+            </div>
+            <span className={`mt-2 text-sm ${
+              step >= 3 ? "text-pink-500" : "text-gray-400"
+            }`}>
+              Get estimates
+            </span>
+          </div>
         </div>
       </div>
 
