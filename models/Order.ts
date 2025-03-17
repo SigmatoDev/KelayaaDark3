@@ -1,5 +1,4 @@
 import mongoose from 'mongoose';
-
 const orderSchema = new mongoose.Schema({
   user: { type: String, required: true },
   orderNumber: { type: String, required: true, unique: true },
