@@ -7,13 +7,22 @@ import { Product } from "@/lib/models/ProductModel";
 import { useSession } from "next-auth/react";
 import { Heart } from "lucide-react";
 
-// const FALLBACK_IMAGE = "/images/fallback.webp";
 const FALLBACK_IMAGE = "/images/noimage.webp";
+
+// Function to validate image URL
+const isValidImageUrl = (url: string) => {
+  return url.startsWith("http://") || url.startsWith("https://");
+};
 
 const ProductItem = ({ product }: { product: Product }) => {
   const { data: session } = useSession();
   const userId = session?.user?._id;
-  const [imageSrc, setImageSrc] = useState(product?.image || FALLBACK_IMAGE);
+
+  // Validate the product image or fallback
+  const initialImage = isValidImageUrl(product?.image)
+    ? product.image
+    : FALLBACK_IMAGE;
+  const [imageSrc, setImageSrc] = useState(initialImage);
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
@@ -56,7 +65,6 @@ const ProductItem = ({ product }: { product: Product }) => {
         onClick={toggleWishlist}
         className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-lg"
       >
-        {/* Solid heart filled with pink color when wishlisted, solid gray when not */}
         <Heart
           className={`w-6 h-6 ${isWishlisted ? "text-pink-500 stroke-pink-500 stroke-2" : "text-gray-500 "}`}
         />
