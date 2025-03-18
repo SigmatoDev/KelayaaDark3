@@ -25,6 +25,7 @@ import Image from "next/image";
 import CardGrid from "../category-box/CategoryBox";
 import SignInPopup from "../signin/SignIn";
 import useCartService from "@/lib/hooks/useCartStore";
+import HeroSectionCustomDesign from "../hero-section-customdesign/heroSectionCustomDesign";
 
 const keywords = ["Gold", "Diamond", "Silver", "Platinum", "Special"];
 const promotions = [
@@ -536,7 +537,8 @@ const Header = () => {
             </Suspense>
           </div>
           <div className="px-4">
-            <HeroSection />
+            {/* <HeroSection /> */}
+            <HeroSectionCustomDesign/>
           </div>
           <CardGrid />
         </>

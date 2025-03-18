@@ -40,7 +40,7 @@ const cards: Card[] = [
     fgImage: "/phone.png",
     image: "",
     type: "double-image" as const,
-    linkUrl: "/sub-custom-design",
+    linkUrl: "/custom-design",
   },
   {
     title: "Best Sellers And New Arrivals",
@@ -134,7 +134,7 @@ const HeroSection = () => {
   };
 
   return (
-    <div className=" xl:w-[85%] 2xl:w-[70%] mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mt-24">
+    <div className=" xl:w-[95%] 2xl:w-[80%] mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mt-24">
       {cards.map((card, index) => (
         <div
           key={index}
@@ -142,14 +142,14 @@ const HeroSection = () => {
         >
           <div className="w-[50%] z-20 flex flex-col justify-start items-start">
             <h2
-              className={`text-2xl font-bold ${card.textColor} ${markoOne.className} `}
+              className={`text-3xl font-medium ${card.textColor}`}
             >
               {card.title}
             </h2>
             <p className="mt-2 text-sm text-gray-500">{card.description}</p>
             <Link
               href={card.linkUrl}
-              className={`mt-8 px-4 py-2 text-white rounded-lg ${card.buttonColor}`}
+              className={`mt-8 px-4 py-2 text-white ${card.buttonColor}`}
             >
               {card.buttonText}
             </Link>
