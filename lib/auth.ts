@@ -1,12 +1,14 @@
-import bcrypt from 'bcryptjs';
-import NextAuth from 'next-auth';
-import CredentialsProvider from 'next-auth/providers/credentials';
+import bcrypt from "bcryptjs";
+import NextAuth from "next-auth";
+import CredentialsProvider from "next-auth/providers/credentials";
+import GoogleProvider from "next-auth/providers/google";
 
-import dbConnect from './dbConnect';
-import UserModel from './models/UserModel';
+import dbConnect from "./dbConnect";
+import UserModel from "./models/UserModel";
 
 export const { handlers: { GET, POST }, auth } = NextAuth({
   providers: [
+    // Credentials (Email & Password) Login
     CredentialsProvider({
       id: 'credentials',
       name: 'Credentials',
@@ -31,6 +33,28 @@ export const { handlers: { GET, POST }, auth } = NextAuth({
         
         if (!isValid) {
           throw new Error('Invalid password');
+        return user;
+      },
+    }),
+
+    // Google OAuth Provider
+    GoogleProvider({
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      async profile(profile) {
+        await dbConnect();
+        console.log("Google Profile:", profile);
+
+        let user = await UserModel.findOne({ email: profile.email });
+
+        if (!user) {
+          // If user does not exist, create a new one
+          user = await UserModel.create({
+            name: profile.name,
+            email: profile.email,
+            provider: "google", // Mark as Google user
+          });
+
         }
 
         return {
@@ -46,20 +70,26 @@ export const { handlers: { GET, POST }, auth } = NextAuth({
     signIn: '/auth/signin',
     error: '/auth/error',
   },
+
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
+
         token.id = user.id;
         token.isAdmin = user.isAdmin;
       }
+
       return token;
     },
+
     async session({ session, token }) {
+
       if (token) {
         session.user.id = token.id;
         session.user.isAdmin = token.isAdmin;
       }
       return session;
+
     }
   }
 });

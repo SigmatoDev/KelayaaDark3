@@ -66,21 +66,22 @@ async function parseForm(req: NextRequest): Promise<{ files: File[] }> {
   //   });
   // });
 
-
   return new Promise((resolve, reject) => {
-    form.parse(incomingMessage, (err: any, fields: formidable.Fields, files: formidable.Files) => {
-      if (err) return reject(err);
-  
-      const uploadedFiles: File[] = Array.isArray(files.files)
-        ? files.files.filter((f): f is File => f !== undefined)
-        : files.files
-          ? [files.files as File]
-          : [];
-  
-      resolve({ files: uploadedFiles });
-    });
+    form.parse(
+      incomingMessage,
+      (err: any, fields: formidable.Fields, files: formidable.Files) => {
+        if (err) return reject(err);
+
+        const uploadedFiles: File[] = Array.isArray(files.files)
+          ? files.files.filter((f): f is File => f !== undefined)
+          : files.files
+            ? [files.files as File]
+            : [];
+
+        resolve({ files: uploadedFiles });
+      }
+    );
   });
-  
 }
 
 // **Handle File Upload API Route**
@@ -132,7 +133,7 @@ export async function POST(req: NextRequest) {
   }
 }
 
-
+export const dynamic = "force-dynamic"; // ✅ Use the new Next.js API Route config
 
 // **Disable Next.js default body parser**
 // export const config = {

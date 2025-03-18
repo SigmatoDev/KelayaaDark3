@@ -212,8 +212,18 @@ export const GET = auth(async (req: any) => {
   }
 
   await dbConnect();
+
   const products = await ProductModel.find();
-  return Response.json(products);
+
+  // Sort products so that those with an image URL appear first
+  const sortedProducts = products.sort((a, b) => {
+    const hasImageA = a.image && a.image.startsWith("http");
+    const hasImageB = b.image && b.image.startsWith("http");
+
+    return hasImageB - hasImageA; // Products with image URLs come first
+  });
+
+  return Response.json(sortedProducts);
 }) as any;
 
 export const POST = auth(async (req: any) => {
@@ -227,7 +237,7 @@ export const POST = auth(async (req: any) => {
     const body = await req.text();
     const parsedBody = JSON.parse(body);
 
-    console.log("Received products:", parsedBody);
+    // console.log("Received products:", parsedBody);
 
     if (
       !Array.isArray(parsedBody.products) ||
@@ -254,7 +264,7 @@ export const POST = auth(async (req: any) => {
     ];
 
     const productsToSave = parsedBody.products.map((product: any) => {
-      console.log("Received Product Data:", product); // Debug incoming data
+      // console.log("Received Product Data:", product); // Debug incoming data
 
       const processedProduct: any = {};
 
@@ -299,7 +309,7 @@ export const POST = auth(async (req: any) => {
         }
       });
 
-      console.log("Processed Product Before Saving:", processedProduct); // Debug final data before saving
+      // console.log("Processed Product Before Saving:", processedProduct); // Debug final data before saving
 
       return new ProductModel(processedProduct);
     });
