@@ -3,13 +3,14 @@
 import Image from "next/image";
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 
-import { Marko_One } from 'next/font/google';
+import { Marko_One } from "next/font/google";
 
-const markoOne = Marko_One({ 
-  weight: '400',
-  subsets: ['latin'],
-  display: 'swap',
+const markoOne = Marko_One({
+  weight: "400",
+  subsets: ["latin"],
+  display: "swap",
 });
 
 interface Card {
@@ -23,6 +24,7 @@ interface Card {
   bgImage: string;
   fgImage: string;
   image: string;
+  linkUrl: string;
 }
 
 const cards: Card[] = [
@@ -37,7 +39,8 @@ const cards: Card[] = [
     bgImage: "/blob.svg",
     fgImage: "/phone.png",
     image: "",
-    type: "double-image" as const
+    type: "double-image" as const,
+    linkUrl: "/sub-custom-design",
   },
   {
     title: "Best Sellers And New Arrivals",
@@ -50,7 +53,8 @@ const cards: Card[] = [
     bgImage: "",
     fgImage: "",
     image: "/flower1.svg",
-    type: "single-image" as const
+    type: "single-image" as const,
+    linkUrl: "/sub-custom-design",
   },
 ];
 
@@ -113,7 +117,7 @@ const HeroSection = () => {
           className="w-[300px] h-[300px]  absolute -bottom-28 -right-16"
           variants={{
             initial: { scale: 1.1 },
-            hover: { scale: 1.4, rotate: 2 }
+            hover: { scale: 1.4, rotate: 2 },
           }}
           transition={{ duration: 0.8 }}
         >
@@ -136,16 +140,19 @@ const HeroSection = () => {
           key={index}
           className={`relative overflow-hidden p-10 rounded-lg ${card.bgColor} flex items-center group W-[759px] h-[400px]`}
         >
-          <div className="w-[50%] z-20">
-            <h2 className={`text-2xl font-bold ${card.textColor} ${markoOne.className} `}>
+          <div className="w-[50%] z-20 flex flex-col justify-start items-start">
+            <h2
+              className={`text-2xl font-bold ${card.textColor} ${markoOne.className} `}
+            >
               {card.title}
             </h2>
             <p className="mt-2 text-sm text-gray-500">{card.description}</p>
-            <button
-              className={`mt-4 px-4 py-2 text-white rounded-lg ${card.buttonColor}`}
+            <Link
+              href={card.linkUrl}
+              className={`mt-8 px-4 py-2 text-white rounded-lg ${card.buttonColor}`}
             >
               {card.buttonText}
-            </button>
+            </Link>
           </div>
 
           {renderImage(card)}

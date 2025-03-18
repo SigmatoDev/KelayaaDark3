@@ -6,43 +6,33 @@ import GoogleProvider from "next-auth/providers/google";
 import dbConnect from "./dbConnect";
 import UserModel from "./models/UserModel";
 
-export const config = {
+export const { handlers: { GET, POST }, auth } = NextAuth({
   providers: [
     // Credentials (Email & Password) Login
     CredentialsProvider({
+      id: 'credentials',
+      name: 'Credentials',
       credentials: {
-        email: { type: "email" },
-        password: { type: "password" },
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
       },
       async authorize(credentials) {
-        console.log("Received credentials:", credentials);
         await dbConnect();
-        if (!credentials) return null;
+        
+        if (!credentials?.email || !credentials?.password) {
+          throw new Error('Invalid credentials');
+        }
 
         const user = await UserModel.findOne({ email: credentials.email });
-        console.log("User found:", user);
-
+        
         if (!user) {
-          throw new Error("No user found with this email.");
+          throw new Error('No user found');
         }
 
-        // If user registered via Google, prevent login with password
-        if (user.provider === "google") {
-          throw new Error(
-            "This email is registered via Google. Please log in with Google."
-          );
-        }
-
-        const isMatch = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
-        console.log("Password match:", isMatch);
-
-        if (!isMatch) {
-          throw new Error("Invalid password.");
-        }
-
+        const isValid = await bcrypt.compare(credentials.password, user.password);
+        
+        if (!isValid) {
+          throw new Error('Invalid password');
         return user;
       },
     }),
@@ -64,60 +54,42 @@ export const config = {
             email: profile.email,
             provider: "google", // Mark as Google user
           });
+
         }
 
         return {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
+          isAdmin: user.isAdmin,
         };
-      },
-    }),
+      }
+    })
   ],
-
   pages: {
-    signIn: "/signin",
-    newUser: "/register",
-    error: "/error",
+    signIn: '/auth/signin',
+    error: '/auth/error',
   },
 
   callbacks: {
-    async jwt({ user, trigger, session, token }: any) {
+    async jwt({ token, user }) {
       if (user) {
-        token.user = {
-          _id: user._id,
-          email: user.email,
-          name: user.name,
-          isAdmin: user.isAdmin || false,
-          provider: user.provider, // Store provider info
-        };
-      }
 
-      if (trigger === "update" && session) {
-        token.user = {
-          ...token.user,
-          email: session.user.email,
-          name: session.user.name,
-        };
+        token.id = user.id;
+        token.isAdmin = user.isAdmin;
       }
 
       return token;
     },
 
-    async session({ session, token }: any) {
+    async session({ session, token }) {
+
       if (token) {
-        session.user = token.user;
+        session.user.id = token.id;
+        session.user.isAdmin = token.isAdmin;
       }
       return session;
-    },
-  },
 
-  secret: process.env.NEXTAUTH_SECRET,
-};
-
-export const {
-  handlers: { GET, POST },
-  auth,
-  signIn,
-  signOut,
-} = NextAuth(config);
+    }
+  }
+});

@@ -23,6 +23,7 @@ const ProductItem = ({ product }: { product: Product }) => {
     ? product.image
     : FALLBACK_IMAGE;
   const [imageSrc, setImageSrc] = useState(initialImage);
+
   const [isWishlisted, setIsWishlisted] = useState(false);
 
   useEffect(() => {
@@ -53,6 +54,7 @@ const ProductItem = ({ product }: { product: Product }) => {
           className="relative w-full h-full block"
         >
           <Image
+            key={imageSrc} // Forces re-render if fallback image updates
             src={imageSrc}
             alt={product.name || "Product Image Unavailable"}
             fill
