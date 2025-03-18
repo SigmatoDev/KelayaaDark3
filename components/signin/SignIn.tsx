@@ -6,6 +6,7 @@ import { signIn } from "next-auth/react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import toast from "react-hot-toast";
 
 interface SignInPopupProps {
   isOpen: boolean;
@@ -16,41 +17,73 @@ type Inputs = {
   fullName?: string;
   email: string;
   password: string;
+  confirmPassword?: string;
 };
 
 export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  const [isRegistering, setIsRegistering] = useState(false); // Toggle state
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<Inputs>();
 
   const formSubmit: SubmitHandler<Inputs> = async (data) => {
-    const { email, password, fullName } = data;
+    const { email, password, confirmPassword, fullName } = data;
 
-    if (isRegistering) {
-      // Handle Registration API Call (Replace with actual API)
-      console.log("Registering:", { fullName, email, password });
-      setIsOpen(false);
-      return;
+    try {
+      if (isRegistering) {
+        if (password !== confirmPassword) {
+          toast.error("Passwords do not match!");
+          return;
+        }
+
+        // Handle Registration
+        const res = await fetch("/api/auth/register", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: fullName, email, password }),
+        });
+
+        const responseData = await res.json();
+        if (!res.ok) {
+          throw new Error(responseData.message || "Registration failed");
+        }
+
+        toast.success("Account created! Please login.");
+        setIsRegistering(false);
+        return;
+      }
+
+      // Handle Login
+      const res = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (res?.error) {
+        setError("Invalid email or password");
+        toast.error("Invalid email or password");
+      } else {
+        toast.success("Login successful!");
+        setIsOpen(false);
+        router.push("/");
+      }
+    } catch (err: any) {
+      toast.error(err.message || "Something went wrong");
     }
+  };
 
-    const res = await signIn("credentials", {
-      email,
-      password,
-      redirect: false,
-    });
-
-    if (res?.error) {
-      setError("Invalid email or password");
-    } else {
-      setIsOpen(false);
-      console.log("res", res);
-      router.push("/"); // Redirect after successful login
+  const handleGoogleSignIn = async () => {
+    try {
+      await signIn("google", { callbackUrl: "/" });
+    } catch (err) {
+      toast.error("Google sign-in failed");
     }
   };
 
@@ -70,7 +103,7 @@ export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
           Welcome to Kelayaa
         </h2>
 
-        {error && <div className="text-error text-center mb-4">{error}</div>}
+        {error && <div className="text-red-500 text-center mb-4">{error}</div>}
 
         <form className="space-y-4" onSubmit={handleSubmit(formSubmit)}>
           {isRegistering && (
@@ -85,7 +118,7 @@ export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
                 className="w-full mt-1 p-2 border rounded-md bg-gray-100"
               />
               {errors.fullName && (
-                <p className="text-error">{errors.fullName.message}</p>
+                <p className="text-red-500">{errors.fullName.message}</p>
               )}
             </div>
           )}
@@ -99,7 +132,7 @@ export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
               className="w-full mt-1 p-2 border rounded-md bg-gray-100"
             />
             {errors.email && (
-              <p className="text-error">{errors.email.message}</p>
+              <p className="text-red-500">{errors.email.message}</p>
             )}
           </div>
 
@@ -114,22 +147,41 @@ export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
               className="w-full mt-1 p-2 border rounded-md bg-gray-100"
             />
             {errors.password && (
-              <p className="text-error">{errors.password.message}</p>
+              <p className="text-red-500">{errors.password.message}</p>
             )}
           </div>
+
+          {isRegistering && (
+            <div>
+              <label className="text-gray-700 text-sm font-semibold">
+                CONFIRM PASSWORD
+              </label>
+              <input
+                type="password"
+                {...register("confirmPassword", {
+                  required: "Confirm Password is required",
+                  validate: (value) =>
+                    value === watch("password") || "Passwords do not match",
+                })}
+                placeholder="Re-enter Your Password"
+                className="w-full mt-1 p-2 border rounded-md bg-gray-100"
+              />
+              {errors.confirmPassword && (
+                <p className="text-red-500">{errors.confirmPassword.message}</p>
+              )}
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={isSubmitting}
             className="w-full py-2 bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold rounded-md"
           >
-            {isSubmitting ? (
-              <span className="loading loading-spinner"></span>
-            ) : isRegistering ? (
-              "CREATE ACCOUNT"
-            ) : (
-              "SIGN IN"
-            )}
+            {isSubmitting
+              ? "Loading..."
+              : isRegistering
+                ? "CREATE ACCOUNT"
+                : "SIGN IN"}
           </button>
         </form>
 
@@ -152,7 +204,7 @@ export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
         </div>
 
         <button
-          onClick={() => signIn("google")}
+          onClick={handleGoogleSignIn}
           className="flex items-center justify-center w-full py-2 border rounded-md shadow-sm hover:bg-gray-100"
         >
           <FcGoogle className="mr-2" size={20} />{" "}
