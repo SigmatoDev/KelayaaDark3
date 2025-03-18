@@ -7,45 +7,70 @@ import StepThree from "./steps/StepThree";
 import OrderConfirmation from "./OrderConfirmation";
 
 export interface DesignFormData {
-  // Step 1
-  gender: string;
-  contactNumber: string;
-  designType: string;
-  metalType: string;
-  materialKarat: number;
+  // Step One fields
+  name: string;
+  email: string;
+  phone: string;
+  occasion: string;
   budget: number;
+  metalType: string;
+  karat: number;
+  productName: string;
+  weight?: number;
 
-  // Step 2
-  designMethod: string;
+  // Step Two fields
+  designMethod: 'details' | 'upload';
   stoneType?: string;
   customImage?: string;
-  occasion: string;
-  size: number;
-  additionalDetails: string;
+  additionalDetails?: string;
 
-  // Step 3
-  timeline: string;
+  // Step Three fields
+  timeline: Date | null;
+  personalConsultation: boolean;
   termsAccepted: boolean;
   customizationAccepted: boolean;
+
+  // Price calculation fields
+  basePrice?: number;
+  gst?: number;
+  deliveryCharge?: number;
+  discount?: number;
 }
+
+export const initialFormData: DesignFormData = {
+  // Step One initial values
+  name: '',
+  email: '',
+  phone: '',
+  occasion: '',
+  budget: 0,
+  metalType: 'Gold',
+  karat: 22,
+  productName: 'Wedding Ring',
+  weight: 4.4,
+
+  // Step Two initial values
+  designMethod: 'details',
+  stoneType: 'Diamonds',
+  customImage: '',
+  additionalDetails: '',
+
+  // Step Three initial values
+  timeline: null,
+  personalConsultation: false,
+  termsAccepted: false,
+  customizationAccepted: false,
+
+  // Price calculation initial values
+  basePrice: 27499,
+  gst: 281,
+  deliveryCharge: 0,
+  discount: 500
+};
 
 export default function CustomDesignForm() {
   const [step, setStep] = useState(1);
-  const [formData, setFormData] = useState<DesignFormData>({
-    gender: "",
-    contactNumber: "",
-    designType: "",
-    metalType: "",
-    materialKarat: 20,
-    budget: 20000,
-    designMethod: "details",
-    occasion: "",
-    size: 7,
-    additionalDetails: "",
-    timeline: "",
-    termsAccepted: false,
-    customizationAccepted: false,
-  });
+  const [formData, setFormData] = useState<DesignFormData>(initialFormData);
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
