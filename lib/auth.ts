@@ -33,8 +33,10 @@ export const { handlers: { GET, POST }, auth } = NextAuth({
         
         if (!isValid) {
           throw new Error('Invalid password');
+        }
+        
         return user;
-      },
+      }
     }),
 
     // Google OAuth Provider
