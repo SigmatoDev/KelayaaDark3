@@ -43,13 +43,13 @@ const Footer = () => {
               <h3 className="font-semibold xl:text-lg text-[14px] mb-3 uppercase">Website</h3>
               <ul className="space-y-1 xl:text-sm text-[12px]">
                 <li onClick={() => router.push("/")} className="cursor-pointer">
-                  Version1
+                  
                 </li>
                 <li
                   onClick={() => router.push("/homepage-2")}
                   className="cursor-pointer"
                 >
-                  Version2
+                 
                 </li>
               </ul>
             </div>
@@ -113,10 +113,10 @@ const Footer = () => {
 
       {/* Bottom Footer with Social Media & Copyright */}
       <footer
-        className="w-full p-4 text-white"
+        className="w-full p-4 text-grey-800"
         style={{
           background:
-            "linear-gradient(90.25deg, #EC008C 36.97%, #FC6767 101.72%)",
+            "bg-grey-800",
         }}
       >
         <div className="container mx-auto flex justify-between items-center">

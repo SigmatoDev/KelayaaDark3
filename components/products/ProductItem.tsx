@@ -47,8 +47,8 @@ const ProductItem = ({ product }: { product: Product }) => {
   };
 
   return (
-    <div className="card mb-4 rounded-none w-[300px] h-[333px] xl:w-[300px] xl:h-[333px] 2xl:w-[400px] 2xl:h-[433px] md:w-[200px] md:h-[233px] lg:w-[250px] lg:h-[270px] relative">
-      <figure className="w-full h-full overflow-hidden">
+<div className="card mb-4 w-[300px] h-[333px] xl:w-[300px] xl:h-[333px] 2xl:w-[400px] 2xl:h-[433px] md:w-[200px] md:h-[233px] lg:w-[250px] lg:h-[270px] relative rounded-xl border border-neutral-200 shadow-sm transition-shadow duration-300 hover:shadow-md hover:shadow-pink-100 bg-white">
+<figure className="w-full h-full overflow-hidden">
         <Link
           href={`/product/${product.slug}`}
           className="relative w-full h-full block"

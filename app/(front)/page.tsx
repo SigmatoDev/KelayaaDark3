@@ -15,6 +15,8 @@ import GiftImage from "@/components/products/GiftBanner";
 import BlogsImage from "@/components/products/Blogs";
 import ProductShips from "@/components/products/ProductShips";
 import CardGrid from "@/components/special-collections/SpecialCollections";
+import HowToSection from "@/components/howto-section/howToSection";
+import CategoryGrid from "@/components/category-grid/categoryGrid";
 
 export const metadata: Metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME || "Kelayaa",
@@ -26,6 +28,12 @@ export const metadata: Metadata = {
 const HomePage = () => {
   return (
     <>
+
+
+      <div className="w-full mx-auto px-4 mb-8">
+        <CategoryGrid/>
+      </div> 
+
       {/* Regular Content Inside Container */}
       <div className="w-full mx-auto px-10">
         <Suspense
@@ -35,9 +43,14 @@ const HomePage = () => {
         </Suspense>
       </div>
 
-      <div className="w-full mx-auto px-4 mb-8">
+      
+        
+
+      {/* <div className="w-full mx-auto px-4 mb-8">
         <CardGrid />
-      </div>
+      </div> */}
+
+      
 
       {/* Gift Banner Outside the Container */}
       {/* <div className="w-full mb-5">
@@ -53,6 +66,10 @@ const HomePage = () => {
       </div> */}
       <div className="w-full">
         <ProductShips />
+      </div>
+
+      <div className="w-full">
+        <HowToSection/>
       </div>
 
       {/* Back to Container for Other Content

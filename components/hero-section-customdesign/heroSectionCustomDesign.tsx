@@ -44,7 +44,7 @@ const cards: Card[] = [
     type: "double-image",
     linkUrl: "/custom-design",
     howText: "How it works?",
-    howTextUrl:"/custom-design"
+    howTextUrl:"/how-it-works"
   },
 ];
 

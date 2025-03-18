@@ -1,6 +1,7 @@
 "use client";
 import { useRouter } from "next/navigation";
 import React from "react";
+import CategoryGrid from "../category-grid/categoryGrid";
 
 const CardGrid: React.FC = () => {
   const router = useRouter();
@@ -71,17 +72,12 @@ const CardGrid: React.FC = () => {
         </div>
       </div>
       
-      <div className="text-center">
-        <h2 className="text-[20px] md:text-[38px] font-normal mb-6 mt-2 md:mt-24 uppercase text-center">
-          EXPLORE OUR
-          <span className="bg-gradient-to-r from-[#f76999] to-[#fb8d92] bg-clip-text text-transparent ml-2">
-            COLLECTIONS
-          </span>
-        </h2>
-      </div>
-      <div className="container mx-auto">
+     
+      {/* <div className="container mx-auto"> */}
+
+       
         {/* First row: 3 cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {/* <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {cards.slice(0, 3).map((card) => (
             <div
               key={card.id}
@@ -118,7 +114,7 @@ const CardGrid: React.FC = () => {
 
             </div>
           ))}
-        </div>
+        </div> */}
 
         
         {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-6">
@@ -148,7 +144,7 @@ const CardGrid: React.FC = () => {
             </div>
           ))}
         </div> */}
-      </div>
+      {/* </div> */}
 
  
     </>
