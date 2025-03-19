@@ -450,12 +450,12 @@ const Header = () => {
                           animate={{ opacity: 1, y: 0 }}
                           exit={{ opacity: 0, y: -10 }}
                           transition={{ duration: 0.3, ease: "easeOut" }}
-                          className="absolute  left-0 top-full w-full h-[270px] bg-white  rounded-b-2xl p-6 grid grid-cols-3 gap-6  z-50"
+                          className="absolute  left-0 top-full w-full h-[300px] bg-white shadow-2xl rounded-b-2xl p-6 grid grid-cols-3 gap-6  z-50"
                           onMouseEnter={() => setIsOpen(true)}
                           onMouseLeave={() => setIsOpen(false)}
                         >
                           {/* Column 1: Subitems */}
-                          <div className="flex flex-col space-y-2 ">
+                          <div className="flex flex-col space-y-2  pb-4">
                             {menuData[activeMenu].subitems.map(
                               (subitem, idx) => (
                                 <Link
@@ -470,18 +470,19 @@ const Header = () => {
                           </div>
 
                           {/* Column 2: Image 1 */}
-                          <div className="relative w-full h-42">
+                          <div className="relative w-full h-full">
                             <Image
                               src={menuData[activeMenu].images[0]}
                               alt="Promo 1"
                               layout="fill"
                               objectFit="cover"
                               className="rounded-lg shadow-sm"
+                              
                             />
                           </div>
 
                           {/* Column 3: Image 2 */}
-                          <div className="relative w-full h-42">
+                          <div className="relative w-full h-full">
                             <Image
                               src={menuData[activeMenu].images[1]}
                               alt="Promo 2"
