@@ -46,7 +46,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ data, onChange, onNext, onBack }) => 
         onClick={() => onChange({ ...data, stoneType: stone.type })}
         className="group relative w-full focus:outline-none"
       >
-        <div className="relative w-full aspect-square">
+        <div className="relative w-full h-[130px] aspect-square">
           <Image
             src={stone.image}
             alt={stone.label}
@@ -58,7 +58,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ data, onChange, onNext, onBack }) => 
             }`}
           />
           {data.stoneType === stone.type && (
-            <div className="absolute top-3 right-3 w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center shadow-sm">
+            <div className="absolute -top-2 -right-2 w-6 h-6 bg-pink-500 rounded-full flex items-center justify-center shadow-sm">
               <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
               </svg>
@@ -107,7 +107,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ data, onChange, onNext, onBack }) => 
           {data.designMethod === "details" ? (
             /* Stone Selection */
             <div className="grid grid-cols-[280px_1fr] items-start gap-12">
-              <label className="text-gray-700 text-sm pt-2">
+              <label className="text-gray-700 text-sm pt-2 text-right">
                 What Types Of Center Stones Might You Be Considering For Your Ring?
               </label>
               <div className="rounded-lg hover:border-gray-300 transition-colors">
@@ -120,11 +120,11 @@ const StepTwo: React.FC<StepTwoProps> = ({ data, onChange, onNext, onBack }) => 
             </div>
           ) : (
             /* Image Upload */
-            <div className="grid grid-cols-[280px_1fr] items-start gap-9">
-              <label className="text-gray-700 text-sm pt-2">
+            <div className="grid grid-cols-[300px_1fr] items-start gap-9">
+              <label className="text-gray-700 text-sm pt-2 text-right">
                 Upload Your Reference Images
               </label>
-              <div className="rounded-lg hover:border-gray-300 transition-colors">
+              <div className="rounded-lg hover:border-pink-300 transition-colors ">
                 <ImageUpload
                   imageUrl={data.customImage}
                   onImageUploaded={(url) => onChange({ ...data, customImage: url })}
@@ -139,14 +139,15 @@ const StepTwo: React.FC<StepTwoProps> = ({ data, onChange, onNext, onBack }) => 
 
           {/* Occasion Selection */}
           <div className="grid grid-cols-[280px_1fr] items-center gap-12">
-            <label className="text-gray-700 text-sm">What Is The Occasion For</label>
+            <label className="text-gray-700 text-sm text-right">What Is The Occasion For</label>
             <div className="relative">
               <select
                 value={data.occasion}
                 onChange={(e) => onChange({ ...data, occasion: e.target.value })}
                 className="w-full h-[50px] px-4 pr-12 appearance-none border border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 focus:ring-opacity-50 bg-white hover:border-gray-300 transition-colors text-gray-700"
               >
-                <option value="">Wedding</option>
+                <option value="">Choose</option>
+                <option value="wedding">Wedding</option>
                 <option value="engagement">Engagement</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4">
@@ -159,14 +160,14 @@ const StepTwo: React.FC<StepTwoProps> = ({ data, onChange, onNext, onBack }) => 
 
           {/* Size Selection */}
           <div className="grid grid-cols-[280px_1fr] items-center gap-12">
-            <label className="text-gray-700 text-sm">Size Of The Ring</label>
+            <label className="text-gray-700 text-sm text-right">Size Of The Ring</label>
             <div className="relative">
               <select
                 value={data.size}
                 onChange={(e) => onChange({ ...data, size: parseInt(e.target.value) })}
                 className="w-full h-[50px] px-4 pr-12 appearance-none border border-gray-200 rounded-lg focus:outline-none focus:border-pink-500 focus:ring-1 focus:ring-pink-500 focus:ring-opacity-50 bg-white hover:border-gray-300 transition-colors text-gray-700"
               >
-                <option value="">15 MM</option>
+                <option value="">choose the size of the ring</option>
                 {Array.from({ length: 14 }, (_, i) => i + 7).map((size) => (
                   <option key={size} value={size}>
                     {size} MM
@@ -183,7 +184,7 @@ const StepTwo: React.FC<StepTwoProps> = ({ data, onChange, onNext, onBack }) => 
 
           {/* Additional Details */}
           <div className="grid grid-cols-[280px_1fr] items-start gap-12">
-            <label className="text-gray-700 text-sm pt-2">Describe More Details</label>
+            <label className="text-gray-700 text-sm pt-2 text-right">Describe More Details</label>
             <textarea
               value={data.additionalDetails}
               onChange={(e) => onChange({ ...data, additionalDetails: e.target.value })}

@@ -8,7 +8,7 @@ const customDesignSchema = new mongoose.Schema({
     required: true
   },
   // Step 1 fields
-  gender: { type: String, enum: ['male', 'female'], required: true },
+  gender: { type: String, enum: ['myself', 'someone else'], required: true },
   contactNumber: {
     type: String,
     required: true,
@@ -19,7 +19,7 @@ const customDesignSchema = new mongoose.Schema({
     required: true 
   },
   metalType: { type: String, enum: ['gold', 'silver'], required: true },
-  materialKarat: { type: Number, enum: [20, 24], required: true },
+  materialKarat: { type: Number, enum: [14, 18, 22, 24], required: true },
   budget: { type: Number, min: 20000, required: true },
 
   // Step 2 fields

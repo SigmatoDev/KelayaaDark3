@@ -1,4 +1,5 @@
 "use client";
+
 import { useState } from "react";
 import { toast } from "react-hot-toast";
 import StepOne from "./steps/StepOne";
@@ -8,13 +9,14 @@ import OrderConfirmation from "./OrderConfirmation";
 
 export interface DesignFormData {
   // Step One fields
-  name: string;
-  email: string;
-  phone: string;
-  occasion: string;
-  budget: number;
+  gender: string;
+  contactNumber: string;
+  countryCode: string;  // Always a string, never null
+  designType: string;
   metalType: string;
-  karat: number;
+  materialKarat: number | null;
+  budget: number;
+  occasion: string;
   productName: string;
   weight?: number;
 
@@ -39,19 +41,20 @@ export interface DesignFormData {
 
 export const initialFormData: DesignFormData = {
   // Step One initial values
-  name: '',
-  email: '',
-  phone: '',
-  occasion: '',
+  gender: '',
+  contactNumber: '',
+  countryCode: '+91', // Default to India's country code
+  designType: '',
+  metalType: '',
+  materialKarat: null,
   budget: 0,
-  metalType: 'Gold',
-  karat: 22,
-  productName: 'Wedding Ring',
-  weight: 4.4,
+  occasion: '',
+  productName: '',
+  weight: undefined,
 
   // Step Two initial values
   designMethod: 'details',
-  stoneType: 'Diamonds',
+  stoneType: '',
   customImage: '',
   additionalDetails: '',
 
@@ -111,25 +114,30 @@ export default function CustomDesignForm() {
   return (
     <div className="w-[100%] mx-auto ">
       {/* Progress Bar */}
-      <div className="mb-8">
-        <div className="relative flex justify-center gap-20">
-          {/* Connecting lines - adjusted width to match new spacing */}
-          <div className="absolute top-4 left-[30%] right-[15%] h-[2px] bg-gray-200" style={{ width: '42%' }}>
+      <div className="mb-12">
+        <div className="relative flex justify-between max-w-2xl mx-auto px-4">
+          {/* Connecting lines */}
+          <div className="absolute top-[20px] left-[12%] right-[12%] h-[1px] bg-gray-200">
             <div 
-              className="h-full bg-pink-500 transition-all"
+              className="h-full bg-[#D23F57] transition-all"
               style={{ width: `${(step - 1) * 50}%` }}
             />
           </div>
 
           {/* Step 1 */}
           <div className="flex flex-col items-center relative z-10">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step >= 1 ? "bg-pink-500 text-white" : "bg-gray-200 text-gray-500"
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-base font-medium ${
+              step >= 1 ? "bg-[#D23F57] text-white" : "bg-gray-200 text-gray-500"
             }`}>
-              01
+              {step >= 1 ? (
+                // Replace this with your check icon SVG
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              ) : "01"}
             </div>
             <span className={`mt-2 text-sm ${
-              step >= 1 ? "text-pink-500" : "text-gray-400"
+              step >= 1 ? "text-[#D23F57]" : "text-gray-400"
             }`}>
               Start with your idea
             </span>
@@ -137,29 +145,39 @@ export default function CustomDesignForm() {
 
           {/* Step 2 */}
           <div className="flex flex-col items-center relative z-10">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step >= 2 ? "bg-pink-500 text-white" : "bg-gray-200 text-gray-500"
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-base font-medium ${
+              step >= 2 ? "bg-[#D23F57] text-white" : "bg-gray-200 text-gray-500"
             }`}>
-              02
+              {step >= 2 ? (
+                // Replace this with your check icon SVG
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              ) : "02"}
             </div>
             <span className={`mt-2 text-sm ${
-              step >= 2 ? "text-pink-500" : "text-gray-400"
+              step >= 2 ? "text-[#D23F57]" : "text-gray-400"
             }`}>
-              Design your concept
+              Design your concepts
             </span>
           </div>
 
           {/* Step 3 */}
           <div className="flex flex-col items-center relative z-10">
-            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-              step >= 3 ? "bg-pink-500 text-white" : "bg-gray-200 text-gray-500"
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center text-base font-medium ${
+              step >= 3 ? "bg-[#D23F57] text-white" : "bg-gray-200 text-gray-500"
             }`}>
-              03
+              {step >= 3 ? (
+                // Replace this with your check icon SVG
+                <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              ) : "03"}
             </div>
             <span className={`mt-2 text-sm ${
-              step >= 3 ? "text-pink-500" : "text-gray-400"
+              step >= 3 ? "text-[#D23F57]" : "text-gray-400"
             }`}>
-              Get estimates
+              Get Estimates
             </span>
           </div>
         </div>

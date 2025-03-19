@@ -52,7 +52,7 @@ export default function ImageUpload({
   return (
     <div
       className={`border-2 border-dashed rounded-lg p-6 transition-colors ${
-        dragActive ? 'border-pink-500 bg-pink-50' : 'border-gray-300'
+        dragActive ? 'border-pink-500 bg-pink-50' : 'border-pink-300'
       }`}
       onDragOver={(e) => {
         e.preventDefault();
@@ -95,7 +95,7 @@ export default function ImageUpload({
       ) : (
         <div className="text-center">
           <svg
-            className="mx-auto h-12 w-12 text-gray-400"
+            className="mx-auto h-12 w-12 text-pink-500"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 48 48"
