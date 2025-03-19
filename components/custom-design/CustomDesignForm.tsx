@@ -119,7 +119,7 @@ export default function CustomDesignForm() {
           {/* Connecting lines */}
           <div className="absolute top-[20px] left-[12%] right-[12%] h-[1px] bg-gray-200">
             <div 
-              className="h-full bg-[#D23F57] transition-all"
+              className="h-full bg-[#EC4999] transition-all"
               style={{ width: `${(step - 1) * 50}%` }}
             />
           </div>
@@ -127,9 +127,9 @@ export default function CustomDesignForm() {
           {/* Step 1 */}
           <div className="flex flex-col items-center relative z-10">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center text-base font-medium ${
-              step >= 1 ? "bg-[#D23F57] text-white" : "bg-gray-200 text-gray-500"
+              step > 1 ? "bg-[#EC4999] text-white" : step === 1 ? "bg-[#EC4999] text-white" : "bg-gray-200 text-gray-500"
             }`}>
-              {step >= 1 ? (
+              {step > 1 ? (
                 // Replace this with your check icon SVG
                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -137,7 +137,7 @@ export default function CustomDesignForm() {
               ) : "01"}
             </div>
             <span className={`mt-2 text-sm ${
-              step >= 1 ? "text-[#D23F57]" : "text-gray-400"
+              step >= 1 ? "text-[#EC4999]" : "text-gray-400"
             }`}>
               Start with your idea
             </span>
@@ -146,9 +146,9 @@ export default function CustomDesignForm() {
           {/* Step 2 */}
           <div className="flex flex-col items-center relative z-10">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center text-base font-medium ${
-              step >= 2 ? "bg-[#D23F57] text-white" : "bg-gray-200 text-gray-500"
+              step > 2 ? "bg-[#EC4999] text-white" : step === 2 ? "bg-[#EC4999] text-white" : "bg-gray-200 text-gray-500"
             }`}>
-              {step >= 2 ? (
+              {step > 2 ? (
                 // Replace this with your check icon SVG
                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
@@ -156,7 +156,7 @@ export default function CustomDesignForm() {
               ) : "02"}
             </div>
             <span className={`mt-2 text-sm ${
-              step >= 2 ? "text-[#D23F57]" : "text-gray-400"
+              step >= 2 ? "text-[#EC4999]" : "text-gray-400"
             }`}>
               Design your concepts
             </span>
@@ -165,17 +165,16 @@ export default function CustomDesignForm() {
           {/* Step 3 */}
           <div className="flex flex-col items-center relative z-10">
             <div className={`w-10 h-10 rounded-full flex items-center justify-center text-base font-medium ${
-              step >= 3 ? "bg-[#D23F57] text-white" : "bg-gray-200 text-gray-500"
+              step > 3 ? "bg-[#EC4999] text-white" : step === 3 ? "bg-[#EC4999] text-white" : "bg-gray-200 text-gray-500"
             }`}>
-              {step >= 3 ? (
-                // Replace this with your check icon SVG
+              {step > 3 ? (
                 <svg className="w-6 h-6" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M20 6L9 17L4 12" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               ) : "03"}
             </div>
             <span className={`mt-2 text-sm ${
-              step >= 3 ? "text-[#D23F57]" : "text-gray-400"
+              step >= 3 ? "text-[#EC4999]" : "text-gray-400"
             }`}>
               Get Estimates
             </span>

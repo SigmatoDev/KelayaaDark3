@@ -99,17 +99,13 @@ const StepThree: React.FC<StepThreeProps> = ({
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <span className="text-[13px] text-gray-700">Expected Timeline for this design requirement</span>
-                  <span className="text-[13px] text-gray-500">15 days</span>
-                </div>
-                <div className="text-[13px] text-gray-500">
-                  {getProductDetails()}
-                </div>
-                <div className="text-[13px] text-gray-500">
+                  <div className="text-[13px] text-gray-500">
                   {data.timeline ? new Date(data.timeline).toLocaleDateString('en-US', {
                     day: 'numeric',
                     month: 'short',
                     year: 'numeric'
                   }) : '14th Mar 2025'}
+                </div>
                 </div>
                 <div className="relative">
                   <DatePicker
@@ -128,6 +124,9 @@ const StepThree: React.FC<StepThreeProps> = ({
                   {showValidationError && !data.timeline && (
                     <p className="text-red-500 text-[11px] mt-1">Please select a delivery date</p>
                   )}
+                </div>
+                <div className="text-[13px] text-gray-500">
+                  {getProductDetails()}
                 </div>
               </div>
 
