@@ -98,11 +98,11 @@ export default function StepOne({ data, onChange, onNext }: StepOneProps) {
                 onChange={handleCountryCodeChange}
                 className={`w-full p-3 pr-8 appearance-none border rounded-lg focus:outline-none transition-colors ${
                   isPhoneValid 
-                    ? 'border-[#D23F57] bg-pink-50' 
+                    ? 'border-[#EC4999] bg-pink-50' 
                     : isPhoneError
                       ? 'border-red-500 bg-red-50' 
                       : 'border-gray-200'
-                } hover:border-[#D23F57] disabled:opacity-50 disabled:cursor-not-allowed`}
+                } hover:border-[#EC4999] disabled:opacity-50 disabled:cursor-not-allowed`}
                 aria-labelledby="phone-label"
                 aria-required="true"
                 aria-invalid={isPhoneError}
@@ -115,7 +115,7 @@ export default function StepOne({ data, onChange, onNext }: StepOneProps) {
                 <option value="+65">🇸🇬 +65</option>
               </select>
               <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2">
-                <svg className={`h-4 w-4 ${isPhoneValid ? 'text-[#D23F57]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                <svg className={`h-4 w-4 ${isPhoneValid ? 'text-[#EC4999]' : 'text-gray-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                 </svg>
               </div>
@@ -130,11 +130,11 @@ export default function StepOne({ data, onChange, onNext }: StepOneProps) {
                 maxLength={10}
                 className={`w-full p-3 border rounded-lg focus:outline-none transition-colors ${
                   isPhoneValid 
-                    ? 'border-[#D23F57] bg-pink-50' 
+                    ? 'border-[#EC4999] bg-pink-50' 
                     : isPhoneError
                       ? 'border-red-500 bg-red-50' 
                       : 'border-gray-200'
-                } hover:border-[#D23F57] disabled:opacity-50 disabled:cursor-not-allowed`}
+                } hover:border-[#EC4999] disabled:opacity-50 disabled:cursor-not-allowed`}
                 placeholder="Enter 10-digit number"
                 aria-labelledby="phone-label"
                 aria-required="true"
@@ -149,7 +149,7 @@ export default function StepOne({ data, onChange, onNext }: StepOneProps) {
               )}
               {isPhoneValid && (
                 <div className="absolute right-3 top-1/2 -translate-y-1/2" aria-hidden="true">
-                  <svg className="h-5 w-5 text-[#D23F57]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className="h-5 w-5 text-[#EC4999]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
@@ -280,7 +280,7 @@ export default function StepOne({ data, onChange, onNext }: StepOneProps) {
           disabled={!validateForm() || isSubmitting}
           className={`px-8 py-3 rounded-lg font-medium transition-colors relative ${
             validateForm() && !isSubmitting
-              ? 'bg-[#D23F57] text-white hover:bg-[#c03a51]'
+              ? 'bg-[#EC4999] text-white hover:bg-[#e83d90]'
               : 'bg-gray-200 text-gray-500 cursor-not-allowed'
           }`}
           aria-label={
