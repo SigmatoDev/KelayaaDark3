@@ -4,9 +4,9 @@ import useLayoutService from "@/lib/hooks/useLayout";
 import Link from "next/link";
 
 const prices = [
-  { name: "₹1 to ₹50", value: "1-50" },
-  { name: "₹51 to ₹200", value: "51-200" },
-  { name: "₹1800 to ₹2500", value: "1800-2500" },
+  { name: "₹8290 to ₹82900", value: "8290-82900" },
+  { name: "₹82900 to ₹165800", value: "82900-165800" },
+  { name: "₹165800 to ₹331600", value: "165800-331600" },
 ];
 
 const PriceFilter = ({
@@ -69,7 +69,7 @@ const PriceFilter = ({
               href={buildFilterUrl({ p: p.value })}
               className={`block p-2 rounded-md ${
                 selectedPrice === p.value
-                  ? "bg-green-500 text-white"
+                  ? "bg-[#EC4999] text-white"
                   : theme === "dark"
                     ? "hover:bg-gray-700"
                     : "hover:bg-green-100"

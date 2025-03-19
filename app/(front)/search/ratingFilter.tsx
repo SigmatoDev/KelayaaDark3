@@ -65,11 +65,15 @@ const RatingFilter = ({
               href={buildFilterUrl({ r: `${r}` })}
               className={`block p-2 rounded-md ${
                 `${r}` === selectedRating
-                  ? "bg-yellow-500 text-white"
-                  : "hover:bg-yellow-100"
+                  ? "bg-[#EC4999] text-white"
+                  : "hover:bg-pink-50"
               }`}
             >
-              <Rating caption={"& up"} value={r} />
+              <Rating 
+                caption={"& up"} 
+                value={r} 
+                textColor={`${r}` === selectedRating ? "text-white" : undefined}
+              />
             </Link>
           </li>
         ))}

@@ -183,22 +183,9 @@ export default function AuthPopup({ isOpen, setIsOpen }: AuthPopupProps) {
           </span>
         </p>
 
-        {/* OR Divider */}
-        <div className="flex items-center my-4">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="mx-3 text-gray-500">OR</span>
-          <div className="flex-grow border-t border-gray-300"></div>
-        </div>
+       
 
-        {/* Google Sign-In */}
-        {!isRegister && (
-          <button
-            onClick={() => signIn("google")}
-            className="flex items-center justify-center w-full py-2 border rounded-md shadow-sm hover:bg-gray-100"
-          >
-            <FcGoogle className="mr-2" size={20} /> Sign In With Google
-          </button>
-        )}
+     
       </div>
     </div>
   );

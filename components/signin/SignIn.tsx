@@ -196,20 +196,6 @@ export default function SignInPopup({ isOpen, setIsOpen }: SignInPopupProps) {
             {isRegistering ? "Log In" : "Register"}
           </span>
         </p>
-
-        <div className="flex items-center my-4">
-          <div className="flex-grow border-t border-gray-300"></div>
-          <span className="mx-3 text-gray-500">OR</span>
-          <div className="flex-grow border-t border-gray-300"></div>
-        </div>
-
-        <button
-          onClick={handleGoogleSignIn}
-          className="flex items-center justify-center w-full py-2 border rounded-md shadow-sm hover:bg-gray-100"
-        >
-          <FcGoogle className="mr-2" size={20} />{" "}
-          {isRegistering ? "Sign Up" : "Sign In"} With Google
-        </button>
       </div>
     </div>
   );

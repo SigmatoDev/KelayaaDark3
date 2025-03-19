@@ -40,16 +40,31 @@ const Footer = () => {
           <div className="md:col-span-1 flex justify-between gap-2 text-left">
             {/* Website */}
             <div>
-              <h3 className="font-semibold xl:text-lg text-[14px] mb-3 uppercase">Website</h3>
+              <h3 className="font-semibold xl:text-lg text-[14px] mb-3 uppercase">Categories</h3>
               <ul className="space-y-1 xl:text-sm text-[12px]">
-                <li onClick={() => router.push("/")} className="cursor-pointer">
-                  
-                </li>
                 <li
-                  onClick={() => router.push("/homepage-2")}
+                  onClick={() => router.push("/gold")}
                   className="cursor-pointer"
                 >
-                 
+                Gold & Diamonds
+                </li>
+                <li
+                  onClick={() => router.push("/silver")}
+                  className="cursor-pointer"
+                >
+                 Silver
+                </li>
+                <li
+                  onClick={() => router.push("/gemstone")}
+                  className="cursor-pointer"
+                >
+                  Gem Stone
+                </li>
+                <li
+                  onClick={() => router.push("/custom-design")}
+                  className="cursor-pointer"
+                >
+                 Custom Design
                 </li>
               </ul>
             </div>
