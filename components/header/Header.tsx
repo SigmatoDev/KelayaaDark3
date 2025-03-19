@@ -84,13 +84,13 @@ const menuData: Record<string, MenuItem> = {
     ],
     images: ["/images/hovermenu/gold1.webp", "/images/hovermenu/gold3.webp"],
   },
-  "sale-offers": {
-    subitems: [
-      { href: "/discounted-rings", label: "Discounted Rings" },
-      { href: "/sale-necklaces", label: "Sale Necklaces" },
-    ],
-    images: ["/images/hovermenu/gold4.webp", "/images/hovermenu/gold1.webp"],
-  },
+  // "sale-offers": {
+  //   subitems: [
+  //     { href: "/discounted-rings", label: "Discounted Rings" },
+  //     { href: "/sale-necklaces", label: "Sale Necklaces" },
+  //   ],
+  //   images: ["/images/hovermenu/gold4.webp", "/images/hovermenu/gold1.webp"],
+  // },
   collections: {
     subitems: [
       { href: "/wedding-collection", label: "Wedding Collection" },
@@ -461,7 +461,7 @@ const Header = () => {
                                 <Link
                                   key={idx}
                                   href={"/search"}
-                                  className="text-gray-500 uppercase hover:text-pink-500 text-sm font-[300]"
+                                  className="text-gray-500 uppercase hover:text-pink-500 text-sm font-[400]"
                                 >
                                   {subitem.label}
                                 </Link>

@@ -72,7 +72,7 @@ const Carousel = () => {
             <div className="flex md:gap-2 flex-col md:flex-row gap-4" >
               <div className="w-[230px] h-[40px] bg-white hover:bg-transparent border border-transparent hover:border-white transition-all duration-500 group">
                 <a
-                  href="/products"
+                  href="/search"
                   className="w-full h-full flex items-center justify-center px-[20px] text-black group-hover:text-white transition-colors duration-500"
                 >
                   Shop the collection
@@ -81,9 +81,9 @@ const Carousel = () => {
               <div className="w-[230px] h-[40px] bg-transparent border border-white flex items-center justify-center px-[20px] hover:border-white hover:bg-white transition-all duration-500 group">
                 <a
                   className="text-white group-hover:text-black  "
-                  href="/products"
+                  href="/custom-design"
                 >
-                  Discover more
+                  Get Custom Designs
                 </a>
               </div>
             </div>

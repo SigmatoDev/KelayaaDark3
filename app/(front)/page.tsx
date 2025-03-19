@@ -17,6 +17,7 @@ import ProductShips from "@/components/products/ProductShips";
 import CardGrid from "@/components/special-collections/SpecialCollections";
 import HowToSection from "@/components/howto-section/howToSection";
 import CategoryGrid from "@/components/category-grid/categoryGrid";
+import KelayaFavourites from "@/components/KelayaFavourites/KelayaFavourites";
 
 export const metadata: Metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME || "Kelayaa",
@@ -30,7 +31,7 @@ const HomePage = () => {
     <>
 
 
-      <div className="w-full mx-auto px-4 mb-8">
+      <div className="w-full">
         <CategoryGrid/>
       </div> 
 
@@ -70,6 +71,10 @@ const HomePage = () => {
 
       <div className="w-full">
         <HowToSection/>
+      </div>
+
+      <div className="w-full">
+        <KelayaFavourites />
       </div>
 
       {/* Back to Container for Other Content
