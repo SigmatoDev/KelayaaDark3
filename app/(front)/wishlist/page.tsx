@@ -26,7 +26,8 @@ const Wishlist = () => {
     null
   );
   const { data: session } = useSession();
-  const userId = session?.user?._id; // You can get this from session or auth context
+  console.log("data", session);
+  const userId = session?.user?.id; // You can get this from session or auth context
   const router = useRouter(); // Initialize router for navigation
 
   useEffect(() => {
@@ -64,7 +65,7 @@ const Wishlist = () => {
   return (
     <div className="container mx-auto py-10 px-5">
       <h2 className="text-3xl  mb-8 text-center flex items-center justify-center">
-        Your Wishlist <Heart className="ml-2 w-8 h-8 stroke-pink-700"/>
+        Your Wishlist <Heart className="ml-2 w-8 h-8 stroke-pink-700" />
       </h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {wishlistData.products.length === 0 ? (

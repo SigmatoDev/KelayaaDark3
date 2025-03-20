@@ -96,6 +96,61 @@ const getBySlug = cache(async (slug: string) => {
 });
 
 const PAGE_SIZE = 10;
+
+const shuffleArray = <T>(array: T[]): T[] => {
+  for (let i = array.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [array[i], array[j]] = [array[j], array[i]];
+  }
+  return array;
+};
+
+const groupByCategory = (products: any[]) => {
+  const categoryMap = new Map<string, any[]>();
+
+  products.forEach((product) => {
+    if (!categoryMap.has(product.productCategory)) {
+      categoryMap.set(product.productCategory, []);
+    }
+    categoryMap.get(product.productCategory)!.push(product);
+  });
+
+  // Shuffle products within each category
+  categoryMap.forEach((products, category) => {
+    categoryMap.set(category, shuffleArray(products));
+  });
+
+  return categoryMap;
+};
+
+const interleaveCategoriesStrict = (categoryMap: Map<string, any[]>) => {
+  const categoryQueues = Array.from(categoryMap.entries()).map(
+    ([key, value]) => ({
+      category: key,
+      products: value,
+    })
+  );
+
+  const result: any[] = [];
+  let categoryIndex = 0;
+
+  while (categoryQueues.some((q) => q.products.length > 0)) {
+    let attempts = 0;
+    while (attempts < categoryQueues.length) {
+      const queue = categoryQueues[categoryIndex % categoryQueues.length];
+      if (queue.products.length > 0) {
+        result.push(queue.products.shift());
+        categoryIndex++; // Move to the next category in round-robin
+        break;
+      }
+      categoryIndex++; // Try next category
+      attempts++;
+    }
+  }
+
+  return result;
+};
+
 const getByQuery = cache(
   async ({
     q,
@@ -114,6 +169,9 @@ const getByQuery = cache(
   }) => {
     await dbConnect();
 
+    // Fetch distinct product categories
+    const categories = await ProductModel.find().distinct("productCategory");
+
     const queryFilter =
       q && q !== "all"
         ? {
@@ -123,8 +181,13 @@ const getByQuery = cache(
             },
           }
         : {};
+
+    // Ensure all categories are included if "all" is selected
     const categoryFilter =
-      productCategory && productCategory !== "all" ? { productCategory } : {};
+      productCategory && productCategory !== "all"
+        ? { productCategory }
+        : { productCategory: { $in: categories } }; // Fetch all categories
+
     const ratingFilter =
       rating && rating !== "all"
         ? {
@@ -133,7 +196,7 @@ const getByQuery = cache(
             },
           }
         : {};
-    // 10-50
+
     const priceFilter =
       price && price !== "all"
         ? price.includes("-")
@@ -157,30 +220,58 @@ const getByQuery = cache(
             ? { rating: -1 }
             : { _id: -1 };
 
-    const categories = await ProductModel.find().distinct("productCategory");
-    const products = await ProductModel.find(
+    // Fetch all matching products first
+    let products = await ProductModel.aggregate([
       {
-        ...queryFilter,
-        ...categoryFilter,
-        ...priceFilter,
-        ...ratingFilter,
+        $match: {
+          ...queryFilter,
+          ...categoryFilter,
+          ...priceFilter,
+          ...ratingFilter,
+        },
       },
-      "-reviews"
-    )
-      .sort(order)
-      .skip(PAGE_SIZE * (Number(page) - 1))
-      .limit(PAGE_SIZE)
-      .lean();
+      {
+        $addFields: {
+          hasValidImage: {
+            $cond: {
+              if: {
+                $regexMatch: {
+                  input: "$image",
+                  regex: "^(http://|https://)",
+                  options: "i",
+                },
+              },
+              then: 1,
+              else: 0,
+            },
+          },
+        },
+      },
+      { $sort: { hasValidImage: -1, ...order } }, // Sort by images and order
+      { $project: { reviews: 0, hasValidImage: 0 } }, // Exclude unnecessary fields
+    ]);
 
-    const countProducts = await ProductModel.countDocuments({
-      ...queryFilter,
-      ...categoryFilter,
-      ...priceFilter,
-      ...ratingFilter,
-    });
+    const countProducts = products.length;
+
+    // Shuffle if multiple categories exist
+    const uniqueCategories = new Set(products.map((p) => p.productCategory));
+
+    if (uniqueCategories.size > 1) {
+      const categoryMap = groupByCategory(products);
+      products = interleaveCategoriesStrict(categoryMap);
+    } else {
+      // If only one category, shuffle normally
+      products = shuffleArray(products);
+    }
+
+    // Apply pagination *after* shuffling
+    const paginatedProducts = products.slice(
+      PAGE_SIZE * (Number(page) - 1),
+      PAGE_SIZE * Number(page)
+    );
 
     return {
-      products: products as Product[],
+      products: paginatedProducts as Product[],
       countProducts,
       page,
       pages: Math.ceil(countProducts / PAGE_SIZE),

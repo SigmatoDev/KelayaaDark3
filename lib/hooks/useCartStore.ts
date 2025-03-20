@@ -10,7 +10,7 @@ type Cart = {
   taxPrice: number;
   shippingPrice: number;
   totalPrice: number;
-  totalCartQuantity: number; // ✅ New: Store total quantity
+  totalCartQuantity: number;
   paymentMethod: string;
   shippingAddress: ShippingAddress;
   paymentStatus: "pending" | "success" | "failed";
@@ -18,6 +18,15 @@ type Cart = {
   discountPrice: number;
   couponDiscount: number;
   couponCode: string;
+  gstDetails: {
+    hasGST: boolean;
+    companyName: string;
+    gstNumber: string;
+  };
+  personalInfo: {
+    mobileNumber: string;
+    email: string;
+  };
 };
 
 const initialState: Cart = {
@@ -26,7 +35,7 @@ const initialState: Cart = {
   taxPrice: 0,
   shippingPrice: 0,
   totalPrice: 0,
-  totalCartQuantity: 0, // ✅ Initial total quantity is 0
+  totalCartQuantity: 0,
   paymentMethod: "Stripe",
   shippingAddress: {
     firstName: "",
@@ -44,6 +53,15 @@ const initialState: Cart = {
   discountPrice: 0,
   couponDiscount: 0,
   couponCode: "",
+  gstDetails: {
+    hasGST: false,
+    companyName: "",
+    gstNumber: "",
+  },
+  personalInfo: {
+    mobileNumber: "",
+    email: "",
+  },
 };
 
 export const cartStore = create<Cart>()(
@@ -59,7 +77,7 @@ const useCartService = () => {
     taxPrice,
     shippingPrice,
     totalPrice,
-    totalCartQuantity, // ✅ Added to return cart quantity
+    totalCartQuantity,
     paymentMethod,
     shippingAddress,
     paymentStatus,
@@ -67,6 +85,8 @@ const useCartService = () => {
     discountPrice,
     couponDiscount,
     couponCode,
+    gstDetails,
+    personalInfo,
   } = cartStore();
 
   return {
@@ -75,7 +95,7 @@ const useCartService = () => {
     taxPrice,
     shippingPrice,
     totalPrice,
-    totalCartQuantity, // ✅ Include total quantity
+    totalCartQuantity,
     paymentMethod,
     shippingAddress,
     paymentStatus,
@@ -83,7 +103,10 @@ const useCartService = () => {
     discountPrice,
     couponDiscount,
     couponCode,
+    gstDetails,
+    personalInfo,
 
+    // ✅ Include missing functions
     increase: (item: OrderItem) => {
       const exist = items.find((x) => x.slug === item.slug);
       const updatedCartItems = exist
@@ -136,6 +159,18 @@ const useCartService = () => {
         discountPrice: 0,
       });
       updateCart(items);
+    },
+
+    saveGSTDetails: (gst: {
+      hasGST: boolean;
+      companyName: string;
+      gstNumber: string;
+    }) => {
+      cartStore.setState({ gstDetails: gst });
+    },
+
+    savePersonalInfo: (info: { mobileNumber: string; email: string }) => {
+      cartStore.setState({ personalInfo: info });
     },
 
     saveShippingAddress: (shippingAddress: ShippingAddress) => {
