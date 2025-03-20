@@ -25,14 +25,14 @@ const HowToSection = () => {
 
   return (
     <div className="py-12 bg-white">
-      <div className="max-w-7xl mx-auto px-4">
-        <h2 className="text-3xl font-semibold mb-8 text-gray-800">How To Guides</h2>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6">
+        <h2 className="text-3xl font-semibold mb-8 text-gray-800 text-center ">How To Guides</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {guides.map((guide, index) => (
             <Link
               key={index}
               href={guide.link}
-              className="group rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300"
+              className="group rounded-xl overflow-hidden border border-gray-200 hover:shadow-lg transition-all duration-300 mx-auto w-full max-w-[320px] md:max-w-none"
             >
               <div className="h-52 w-full overflow-hidden">
                 <img

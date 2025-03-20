@@ -37,16 +37,15 @@ export default function KelayaFavourites() {
         Favourites
         </span>
       </h2>
-      <p className="text-center mb-8 text-gray-400 font-light text-sm">Stories in Motion. Favourites Forever.
+      <p className="text-center mb-8 text-gray-400 font-light text-sm">Stories in Motion. Favourites Forever.</p>
 
-</p>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
         {favourites.map((item, index) => (
           <div
             key={index}
-            className="relative w-full h-[300px] sm:h-[320px] lg:h-[380px] xl:h-[400px] overflow-hidden rounded-2xl shadow-lg"
+            className="relative mx-auto w-full max-w-[320px] sm:max-w-none h-[300px] sm:h-[320px] lg:h-[380px] xl:h-[400px] overflow-hidden rounded-2xl shadow-lg"
           >
+            <div className="absolute inset-0 bg-[#EC4999]/5" />
             <video
               src={item.videoSrc}
               poster={item.poster}
@@ -54,12 +53,13 @@ export default function KelayaFavourites() {
               muted
               loop
               playsInline
-              className="absolute top-0 left-0 w-full h-full object-none"
+              className="absolute inset-0 w-full h-full"
+              style={{ objectFit: 'none', transform: 'scale(1.6)' }}
             />
           </div>
         ))}
       </div>
-      <div className="flex justify-end items-center my-8 px-4">
+      <div className="flex justify-end items-center mt-6 md:mt-8 px-0 md:px-4">
       <Link
         href="https://www.instagram.com/kelayaajewellery/"
         className="group inline-flex items-center gap-2 text-black font-medium text-sm border-b border-transparent hover:border-black transition-all duration-300"
