@@ -25,34 +25,45 @@ const ProductItem = ({ product }: { product: Product }) => {
     : FALLBACK_IMAGE;
   const [imageSrc, setImageSrc] = useState(initialImage);
 
-  // State for this product's wishlist status
+  // Wishlist state for this specific product
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   // Fetch wishlist status for this specific product
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !product._id) return; // Prevent fetching if userId is not available
 
     const fetchWishlistStatus = async () => {
       try {
-        const res = await fetch(
-          `/api/wishlist?userId=${userId}&productId=${product._id}`
-        );
+        const res = await fetch(`/api/wishlist?userId=${userId}`);
         const data = await res.json();
-        setIsWishlisted(data.status); // Ensure only this product's status updates
+
+        const isInWishlist = data.products.some(
+          (item: Product) => item._id === product._id
+        );
+
+        setIsWishlisted(isInWishlist);
       } catch (error) {
         console.error("Error fetching wishlist status:", error);
       }
     };
 
     fetchWishlistStatus();
-  }, [userId, product._id]);
+  }, [userId, product._id]); // Ensuring it runs only when userId and product._id change
 
-  // Toggle wishlist for this specific product
+  // Optimistic Wishlist Toggle
   const toggleWishlist = async () => {
     if (!userId) {
       toast.error("Please log in to manage wishlist");
       return;
     }
+
+    if (loading) return;
+    setLoading(true);
+
+    // **Optimistic UI Update**
+    const newWishlistState = !isWishlisted;
+    setIsWishlisted(newWishlistState);
 
     try {
       const response = await fetch("/api/wishlist", {
@@ -62,8 +73,14 @@ const ProductItem = ({ product }: { product: Product }) => {
       });
 
       const data = await response.json();
+      console.log("API Response:", data);
 
-      setIsWishlisted(data.status); // Ensure only this product updates
+      // ✅ Fix: Ensure response contains productId
+      if (data.productId !== product._id) {
+        throw new Error("Product mismatch");
+      }
+
+      setIsWishlisted(data.status);
 
       if (data.status) {
         toast.success("Added to Wishlist ❤️");
@@ -73,6 +90,9 @@ const ProductItem = ({ product }: { product: Product }) => {
     } catch (error) {
       console.error("Error updating wishlist:", error);
       toast.error("Something went wrong. Please try again.");
+      setIsWishlisted(!newWishlistState); // Revert on error
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -98,6 +118,7 @@ const ProductItem = ({ product }: { product: Product }) => {
       <button
         onClick={toggleWishlist}
         className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-lg"
+        disabled={loading} // Disable button when loading
       >
         <Heart
           className={`w-6 h-6 transition-all ${
