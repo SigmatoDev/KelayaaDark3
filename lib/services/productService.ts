@@ -22,7 +22,7 @@ const getLatest = cache(async () => {
   });
 
   // Return the top 8 sorted products
-  return sortedProducts.slice(0, 8) as Product[];
+  return sortedProducts.slice(0, 8) as unknown as Product[];
 });
 
 const getTopRated = cache(async () => {
@@ -42,7 +42,7 @@ const getTopRated = cache(async () => {
   });
 
   // Return the top 8 sorted products
-  return sortedProducts.slice(0, 8) as Product[];
+  return sortedProducts.slice(0, 8) as unknown as Product[];
 });
 
 // intentionally disable Next.js Cache to better demo
@@ -61,7 +61,7 @@ const getFeatured = async () => {
   });
 
   // Return the top 3 sorted featured products
-  return sortedProducts.slice(0, 3) as Product[];
+  return sortedProducts.slice(0, 3) as unknown as Product[];
 };
 
 // const getBySlug = cache(async (slug: string) => {
@@ -95,7 +95,7 @@ const getBySlug = cache(async (slug: string) => {
   return alternativeProduct || product;
 });
 
-const PAGE_SIZE = 10;
+const PAGE_SIZE = 50;
 
 const shuffleArray = <T>(array: T[]): T[] => {
   for (let i = array.length - 1; i > 0; i--) {
