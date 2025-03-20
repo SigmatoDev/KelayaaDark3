@@ -31,14 +31,13 @@ const ProductItem = ({ product }: { product: Product }) => {
 
   // Fetch wishlist status for this specific product
   useEffect(() => {
-    if (!userId) return;
+    if (!userId || !product._id) return; // Prevent fetching if userId is not available
 
     const fetchWishlistStatus = async () => {
       try {
         const res = await fetch(`/api/wishlist?userId=${userId}`);
         const data = await res.json();
 
-        // Check if the product exists in the wishlist array
         const isInWishlist = data.products.some(
           (item: Product) => item._id === product._id
         );
@@ -50,7 +49,7 @@ const ProductItem = ({ product }: { product: Product }) => {
     };
 
     fetchWishlistStatus();
-  }, [userId, product._id]);
+  }, [userId, product._id]); // Ensuring it runs only when userId and product._id change
 
   // Optimistic Wishlist Toggle
   const toggleWishlist = async () => {
