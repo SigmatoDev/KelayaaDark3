@@ -10,6 +10,7 @@ import useSWRMutation from "swr/mutation";
 import useLayoutService from "@/lib/hooks/useLayout";
 import CheckoutSteps from "@/components/checkout/CheckoutSteps";
 import useCartService from "@/lib/hooks/useCartStore";
+import { useSession } from "next-auth/react";
 
 const Form = () => {
   const router = useRouter();
@@ -24,9 +25,11 @@ const Form = () => {
     clear,
     setLastOrderId,
     paymentStatus,
-    setPaymentStatus, // Assuming there's a method to set payment status
+    setPaymentStatus,
+    gstDetails,
+    personalInfo,
   } = useCartService();
-
+  const { data: session } = useSession();
   const { theme } = useLayoutService();
 
   // mutate data in the backend by calling trigger function
@@ -46,9 +49,14 @@ const Form = () => {
           taxPrice,
           shippingPrice,
           totalPrice,
+          gstDetails, // ✅ Include GST details
+          personalInfo, // ✅ Include personal info
+          user: session?.user?.id,
         }),
       });
+
       const data = await res.json();
+      console.log("orders", data);
       if (res.ok) {
         setLastOrderId(data?.order?._id);
         clear();
@@ -87,8 +95,9 @@ const Form = () => {
     // Step 2: Poll for payment status and trigger the order placement only if successful
     const checkPaymentStatus = setInterval(() => {
       if (paymentStatus === "success") {
+        console.log("success");
         // If payment was successful, place the order
-        // placeOrder(); // Trigger the order creation API call
+        placeOrder(); // Trigger the order creation API call
         clearInterval(checkPaymentStatus); // Stop polling after success
       } else if (paymentStatus === "failed") {
         // Handle failed payment

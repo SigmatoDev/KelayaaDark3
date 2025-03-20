@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
 export type Product = {
+  filter(arg0: (product: any) => boolean): unknown;
   _id?: string;
   name: string;
   productCode: string;

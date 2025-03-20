@@ -1,12 +1,13 @@
 "use client";
-import { FC, useState } from "react";
+import { FC, useEffect, useState } from "react";
 import Image from "next/image";
 import { FaStar, FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
 import AddToCart from "@/components/products/AddToCart";
 import { convertDocToObj } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { ShoppingCartIcon } from "lucide-react";
+import { CheckCircle, ShoppingCartIcon } from "lucide-react";
 import useCartService from "@/lib/hooks/useCartStore";
+import { useSession } from "next-auth/react";
 
 interface Product {
   _id: string;
@@ -33,9 +34,44 @@ interface ProductPageContentProps {
 
 const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
   const [selectedImage, setSelectedImage] = useState<string>(product.image);
+  const [showAvailability, setShowAvailability] = useState<boolean>(false);
   const router = useRouter();
   const { items } = useCartService();
   const existItem = items.find((x) => x.slug === product.slug);
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+  // Wishlist State
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Fetch Wishlist Status
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/wishlist?userId=${userId}&productId=${product._id}`)
+      .then((res) => res.json())
+      .then((data) => setIsWishlisted(data.status));
+  }, [userId, product._id]);
+
+  // Toggle Wishlist
+  const toggleWishlist = async () => {
+    if (!userId) return alert("Please log in to add items to wishlist");
+
+    const response = await fetch("/api/wishlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ userId, productId: product._id }),
+    });
+
+    const data = await response.json();
+    setIsWishlisted(data.status);
+  };
+
+  // Hide availability message after 3 seconds
+  useEffect(() => {
+    if (showAvailability) {
+      const timer = setTimeout(() => setShowAvailability(false), 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [showAvailability]);
 
   return (
     <div className="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -111,28 +147,52 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
 
         {/* Size & Availability */}
         <div className="flex items-center gap-4 w-full mb-4">
-          <div className="flex items-center bg-[#FFF6F8] rounded-md px-3 py-2 w-full">
-            <span className="text-gray-600 text-[12px] font-medium mr-2">
-              SIZE
-            </span>
-            <span className="px-1">|</span>
-            <select className="bg-transparent text-pink-500 font-semibold text-[12px] focus:outline-none w-full">
-              <option className="text-black text-[12px]">18.00 MM</option>
-              <option className="text-black text-[12px]">19.00 MM</option>
-              <option className="text-black text-[12px]">20.00 MM</option>
-            </select>
+          {/* Size Selector (Visible only if productCategory is "Rings") */}
+          {product?.productCategory === "Rings" && (
+            <div className="flex items-center bg-[#FFF6F8] rounded-md px-3 py-2 w-1/2">
+              <span className="text-gray-600 text-[12px] font-medium mr-2">
+                SIZE
+              </span>
+              <span className="px-1">|</span>
+              <select className="bg-transparent text-pink-500 font-semibold text-[12px] focus:outline-none w-full">
+                <option className="text-black text-[12px]">18.00 MM</option>
+                <option className="text-black text-[12px]">19.00 MM</option>
+                <option className="text-black text-[12px]">20.00 MM</option>
+              </select>
+            </div>
+          )}
+
+          {/* Check Availability Button + Message */}
+          <div
+            className={`flex flex-col ${product?.productCategory === "Rings" ? "w-1/2" : "w-full"}`}
+          >
+            <button
+              className="bg-[#FFF6F8] text-pink-500 text-[12px] px-6 py-2 font-semibold rounded-none w-full"
+              onClick={() => {
+                setShowAvailability(true);
+                setTimeout(() => setShowAvailability(false), 3000);
+              }}
+            >
+              CHECK AVAILABILITY
+            </button>
+            {showAvailability && product.countInStock > 1 && (
+              <div className="flex items-center text-green-600 text-sm font-semibold mt-2">
+                <CheckCircle className="w-4 h-4 mr-2" />
+                This product is available
+              </div>
+            )}
           </div>
-          <button className="bg-[#FFF6F8] text-pink-500 text-[12px] px-6 py-2 font-semibold rounded-none w-full">
-            CHECK AVAILABILITY
-          </button>
         </div>
 
         {/* Buttons Grid */}
         <div
           className={`grid ${existItem ? "grid-cols-3" : "grid-cols-2"} gap-4 w-full`}
         >
-          <button className="bg-[#FFF6F8] text-pink-500 text-[12px] font-bold px-6 py-3 rounded-none w-full">
-            ADD TO WISHLIST
+          <button
+            onClick={toggleWishlist}
+            className="bg-[#FFF6F8] text-pink-500 text-[12px] font-bold px-6 py-3 rounded-none w-full"
+          >
+            {isWishlisted ? "REMOVE FROM WISHLIST" : "ADD TO WISHLIST"}
           </button>
 
           {product.countInStock !== 0 && (

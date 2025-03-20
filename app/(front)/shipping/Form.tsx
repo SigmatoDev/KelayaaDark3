@@ -39,8 +39,12 @@ const Form = () => {
     discountPrice,
     saveShippingAddress,
     shippingAddress,
+    savePersonalInfo,
+    saveGSTDetails,
     totalPrice,
     taxPrice,
+    gstDetails,
+    personalInfo,
   } = useCartService();
   const {
     register,
@@ -104,7 +108,25 @@ const Form = () => {
   }, [sameAsShipping, setValue, watch]);
 
   const formSubmit: SubmitHandler<FormData> = async (form) => {
+    savePersonalInfo({
+      email: form.personalInfo.email || "", // Ensure a default empty string
+      mobileNumber: form.personalInfo.mobileNumber || "",
+    });
+
+    saveGSTDetails({
+      hasGST: form.gstDetails.hasGST ?? false,
+      companyName: form.gstDetails.companyName || "", // Ensure a default empty string
+      gstNumber: form.gstDetails.gstNumber || "",
+    });
+
     saveShippingAddress(form.shippingAddress);
+
+    console.log("Saved Data:", {
+      personalInfo: form.personalInfo,
+      gstDetails: form.gstDetails,
+      shippingAddress: form.shippingAddress,
+    });
+
     router.push("/payment");
   };
 
@@ -215,97 +237,13 @@ const Form = () => {
               </div>
             )}
 
-            <button type="submit" className="btn btn-primary w-full mt-4">
+            <button
+              type="submit"
+              className="btn bg-gradient-to-r from-pink-500 to-red-500 text-white w-full mt-4"
+            >
               Next
             </button>
           </form>
-        </div>
-
-        {/* Order Summary */}
-        <div className="col-span-5  p-6 shadow-md rounded-lg">
-          <div className="bg-white p-6 w-full max-w-md">
-            <h2 className="text-xl font-bold text-gray-900 mb-4">
-              Order Summary
-            </h2>
-
-            {/* Product Details */}
-            <div className="border p-4 rounded-lg flex items-center">
-              <img
-                src="https://via.placeholder.com/60"
-                alt="Product"
-                className="w-16 h-16 rounded-md object-cover"
-              />
-              <div className="ml-4">
-                <h3 className="text-md font-semibold text-gray-800">
-                  Dainty Shimmer Diamond Ring
-                </h3>
-                <p className="text-gray-600 text-sm">1 Qty</p>
-                <p className="text-gray-800 font-semibold mt-1">₹27,499.00</p>
-                <p className="text-gray-500 text-xs">
-                  Estimated delivery: 10 Dec, 2021
-                </p>
-              </div>
-            </div>
-
-            {/* Price Details */}
-            <div className="bg-pink-50 p-4 mt-4 rounded-lg">
-              <div className="flex justify-between text-gray-700 mb-2">
-                <span className="flex items-center">
-                  <FaShoppingBag className="mr-2 text-gray-500" />
-                  Sub Total
-                </span>
-                <span>₹27,798.00</span>
-              </div>
-              <div className="flex justify-between text-gray-700 mb-2">
-                <span className="flex items-center">
-                  <FaPercentage className="mr-2 text-gray-500" />
-                  GST
-                </span>
-                <span>₹281.00</span>
-              </div>
-              <div className="flex justify-between text-gray-700 mb-2">
-                <span className="flex items-center">
-                  <FaTruck className="mr-2 text-gray-500" />
-                  Home Delivery available
-                </span>
-                <span className="text-green-600 font-medium">Free</span>
-              </div>
-
-              {/* Coupon Applied */}
-              <div className="flex justify-between text-green-600 font-medium mb-2">
-                <span className="flex items-center">
-                  <FaCheckCircle className="mr-2 text-green-500" />
-                  Coupon Applied
-                </span>
-                <span>- ₹500.00</span>
-              </div>
-
-              {/* Bank Offers */}
-              <div className="border-2 border-dashed border-pink-500 text-pink-500 p-3 rounded-md flex items-center justify-between mt-2 cursor-pointer">
-                <span className="flex items-center">
-                  <FaTag className="mr-2" />
-                  10+ Bank Offers Available
-                </span>
-                <span className="text-lg">&gt;</span>
-              </div>
-            </div>
-
-            {/* Total Payable */}
-            <div className="flex justify-between font-bold text-gray-900 text-lg mt-4">
-              <span>Total Payable</span>
-              <span>₹27,798.00</span>
-            </div>
-
-            {/* Buttons */}
-            <div className="flex justify-between mt-4">
-              <button className="px-4 py-2 border border-pink-500 text-pink-500 rounded-md">
-                CONTINUE SHOPPING
-              </button>
-              <button className="px-4 py-2 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-md">
-                COMPLETE ORDER
-              </button>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -313,3 +251,90 @@ const Form = () => {
 };
 
 export default Form;
+
+{
+  /* Order Summary */
+}
+// {/* <div className="col-span-5  p-6 shadow-md rounded-lg">
+//   <div className="bg-white p-6 w-full max-w-md">
+//     <h2 className="text-xl font-bold text-gray-900 mb-4">Order Summary</h2>
+
+//     {/* Product Details */}
+//     <div className="border p-4 rounded-lg flex items-center">
+//       <img
+//         src="https://via.placeholder.com/60"
+//         alt="Product"
+//         className="w-16 h-16 rounded-md object-cover"
+//       />
+//       <div className="ml-4">
+//         <h3 className="text-md font-semibold text-gray-800">
+//           Dainty Shimmer Diamond Ring
+//         </h3>
+//         <p className="text-gray-600 text-sm">1 Qty</p>
+//         <p className="text-gray-800 font-semibold mt-1">₹27,499.00</p>
+//         <p className="text-gray-500 text-xs">
+//           Estimated delivery: 10 Dec, 2021
+//         </p>
+//       </div>
+//     </div>
+
+//     {/* Price Details */}
+//     <div className="bg-pink-50 p-4 mt-4 rounded-lg">
+//       <div className="flex justify-between text-gray-700 mb-2">
+//         <span className="flex items-center">
+//           <FaShoppingBag className="mr-2 text-gray-500" />
+//           Sub Total
+//         </span>
+//         <span>₹27,798.00</span>
+//       </div>
+//       <div className="flex justify-between text-gray-700 mb-2">
+//         <span className="flex items-center">
+//           <FaPercentage className="mr-2 text-gray-500" />
+//           GST
+//         </span>
+//         <span>₹281.00</span>
+//       </div>
+//       <div className="flex justify-between text-gray-700 mb-2">
+//         <span className="flex items-center">
+//           <FaTruck className="mr-2 text-gray-500" />
+//           Home Delivery available
+//         </span>
+//         <span className="text-green-600 font-medium">Free</span>
+//       </div>
+
+//       {/* Coupon Applied */}
+//       <div className="flex justify-between text-green-600 font-medium mb-2">
+//         <span className="flex items-center">
+//           <FaCheckCircle className="mr-2 text-green-500" />
+//           Coupon Applied
+//         </span>
+//         <span>- ₹500.00</span>
+//       </div>
+
+//       {/* Bank Offers */}
+//       <div className="border-2 border-dashed border-pink-500 text-pink-500 p-3 rounded-md flex items-center justify-between mt-2 cursor-pointer">
+//         <span className="flex items-center">
+//           <FaTag className="mr-2" />
+//           10+ Bank Offers Available
+//         </span>
+//         <span className="text-lg">&gt;</span>
+//       </div>
+//     </div>
+
+//     {/* Total Payable */}
+//     <div className="flex justify-between font-bold text-gray-900 text-lg mt-4">
+//       <span>Total Payable</span>
+//       <span>₹27,798.00</span>
+//     </div>
+
+//     {/* Buttons */}
+//     <div className="flex justify-between mt-4">
+//       <button className="px-4 py-2 border border-pink-500 text-pink-500 rounded-md">
+//         CONTINUE SHOPPING
+//       </button>
+//       <button className="px-4 py-2 bg-gradient-to-r from-pink-500 to-red-500 text-white rounded-md">
+//         COMPLETE ORDER
+//       </button>
+//     </div>
+//   </div>
+// </div>; */}
