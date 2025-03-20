@@ -13,16 +13,16 @@ const getLatest = cache(async () => {
     .sort({ _id: -1 }) // Get the latest products first
     .lean(); // Convert to plain JavaScript objects
 
-  // Sort: Products with image URLs first
-  const sortedProducts = allProducts.sort((a, b) => {
-    const hasImageA = a.image && a.image.startsWith("http");
-    const hasImageB = b.image && b.image.startsWith("http");
+  // Filter out products with invalid or missing image URLs
+  const validProducts = allProducts.filter(
+    (product) => product.image && /^https?:\/\//.test(product.image)
+  );
 
-    return hasImageB - hasImageA; // Products with images come first
-  });
+  // Shuffle the filtered products
+  const shuffledProducts = shuffleArray(validProducts);
 
-  // Return the top 8 sorted products
-  return sortedProducts.slice(0, 8) as unknown as Product[];
+  // Return the top 8 shuffled products
+  return shuffledProducts.slice(0, 8) as unknown as Product[];
 });
 
 const getTopRated = cache(async () => {

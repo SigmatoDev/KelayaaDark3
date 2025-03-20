@@ -55,6 +55,7 @@ export async function POST(req: Request) {
         message:
           productIndex > -1 ? "Removed from wishlist" : "Added to wishlist",
         status: productIndex === -1,
+        productId: productId, // ✅ Ensure productId is included in the response
       },
       { status: 200 }
     );
@@ -84,8 +85,6 @@ export async function GET(req: Request) {
     const wishlist = await Wishlist.findOne({ userId: userObjectId }).populate(
       "productIds"
     );
-    
-    
 
     if (!wishlist || wishlist.productIds.length === 0) {
       return NextResponse.json({
