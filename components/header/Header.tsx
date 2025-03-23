@@ -173,9 +173,6 @@ const Header = () => {
             </div>
             <Menu />
           </div>
-          <div className="block bg-base-300 pb-3 text-center md:hidden">
-            <SearchBox />
-          </div>
         </nav>
       </header>
     );
@@ -192,233 +189,60 @@ const Header = () => {
               : "bg-black"
         } transition-all duration-1000 ${!isScrolled ? "group" : ""}`}
       >
-        <motion.div
-          className={`w-screen flex justify-around items-center py-0 ${pathname !== "/" ? "" : "overflow-hidden"}`}
-          initial={false}
-          animate={{
-            height: pathname === "/" && isScrolled ? 0 : "auto",
-            y: pathname === "/" && isScrolled ? -50 : 0,
-            opacity: pathname === "/" && isScrolled ? 0 : 1,
-          }}
-          transition={{
-            height: {
-              duration: 0.3,
-              ease: "easeInOut",
-            },
-            y: {
-              type: "spring",
-              stiffness: 100,
-              damping: 20,
-              duration: 0.5,
-            },
-            opacity: { duration: 0.3 },
-          }}
-        >
-          <div>
-            <p
-              className={`text-[10px] text-[#fff] ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} transition-colors duration-300`}
-            >
-              Stores
-            </p>
-          </div>
-          <div>
-            <p
-              className={`text-[10px] text-white uppercase tracking-[1px] w-[300px] text-center font-medium transition-all duration-500 animate-fade ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""}`}
-            >
-              {currentPromo}
-            </p>
-          </div>
-          <div className="flex flex-row items-center text-center">
-            <div className="relative">
-              {session && session.user ? (
-                <li className="list-none">
-                  <div className="relative">
-                    <button
-                      onClick={() => setMenuOpen(!menuOpen)}
-                      className="flex items-center px-3 py-2 text-white bg-transparent rounded-lg hover:bg-gray-800 transition"
-                    >
-                      <User className="h-4 w-4 mr-1" /> {session.user.name}
-                      <ChevronDown className="ml-2 w-4 h-4" />
-                    </button>
-
-                    {menuOpen && (
-                      <ul className="absolute right-0 z-[9999] mt-2 w-52 rounded-lg bg-white/10 backdrop-blur-md p-2 shadow-lg border border-white/20">
-                        <li
-                          onClick={handleClick}
-                          className="flex items-center z-[9999] px-3 py-2 hover:bg-white/20 rounded-md"
-                        >
-                          <History className="w-4 h-4 text-white" />
-                          <Link
-                            href="/order-history"
-                            className="text-white ml-2"
-                          >
-                            Order History
-                          </Link>
-                        </li>
-
-                        <li
-                          onClick={handleClick}
-                          className="flex items-center px-3 py-2 hover:bg-white/20 rounded-md"
-                        >
-                          <User className="w-4 h-4 text-white" />
-                          <Link href="/profile" className="text-white ml-2">
-                            Profile
-                          </Link>
-                        </li>
-
-                        <li
-                          onClick={handleClick}
-                          className="flex items-center px-3 py-2 hover:bg-white/20 rounded-md"
-                        >
-                          <History className="w-4 h-4 text-white" />
-                          <Link
-                            href="/custom-order-history"
-                            className="text-white ml-2"
-                          >
-                            Custom Orders
-                          </Link>
-                        </li>
-
-                        <li>
-                          <button
-                            type="button"
-                            onClick={signOutHandler}
-                            className="flex items-center w-full px-3 py-2 text-white bg-pink-700 hover:bg-pink-500 rounded-md"
-                          >
-                            <LogOut className="w-4 h-4 text-white" />
-                            <span className="ml-2">Sign Out</span>
-                          </button>
-                        </li>
-                      </ul>
-                    )}
-                  </div>
-                </li>
-              ) : (
-                <button
-                  onClick={() => setIsSignInOpen(true)}
-                  className="flex flex-row items-center text-center w-[70px]"
-                >
-                  <User className="w-4 h-4 text-white hover:text-pink-500 transition group-hover:text-black" />
-                  <p className="text-[10px] font-sm mt-1 text-white group-hover:text-black">SIGN IN</p>
-                </button>
-              )}
-            </div>
-
-            <Link
-              href="/wishlist"
-              className="flex flex-col items-center text-center"
-            >
-              <Heart
-                className={`w-4 h-4 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} hover:text-pink-500 transition`}
-              />
-            </Link>
-          </div>
-        </motion.div>
-        <motion.div
-          className={`w-screen flex items-center justify-center overflow-hidden ${pathname !== "/" ? "hidden" : ""}`}
-          initial={false}
-          animate={{
-            height: isScrolled ? 0 : "auto",
-          }}
-          transition={{
-            duration: 0.8,
-            ease: "easeInOut",
-          }}
-        >
-          <div className="flex items-center justify-center w-[200px] h-[60px] md:w-[350px] md:h-[120px] relative">
-            <Link
-              href="/"
-              className="flex items-center justify-center w-screen h-full"
-            >
-              <motion.div
-                initial={false}
-                animate={{
-                  y: isScrolled ? -120 : 0,
-                  opacity: isScrolled ? 0 : 1,
-                }}
-                transition={{
-                  y: {
-                    type: "spring",
-                    stiffness: 100,
-                    damping: 20,
-                    duration: 0.8,
-                  },
-                  opacity: { duration: 0.5 },
-                }}
-                className="flex items-center justify-center relative w-full h-full"
-              >
-                <motion.img
-                  src="/Kelayaa - logo.webp"
-                  alt="Kelayaa Logo"
-                  className={`w-[75%] h-full object-contain transition-all duration-300 ${
-                    !isScrolled ? "group-hover:opacity-0" : ""
-                  }`}
-                />
-                <motion.img
-                  src="/Kelayaa - logo.webp"
-                  alt="Kelayaa Logo Black"
-                  className={`w-[75%] h-full object-contain absolute top-0 left-1/2 -translate-x-1/2 transition-all duration-300 ${
-                    !isScrolled
-                      ? "opacity-0 group-hover:opacity-100"
-                      : "opacity-0"
-                  }`}
-                />
-              </motion.div>
-            </Link>
-          </div>
-        </motion.div>
         <header
-          className={`text-gray-800 w-full xl:h-[80px] my-0 transition-[margin] xl:flex xl:justify-center items-center duration-1000 ease-in-out ${isScrolled ? " mt-0" : " mt-4"}`}
+          className={`text-gray-800 w-full xl:h-[80px] my-0 transition-[margin] xl:flex xl:justify-center items-center duration-1000 ease-in-out ${isScrolled ? " mt-1" : " my-1"}`}
         >
           {/* Parent Div 1 - Search & Logo Section */}
-          <div className="w-full px-4 sm:px-8 lg:px-12 ">
-            <div className="flex relative items-center justify-center max-w-[1600px] mx-auto ">
+          <div className="w-full px-4 sm:px-8 lg:px-12">
+            <div className="flex relative items-center justify-center max-w-[1600px] mx-auto">
               {/* Logo */}
 
-              <div
-                className={`flex absolute left-0  justify-center w-[200px] h-[60px] md:w-[250px] md:h-[60px] overflow-hidden transition-all duration-1000 ease-out ${
-                  pathname === "/"
-                    ? isScrolled
-                      ? "opacity-100 scale-100"
-                      : "opacity-0 scale-95"
-                    : "opacity-100 scale-100"
-                }`}
+              <nav
+                className={`text-white w-full z-[999] ${!isScrolled ? "group-hover:text-black" : ""}`}
               >
-                <Link href="/">
-                  <img
-                    src="/Kelayaa - logo.webp"
-                    alt="Kelayaa Logo"
-                    className="w-full h-full object-cover"
-                  />
-                </Link>
-              </div>
-
-              <div className="w-[100px]">
-                {/* navvvvvvvvvvvvv */}
-                <nav
-                  className={`text-white w-[100px] z-[999] ${!isScrolled ? "group-hover:text-black" : ""}`}
+                <div
+                  className={`flex  absolute left-0 top-0 lg:top-3 z-[9999] justify-center items-center w-[150px] lg:w-[200px] h-[40px] lg:h-[60px] md:w-[250px] md:h-[60px] overflow-hidden transition-all duration-1000 ease-out opacity-100 scale-100 pointer-events-auto`}
                 >
-                  <div className="flex items-center justify-center max-w-[1600px] mx-auto px-4">
-                    {/* Mobile Menu */}
-                    <div className="flex items-center gap-4">
-                      <label
-                        htmlFor="my-drawer"
-                        className={`btn btn-square btn-ghost text-white ${!isScrolled ? "group-hover:text-black" : ""} md:hidden`}
-                      >
-                        <AlignJustify />
-                      </label>
-                    </div>
+                  <Link href="/">
+                    <img
+                      src="/Kelayaa - logo.webp"
+                      alt="Kelayaa Logo"
+                      className="w-full h-full object-cover cursor-pointer"
+                    />
+                  </Link>
+                </div>
+                <div className="flex items-center justify-end max-w-[1600px] mx-auto px-4">
+                  <div className="flex items-center">
+                    <label
+                      htmlFor="my-drawer"
+                      className={`btn btn-square btn-ghost text-white ${!isScrolled ? "group-hover:text-black" : ""} md:hidden ml-auto`}
+                    >
+                      <AlignJustify />
+                    </label>
 
-                    {/* Navigation Links */}
-                    <div className="relative z-50">
-                      <div
-                        className="hidden md:flex space-x-0 uppercase mx-auto px-1 py-2 relative rounded-[30px] items-center justify-center xl:py-[30px]"
-                        onMouseLeave={() => setIsOpen(false)}
-                      >
+                    <Link
+                      href="/cart"
+                      className="relative  md:hidden flex flex-col items-center text-center"
+                    >
+                      <ShoppingCart
+                        className={`w-[50px] h-5 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} hover:text-pink-500 transition`}
+                      />
+                      <span className="absolute -top-3 -right-0.5 bg-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                        {totalCartQuantity || 0}
+                      </span>
+                    </Link>
+                  </div>
+
+                  {/* Navigation Links */}
+                  <div className="relative z-50">
+                    <div
+                      className="hidden md:flex space-x-4 uppercase px-1 py-2 relative items-center xl:py-[30px]"
+                      onMouseLeave={() => setIsOpen(false)}
+                    >
+                      <div className="flex items-center space-x-8">
                         {Object.keys(menuData).map((key) => (
                           <Link
                             key={key}
-                            // href={`/${key}`}
                             href={`/search`}
                             className={`w-[140px] text-center text-white ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} transition-all duration-300 ease-in-out hover:text-pink-300 text-xs`}
                             onMouseEnter={() => {
@@ -430,101 +254,162 @@ const Header = () => {
                             <span className="absolute left-0 bottom-0 w-0 h-[2px] bg-pink-500 transition-all duration-300 ease-in-out hover:w-full shadow-[0_0_8px_#ec4899]"></span>
                           </Link>
                         ))}
+                      </div>
+
+                      <div className="flex items-center space-x-4 ml-auto">
+                        {/* User menu */}
+                        <div className="relative">
+                          {session && session.user ? (
+                            <li className="list-none">
+                              <div className="relative">
+                                <button
+                                  onClick={() => setMenuOpen(!menuOpen)}
+                                  className="flex items-center px-3 py-2 text-white bg-transparent rounded-lg hover:bg-gray-800 transition"
+                                >
+                                  <User className="h-4 w-4 mr-1" />{" "}
+                                  {session.user.name}
+                                  <ChevronDown className="ml-2 w-4 h-4" />
+                                </button>
+                                {/* Dropdown menu */}
+                                {menuOpen && (
+                                  <ul className="absolute right-0 z-[9999] mt-2 w-52 rounded-lg bg-white/10 backdrop-blur-md p-2 shadow-lg border border-white/20">
+                                    <li
+                                      onClick={handleClick}
+                                      className="flex items-center z-[9999] px-3 py-2 hover:bg-white/20 rounded-md"
+                                    >
+                                      <History className="w-4 h-4 text-white" />
+                                      <Link
+                                        href="/order-history"
+                                        className="text-white ml-2"
+                                      >
+                                        Order History
+                                      </Link>
+                                    </li>
+                                    <li
+                                      onClick={handleClick}
+                                      className="flex items-center px-3 py-2 hover:bg-white/20 rounded-md"
+                                    >
+                                      <User className="w-4 h-4 text-white" />
+                                      <Link
+                                        href="/profile"
+                                        className="text-white ml-2"
+                                      >
+                                        Profile
+                                      </Link>
+                                    </li>
+                                    <li
+                                      onClick={handleClick}
+                                      className="flex items-center px-3 py-2 hover:bg-white/20 rounded-md"
+                                    >
+                                      <History className="w-4 h-4 text-white" />
+                                      <Link
+                                        href="/custom-order-history"
+                                        className="text-white ml-2"
+                                      >
+                                        Custom Orders
+                                      </Link>
+                                    </li>
+                                    <li>
+                                      <button
+                                        type="button"
+                                        onClick={signOutHandler}
+                                        className="flex items-center w-full px-3 py-2 text-white bg-pink-700 hover:bg-pink-500 rounded-md"
+                                      >
+                                        <LogOut className="w-4 h-4 text-white" />
+                                        <span className="ml-2">Sign Out</span>
+                                      </button>
+                                    </li>
+                                  </ul>
+                                )}
+                              </div>
+                            </li>
+                          ) : (
+                            <button
+                              onClick={() => setIsSignInOpen(true)}
+                              className="flex flex-row items-center text-center w-[70px]"
+                            >
+                              <User className="w-5 h-5 text-white hover:text-pink-500 transition group-hover:text-black" />
+                              <p className="text-[12px] font-medium mt-1 text-white group-hover:text-black">
+                                SIGN IN
+                              </p>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Wishlist */}
+                        <Link
+                          href="/wishlist"
+                          className="flex flex-col items-center text-center"
+                        >
+                          <Heart
+                            className={`w-5 h-5 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} hover:text-pink-500 transition`}
+                          />
+                        </Link>
+
                         <Link
                           href="/cart"
                           className="relative flex flex-col items-center text-center"
                         >
                           <ShoppingCart
-                            className={`w-[50px] h-4 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} hover:text-pink-500 transition`}
+                            className={`w-[50px] h-5 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} hover:text-pink-500 transition`}
                           />
                           <span className="absolute -top-3 -right-0.5 bg-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full">
                             {totalCartQuantity || 0}
                           </span>
                         </Link>
                       </div>
-
-                      {/* Dynamic Dropdown */}
-                      {isOpen && activeMenu && (
-                        <motion.div
-                          initial={{ opacity: 0, y: -10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.3, ease: "easeOut" }}
-                          className="absolute  left-0 top-full w-full h-[300px] bg-white shadow-2xl rounded-b-2xl p-6 grid grid-cols-3 gap-6  z-50"
-                          onMouseEnter={() => setIsOpen(true)}
-                          onMouseLeave={() => setIsOpen(false)}
-                        >
-                          {/* Column 1: Subitems */}
-                          <div className="flex flex-col space-y-2  pb-4">
-                            {menuData[activeMenu].subitems.map(
-                              (subitem, idx) => (
-                                <Link
-                                  key={idx}
-                                  href={"/search"}
-                                  className="text-gray-500 uppercase hover:text-pink-500 text-sm font-[400]"
-                                >
-                                  {subitem.label}
-                                </Link>
-                              )
-                            )}
-                          </div>
-
-                          {/* Column 2: Image 1 */}
-                          <div className="relative w-full h-full">
-                            <Image
-                              src={menuData[activeMenu].images[0]}
-                              alt="Promo 1"
-                              layout="fill"
-                              objectFit="cover"
-                              className="rounded-lg shadow-sm"
-                              
-                            />
-                          </div>
-
-                          {/* Column 3: Image 2 */}
-                          <div className="relative w-full h-full">
-                            <Image
-                              src={menuData[activeMenu].images[1]}
-                              alt="Promo 2"
-                              layout="fill"
-                              objectFit="cover"
-                              className="rounded-lg shadow-sm"
-                            />
-                          </div>
-                        </motion.div>
-                      )}
                     </div>
+
+                    {/* Dynamic Dropdown */}
+                    {isOpen && activeMenu && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.3, ease: "easeOut" }}
+                        className="absolute left-0 top-full w-full h-[300px] bg-white shadow-2xl rounded-b-2xl p-6 grid grid-cols-3 gap-6 z-50"
+                        onMouseEnter={() => setIsOpen(true)}
+                        onMouseLeave={() => setIsOpen(false)}
+                      >
+                        {/* Column 1: Subitems */}
+                        <div className="flex flex-col space-y-2 pb-4">
+                          {menuData[activeMenu].subitems.map((subitem, idx) => (
+                            <Link
+                              key={idx}
+                              href={"/search"}
+                              className="text-gray-500 uppercase hover:text-pink-500 text-sm font-[400]"
+                            >
+                              {subitem.label}
+                            </Link>
+                          ))}
+                        </div>
+
+                        {/* Column 2: Image 1 */}
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={menuData[activeMenu].images[0]}
+                            alt="Promo 1"
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-lg shadow-sm"
+                          />
+                        </div>
+
+                        {/* Column 3: Image 2 */}
+                        <div className="relative w-full h-full">
+                          <Image
+                            src={menuData[activeMenu].images[1]}
+                            alt="Promo 2"
+                            layout="fill"
+                            objectFit="cover"
+                            className="rounded-lg shadow-sm"
+                          />
+                        </div>
+                      </motion.div>
+                    )}
                   </div>
-                </nav>
-              </div>
-
-              {/* <div className="flex xl:gap-7 gap-1 justify-center">
-                <Link
-                  href="/cart"
-                  className="relative flex flex-col items-center text-center"
-                >
-                  <ShoppingCart
-                    className={`w-[50px] h-4 text-white ${!isScrolled ? "group-hover:text-black" : ""} hover:text-pink-500 transition`}
-                  />
-                  <span className="absolute -top-3 -right-0.5 bg-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full">
-                    0
-                  </span>
-                </Link>
-              </div> */}
-            </div>
-          </div>
-
-          {/* Mobile Search Bar */}
-          <div className="md:hidden px-2 py-2 mx-10 mb-2">
-            <div className="relative w-full">
-              <input
-                type="text"
-                placeholder={`Search in Kelayaa... ${currentKeyword}`}
-                className="w-full p-2 pl-12 bg-white border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-pink-500 transition-all shadow-sm"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500" />
+                </div>
+              </nav>
             </div>
           </div>
         </header>
@@ -539,7 +424,7 @@ const Header = () => {
           </div>
           <div className="px-4">
             {/* <HeroSection /> */}
-            <HeroSectionCustomDesign/>
+            <HeroSectionCustomDesign />
           </div>
           <CardGrid />
         </>
