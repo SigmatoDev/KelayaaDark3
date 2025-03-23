@@ -19,6 +19,29 @@ export default function AboutUs() {
         </p>
       </section>
 
+      {/* Founder Section */}
+      <section className="text-center">
+        <h2 className="text-4xl font-bold mb-10">Meet Our Founder</h2>
+        <div className="flex flex-col items-center justify-center max-w-xl mx-auto bg-white shadow-lg rounded-3xl p-8">
+          <div className="w-38 h-38 rounded-lg overflow-hidden border-4 border-pink-500 mb-4 shadow-md">
+            <Image
+              src="/images/founders/arushi.webp"
+              alt="Arushi Amla"
+              width={400}
+              height={400}
+              className="object-cover w-full h-full"
+            />
+          </div>
+          <h3 className="text-2xl font-semibold text-gray-900 mb-1">
+            Arushi Amla
+          </h3>
+          <p className="text-pink-600 font-medium mb-4">Creative Force & Founder</p>
+          <p className="text-gray-700 text-base leading-relaxed">
+            A jewelry artist at heart, Arushi brings designs to life, creating timeless pieces that reflect individuality, elegance, and grace. Her vision is to blend contemporary creativity with traditional craftsmanship that celebrates the soul of every wearer.
+          </p>
+        </div>
+      </section>
+
       {/* Vision & Mission */}
       <section className="bg-pink-50 p-8 md:p-12 rounded-3xl shadow-xl">
         <div className="grid md:grid-cols-2 gap-10 text-center">
@@ -44,28 +67,7 @@ export default function AboutUs() {
         </div>
       </section>
 
-      {/* Founder Section */}
-      <section className="text-center">
-        <h2 className="text-4xl font-bold mb-10">Meet Our Founder</h2>
-        <div className="flex flex-col items-center justify-center max-w-xl mx-auto bg-white shadow-lg rounded-3xl p-8">
-          <div className="w-36 h-36 rounded-full overflow-hidden border-4 border-pink-500 mb-4 shadow-md">
-            <Image
-              src="/images/founders/arushi.webp"
-              alt="Arushi Amla"
-              width={300}
-              height={300}
-              className="object-cover w-full h-full"
-            />
-          </div>
-          <h3 className="text-2xl font-semibold text-gray-900 mb-1">
-            Arushi Amla
-          </h3>
-          <p className="text-pink-600 font-medium mb-4">Creative Force & Founder</p>
-          <p className="text-gray-700 text-base leading-relaxed">
-            A jewelry artist at heart, Arushi brings designs to life, creating timeless pieces that reflect individuality, elegance, and grace. Her vision is to blend contemporary creativity with traditional craftsmanship that celebrates the soul of every wearer.
-          </p>
-        </div>
-      </section>
+      
     </div>
   );
 }
