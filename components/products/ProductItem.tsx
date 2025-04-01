@@ -20,18 +20,32 @@ const ProductItem = ({ product }: { product: Product }) => {
   const userId = session?.user?.id;
 
   // Validate the product image or fallback
-  const initialImage = isValidImageUrl(product?.image)
+  // Validate the product image or fallback
+  const initialImage = isValidImageUrl(product?.image || "")
     ? product.image
     : FALLBACK_IMAGE;
   const [imageSrc, setImageSrc] = useState(initialImage);
 
   // Wishlist state for this specific product
   const [isWishlisted, setIsWishlisted] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    setLoading(true);
+
+    const timer = setTimeout(() => {
+      setLoading(false);
+    }, 2000);
+
+    return () => clearTimeout(timer);
+  }, []);
 
   // Fetch wishlist status for this specific product
   useEffect(() => {
-    if (!userId || !product._id) return; // Prevent fetching if userId is not available
+    if (!userId || !product._id) {
+      setLoading(false);
+      return;
+    }
 
     const fetchWishlistStatus = async () => {
       try {
@@ -45,11 +59,13 @@ const ProductItem = ({ product }: { product: Product }) => {
         setIsWishlisted(isInWishlist);
       } catch (error) {
         console.error("Error fetching wishlist status:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchWishlistStatus();
-  }, [userId, product._id]); // Ensuring it runs only when userId and product._id change
+  }, [userId, product._id]);
 
   // Optimistic Wishlist Toggle
   const toggleWishlist = async () => {
@@ -61,7 +77,6 @@ const ProductItem = ({ product }: { product: Product }) => {
     if (loading) return;
     setLoading(true);
 
-    // **Optimistic UI Update**
     const newWishlistState = !isWishlisted;
     setIsWishlisted(newWishlistState);
 
@@ -73,9 +88,7 @@ const ProductItem = ({ product }: { product: Product }) => {
       });
 
       const data = await response.json();
-      console.log("API Response:", data);
 
-      // ✅ Fix: Ensure response contains productId
       if (data.productId !== product._id) {
         throw new Error("Product mismatch");
       }
@@ -90,22 +103,29 @@ const ProductItem = ({ product }: { product: Product }) => {
     } catch (error) {
       console.error("Error updating wishlist:", error);
       toast.error("Something went wrong. Please try again.");
-      setIsWishlisted(!newWishlistState); // Revert on error
+      setIsWishlisted(!newWishlistState);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="card mb-4 w-[300px] h-[333px] xl:w-[300px] xl:h-[333px] 2xl:w-[400px] 2xl:h-[433px] md:w-[200px] md:h-[233px] lg:w-[250px] lg:h-[270px] relative rounded-xl border border-neutral-200 shadow-sm transition-shadow duration-300 hover:shadow-md hover:shadow-pink-100 bg-white">
+    <div className="relative card mb-4 w-[300px] h-[333px] xl:w-[300px] xl:h-[333px] 2xl:w-[400px] 2xl:h-[433px] md:w-[200px] md:h-[233px] lg:w-[250px] lg:h-[270px] rounded-xl border border-neutral-200 shadow-sm transition-shadow duration-300 hover:shadow-md hover:shadow-pink-100 bg-white">
+      {/* Loader Overlay */}
+      {loading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
+          <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+        </div>
+      )}
+
       <figure className="w-full h-full overflow-hidden">
         <Link
           href={`/product/${product.slug}`}
           className="relative w-full h-full block"
         >
           <Image
-            key={imageSrc} // Forces re-render if fallback image updates
-            src={imageSrc}
+            key={imageSrc}
+            src={imageSrc || FALLBACK_IMAGE} // Ensure a valid string is passed
             alt={product.name || "Product Image Unavailable"}
             fill
             className="object-cover w-full h-full transition-transform duration-700 ease-in-out hover:scale-125"
@@ -118,12 +138,10 @@ const ProductItem = ({ product }: { product: Product }) => {
       <button
         onClick={toggleWishlist}
         className="absolute top-2 right-2 bg-white rounded-full p-2 shadow-lg"
-        disabled={loading} // Disable button when loading
+        disabled={loading}
       >
         <Heart
-          className={`w-6 h-6 transition-all ${
-            isWishlisted ? "text-red-500 fill-red-500" : "text-gray-500"
-          }`}
+          className={`w-6 h-6 transition-all ${isWishlisted ? "text-red-500 fill-red-500" : "text-gray-500"}`}
         />
       </button>
 

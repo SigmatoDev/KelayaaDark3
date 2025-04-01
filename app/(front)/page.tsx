@@ -29,11 +29,13 @@ export const metadata: Metadata = {
 const HomePage = () => {
   return (
     <>
-
+      <div className="w-full">
+        <KelayaFavourites />
+      </div>
 
       <div className="w-full">
-        <CategoryGrid/>
-      </div> 
+        <CategoryGrid />
+      </div>
 
       {/* Regular Content Inside Container */}
       <div className="w-full mx-auto px-10">
@@ -44,14 +46,9 @@ const HomePage = () => {
         </Suspense>
       </div>
 
-      
-        
-
       {/* <div className="w-full mx-auto px-4 mb-8">
         <CardGrid />
       </div> */}
-
-      
 
       {/* Gift Banner Outside the Container */}
       {/* <div className="w-full mb-5">
@@ -65,16 +62,13 @@ const HomePage = () => {
       {/* <div className="container mx-auto my-8">
         <BlogsImage src="/images/banners/blog.png" alt="Blogs" height={200} />
       </div> */}
+
+      <div className="w-full">
+        <HowToSection />
+      </div>
+
       <div className="w-full">
         <ProductShips />
-      </div>
-
-      <div className="w-full">
-        <HowToSection/>
-      </div>
-
-      <div className="w-full">
-        <KelayaFavourites />
       </div>
 
       {/* Back to Container for Other Content

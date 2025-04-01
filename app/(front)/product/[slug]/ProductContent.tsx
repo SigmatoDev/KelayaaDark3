@@ -40,8 +40,11 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
   const existItem = items.find((x) => x.slug === product.slug);
   const { data: session } = useSession();
   const userId = session?.user?.id;
-  // Wishlist State
   const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Zoom state for the image
+  const [scale, setScale] = useState(1); // Initial scale of 1
+  const [position, setPosition] = useState({ x: 0, y: 0 }); // Position for dragging the image
 
   // Fetch Wishlist Status
   useEffect(() => {
@@ -51,7 +54,6 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
       .then((data) => setIsWishlisted(data.status));
   }, [userId, product._id]);
 
-  // Toggle Wishlist
   const toggleWishlist = async () => {
     if (!userId) return alert("Please log in to add items to wishlist");
 
@@ -65,13 +67,45 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
     setIsWishlisted(data.status);
   };
 
-  // Hide availability message after 3 seconds
-  useEffect(() => {
-    if (showAvailability) {
-      const timer = setTimeout(() => setShowAvailability(false), 3000);
-      return () => clearTimeout(timer);
-    }
-  }, [showAvailability]);
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const container = e.currentTarget.getBoundingClientRect();
+    const offsetX = e.clientX - container.left;
+    const offsetY = e.clientY - container.top;
+
+    const zoomLevel = 2.5; // Adjust zoom level as needed
+    const centerX = offsetX / container.width;
+    const centerY = offsetY / container.height;
+
+    const scaleValue = 1 + zoomLevel * Math.max(centerX, centerY); // Zoom based on position
+    setScale(scaleValue);
+  };
+
+  // Start dragging
+  const handleMouseDown = (e: React.MouseEvent) => {
+    e.preventDefault();
+    const startX = e.clientX - position.x;
+    const startY = e.clientY - position.y;
+
+    const onMouseMove = (moveEvent: MouseEvent) => {
+      const newX = moveEvent.clientX - startX;
+      const newY = moveEvent.clientY - startY;
+      setPosition({ x: newX, y: newY });
+    };
+
+    const onMouseUp = () => {
+      window.removeEventListener("mousemove", onMouseMove);
+      window.removeEventListener("mouseup", onMouseUp);
+    };
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mouseup", onMouseUp);
+  };
+
+  // Handle Mouse Leave to reset zoom and position
+  const handleMouseLeave = () => {
+    setScale(1); // Reset zoom
+    setPosition({ x: 0, y: 0 }); // Reset position after leaving
+  };
 
   return (
     <div className="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -80,29 +114,70 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
         {product.images.length > 0 ? (
           <>
             <div className="flex md:flex-col gap-2">
-              {product.images.map((img, index) => (
-                <button
-                  key={index}
-                  onClick={() => setSelectedImage(img)}
-                  className={`border-2 p-1 rounded-none ${
-                    selectedImage === img
-                      ? "border-pink-500"
-                      : "border-gray-200"
-                  }`}
+              {product.images.map((img, index) => {
+                const imageUrl = img.startsWith("http") ? img : `/${img}`;
+                const isImageAvailable = imageUrl && img !== "";
+
+                return isImageAvailable ? (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImage(img)}
+                    className={`p-1 rounded-none ${
+                      selectedImage === img ? "border-2 border-pink-500" : ""
+                    }`}
+                  >
+                    <Image
+                      src={imageUrl}
+                      alt="product image"
+                      width={60}
+                      height={60}
+                      onError={(e) =>
+                        ((e.target as HTMLImageElement).style.display = "none")
+                      }
+                    />
+                  </button>
+                ) : null;
+              })}
+            </div>
+
+            {/* Main image */}
+            {selectedImage && (
+              <div
+                className="relative w-full h-[400px] md:h-[500px] overflow-hidden"
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+                onMouseDown={handleMouseDown}
+                style={{
+                  cursor: "grab", // Change the cursor to indicate dragging
+                }}
+              >
+                <div
+                  style={{
+                    transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
+                    transformOrigin: "center center",
+                    transition: "transform 0.3s ease",
+                    width: "100%",
+                    height: "100%",
+                    position: "absolute",
+                  }}
                 >
-                  <Image src={img} alt="Ring" width={60} height={60} />
-                </button>
-              ))}
-            </div>
-            <div className="relative w-full h-[400px] md:h-[500px]">
-              <Image
-                src={selectedImage}
-                alt="Selected Ring"
-                layout="fill"
-                objectFit="cover"
-                quality={100}
-              />
-            </div>
+                  <Image
+                    src={
+                      selectedImage.startsWith("http")
+                        ? selectedImage
+                        : `/${selectedImage}`
+                    }
+                    alt="product image"
+                    layout="fill"
+                    objectFit="cover"
+                    quality={100}
+                    onError={(e) =>
+                      ((e.target as HTMLImageElement).style.display = "none")
+                    }
+                  />
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <p>No images found for this product.</p>
@@ -133,10 +208,10 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
           <p className="font-semibold">: {product?.productCode}</p> */}
           <p className="text-gray-600">Category</p>
           <p className="font-semibold">: {product?.productCategory}</p>
-          <p className="text-gray-600">Tags</p>
+          {/* <p className="text-gray-600">Tags</p>
           <p className="font-semibold capitalize">
             : {product?.tags?.join(", ")}
-          </p>
+          </p> */}
           <p className="text-gray-600">Share</p>
           <div className="flex gap-3 text-gray-500">
             : <FaFacebookF size={14} />
@@ -148,23 +223,24 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
         {/* Size & Availability */}
         <div className="flex items-center gap-4 w-full mb-4">
           {/* Size Selector (Visible only if productCategory is "Rings") */}
-          {product?.productCategory === "Rings" && (
-            <div className="flex items-center bg-[#FFF6F8] rounded-md px-3 py-2 w-1/2">
-              <span className="text-gray-600 text-[12px] font-medium mr-2">
-                SIZE
-              </span>
-              <span className="px-1">|</span>
-              <select className="bg-transparent text-pink-500 font-semibold text-[12px] focus:outline-none w-full">
-                <option className="text-black text-[12px]">18.00 MM</option>
-                <option className="text-black text-[12px]">19.00 MM</option>
-                <option className="text-black text-[12px]">20.00 MM</option>
-              </select>
-            </div>
-          )}
+          {product?.productCategory === "Rings" ||
+            (product?.productCategory === "Ring" && (
+              <div className="flex items-center bg-[#FFF6F8] rounded-md px-3 py-2 w-1/2">
+                <span className="text-gray-600 text-[12px] font-medium mr-2">
+                  SIZE
+                </span>
+                <span className="px-1">|</span>
+                <select className="bg-transparent text-pink-500 font-semibold text-[12px] focus:outline-none w-full">
+                  <option className="text-black text-[12px]">18.00 MM</option>
+                  <option className="text-black text-[12px]">19.00 MM</option>
+                  <option className="text-black text-[12px]">20.00 MM</option>
+                </select>
+              </div>
+            ))}
 
           {/* Check Availability Button + Message */}
           <div
-            className={`flex flex-col ${product?.productCategory === "Rings" ? "w-1/2" : "w-full"}`}
+            className={`flex flex-col ${product?.productCategory === "Rings" || product?.productCategory === "Ring" ? "w-1/2" : "w-full"}`}
           >
             <button
               className="bg-[#FFF6F8] text-pink-500 text-[12px] px-6 py-2 font-semibold rounded-none w-full"

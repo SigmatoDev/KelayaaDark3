@@ -148,7 +148,7 @@ export default function UploadProductExcelFile() {
       <h1 className="text-2xl text-orange-500">Upload Products via Excel</h1>
 
       <div
-        className="w-96 h-48 border-2 border-dashed border-gray-400 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all hover:border-blue-500 hover:bg-transparent hover:shadow-lg hover:text-blue-500 relative"
+        className="w-80  h-48 border-2 border-dashed border-gray-400 rounded-lg flex flex-col items-center justify-center cursor-pointer transition-all hover:border-blue-500 hover:bg-transparent hover:shadow-lg hover:text-blue-500 relative"
         onClick={() => fileInputRef.current?.click()}
       >
         <label

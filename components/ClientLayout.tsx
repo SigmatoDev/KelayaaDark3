@@ -7,6 +7,7 @@ import DrawerButton from "@/components/DrawerButton";
 import Footer from "@/components/footer/Footer";
 import Header from "@/components/header/Header";
 import Sidebar from "@/components/Sidebar";
+import { useSession } from "next-auth/react";
 
 export default function ClientLayout({
   children,
@@ -14,6 +15,8 @@ export default function ClientLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+
+  const { data: session } = useSession();
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -26,7 +29,7 @@ export default function ClientLayout({
         <div className="flex min-h-screen flex-col">
           <Header />
           {children}
-          <Footer />
+          {session?.user?.isAdmin ? "" : <Footer />}
         </div>
       </div>
       <div className="drawer-side z-50">

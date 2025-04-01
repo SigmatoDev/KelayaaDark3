@@ -114,10 +114,14 @@ const HeroSectionCustomDesign = () => {
               {/* Content with enhanced contrast */}
               <div className="relative z-10 w-full">
                 <div className="absolute inset-0 bg-gradient-to-b from-white/90 via-white/50 to-transparent pointer-events-none lg:hidden"></div>
-                <h2 className={`text-2xl sm:text-3xl font-medium ${card.textColor} text-center lg:text-left mb-3 relative`}>
+                <h2
+                  className={`text-2xl sm:text-3xl font-medium ${card.textColor} text-center lg:text-left mb-3 relative`}
+                >
                   {card.title}
                 </h2>
-                <p className="mt-2 text-sm text-gray-900 text-center lg:text-left leading-relaxed relative">{card.description}</p>
+                <p className="mt-2 text-sm text-gray-900 text-center lg:text-left leading-relaxed relative">
+                  {card.description}
+                </p>
                 <div className="flex flex-col sm:flex-row lg:flex-col items-center lg:items-start gap-4 w-full mt-6 lg:mt-8 relative">
                   <Link
                     href={card.linkUrl}
@@ -160,7 +164,9 @@ const HeroSectionCustomDesign = () => {
             {/* Gradient Bar - Always visible on mobile, hover on desktop */}
             <div className="absolute bottom-0 left-0 w-full h-[3.5rem] sm:h-14 lg:h-0 lg:group-hover:h-16 transition-all duration-500 ease-in-out bg-[#EC4999] hover:bg-[#d93d87] flex items-center justify-center overflow-hidden shadow-sm">
               <div className="text-white text-[0.9375rem] font-medium flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 text-center min-h-[3.25rem] hover:scale-[1.02] transition-transform duration-300">
-                <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-px after:bg-white/30 after:transition-all after:duration-300">Explore More Custom Designs</span>
+                <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-px after:bg-white/30 after:transition-all after:duration-300">
+                  Explore More Custom Designs
+                </span>
                 <span className="transform transition-transform duration-300 group-hover:translate-x-2 text-lg leading-none">
                   →
                 </span>
@@ -185,7 +191,9 @@ const HeroSectionCustomDesign = () => {
             {/* Gradient Bar - Always visible on mobile, hover on desktop */}
             <div className="absolute bottom-0 left-0 w-full h-[3.5rem] sm:h-14 lg:h-0 lg:group-hover:h-16 transition-all duration-500 ease-in-out bg-[#EC4999] hover:bg-[#d93d87] flex items-center justify-center overflow-hidden shadow-sm">
               <div className="text-white text-[0.9375rem] font-medium flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 text-center min-h-[3.25rem] hover:scale-[1.02] transition-transform duration-300">
-                <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-px after:bg-white/30 after:transition-all after:duration-300">Explore More Custom Designs</span>
+                <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-px after:bg-white/30 after:transition-all after:duration-300">
+                  Explore More Custom Designs
+                </span>
                 <span className="transform transition-transform duration-300 group-hover:translate-x-2 text-lg leading-none">
                   →
                 </span>
