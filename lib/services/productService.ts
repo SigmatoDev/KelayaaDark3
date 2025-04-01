@@ -170,7 +170,9 @@ const getByQuery = cache(
     await dbConnect();
 
     // Fetch distinct product categories
-    const categories = await ProductModel.find().distinct("productCategory");
+    const categories = await ProductModel.find()
+      .distinct("productCategory")
+      .lean();
 
     const queryFilter =
       q && q !== "all"
@@ -318,6 +320,70 @@ const getCategories = cache(async () => {
   return sortedCategories;
 });
 
+const getMaterialTypes = cache(async () => {
+  await dbConnect();
+
+  // Fetch distinct categories
+  const categories = await ProductModel.find().distinct("materialType");
+
+  // Fetch categories that have at least one product with an image URL
+  const categoriesWithImages = await ProductModel.aggregate([
+    {
+      $match: { image: { $regex: /^http/ } }, // Find products with valid image URLs
+    },
+    {
+      $group: { _id: "$materialType" }, // Group by category
+    },
+  ]);
+
+  // Create a Set for quick lookup
+  const categoriesWithImagesSet = new Set(
+    categoriesWithImages.map((c) => c._id)
+  );
+
+  // Sort: Categories with images come first
+  const sortedMaterialTypes = categories.sort((a, b) => {
+    const hasImageA = categoriesWithImagesSet.has(a);
+    const hasImageB = categoriesWithImagesSet.has(b);
+
+    return Number(hasImageB) - Number(hasImageA); // Convert boolean to number (true → 1, false → 0)
+  });
+
+  return sortedMaterialTypes;
+});
+
+const getByCategory = cache(async (category: string) => {
+  await dbConnect();
+
+  console.log(`🔹 Fetching products for category: ${category}`);
+
+  const products = await ProductModel.find({
+    productCategory: category,
+  }).lean();
+
+  console.log(
+    `✅ Fetched ${products.length} products for category: ${category}`
+  );
+
+  if (!products || products.length === 0) {
+    console.warn(`⚠️ No products found for category: ${category}`);
+    return [];
+  }
+
+  // Filter: Keep only products with a valid image URL
+  const validProducts = products.filter(
+    (product) => product.image && /^https?:\/\//.test(product.image)
+  );
+
+  // If no products have valid images, return all products
+  const productsToShuffle = validProducts.length > 0 ? validProducts : products;
+
+  // Shuffle the filtered products
+  const shuffledProducts = shuffleArray(productsToShuffle);
+
+  return shuffledProducts as unknown as Product[];
+});
+
 const productService = {
   getLatest,
   getFeatured,
@@ -325,6 +391,8 @@ const productService = {
   getByQuery,
   getCategories,
   getTopRated,
+  getByCategory,
+  getMaterialTypes,
 };
 
 export default productService;

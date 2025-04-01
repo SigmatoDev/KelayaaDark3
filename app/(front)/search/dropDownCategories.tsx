@@ -13,6 +13,7 @@ const CategoryDropdown = ({
   rating,
   sort,
   page,
+  materialType,
 }: {
   categories: string[];
   selectedCategory: string;
@@ -22,11 +23,20 @@ const CategoryDropdown = ({
   rating: string;
   sort: string;
   page: string;
+  materialType: string;
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
   const buildFilterUrl = ({ c }: { c?: string }) => {
-    const params = { q, productCategory, price, rating, sort, page };
+    const params = {
+      q,
+      materialType,
+      productCategory,
+      price,
+      rating,
+      sort,
+      page,
+    };
     if (c) params.productCategory = c;
     return `/search?${new URLSearchParams(params).toString()}`;
   };
@@ -50,7 +60,11 @@ const CategoryDropdown = ({
         {/* Dropdown Toggle Button */}
         <button
           onClick={() => setIsOpen((prev) => !prev)}
-          className="w-full px-4 py-2 text-left border rounded-lg   focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className={`w-full px-4 py-2 text-left border rounded-lg focus:outline-none transition-all ${
+            selectedCategory !== "all"
+              ? "ring-1 ring-pink-500"
+              : "border-gray-300"
+          }`}
         >
           {selectedCategory === "all" ? "Select Category" : selectedCategory}
           <svg
@@ -79,7 +93,7 @@ const CategoryDropdown = ({
                 href={buildFilterUrl({ c: "all" })}
                 onClick={handleSelect}
                 className={`block px-4 py-2 hover:bg-blue-100 ${
-                  selectedCategory === "all" ? "bg-blue-500 text-white" : ""
+                  selectedCategory === "all" ? "bg-[#EC4999] text-white" : ""
                 }`}
               >
                 All
@@ -93,11 +107,11 @@ const CategoryDropdown = ({
                   className={`block px-4 py-2 ${
                     selectedCategory === category
                       ? theme === "dark"
-                        ? "bg-blue-500 text-white"
-                        : "bg-blue-500 text-white"
+                        ? "bg-[#EC4999] text-white"
+                        : "hover:bg-pink-50"
                       : theme === "dark"
-                        ? "hover:bg-blue-100 "
-                        : "hover:bg-blue-100 hover:text-black"
+                        ? "bg-[#EC4999] text-white"
+                        : "hover:bg-pink-50"
                   }`}
                 >
                   {category}

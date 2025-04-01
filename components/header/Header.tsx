@@ -376,7 +376,8 @@ const Header = () => {
                           {menuData[activeMenu].subitems.map((subitem, idx) => (
                             <Link
                               key={idx}
-                              href={"/search"}
+                              href={`/category/${subitem.label}`}
+                              onClick={() => setIsOpen(false)}
                               className="text-gray-500 uppercase hover:text-pink-500 text-sm font-[400]"
                             >
                               {subitem.label}

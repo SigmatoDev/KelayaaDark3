@@ -5,6 +5,7 @@ import productServices from "@/lib/services/productService";
 import CategoryDropdown from "./dropDownCategories";
 import PriceFilter from "./priceFilter";
 import RatingFilter from "./ratingFilter";
+import MaterialTypeDropdown from "./materialDropdown";
 
 const sortOrders = ["newest", "lowest", "highest", "rating"];
 const pageSize = 10; // Default to 10 products per page
@@ -17,6 +18,7 @@ const isValidImageUrl = (url: string) => {
 export default async function SearchPage({
   searchParams: {
     q = "all",
+    materialType = "all",
     productCategory = "all",
     price = "all",
     rating = "all",
@@ -26,6 +28,7 @@ export default async function SearchPage({
 }: {
   searchParams: {
     q: string;
+    materialType: string;
     productCategory: string;
     price: string;
     rating: string;
@@ -35,22 +38,42 @@ export default async function SearchPage({
 }) {
   const currentPage = Number(page);
 
+  // Debug: Log current filter selections
+  console.log("Selected Filters:");
+  console.log("Query:", q);
+  console.log("Category:", productCategory);
+  console.log("Price:", price);
+  console.log("Rating:", rating);
+  console.log("Sort:", sort);
+  console.log("Page:", page);
+
   // Function to construct filter URLs
   const getFilterUrl = ({
     c,
+    m,
     s,
     p,
     r,
     pg,
   }: {
     c?: string;
+    m?: string;
     s?: string;
     p?: string;
     r?: string;
     pg?: string;
   }) => {
-    const params: any = { q, productCategory, price, rating, sort, page };
+    const params: any = {
+      q,
+      productCategory,
+      price,
+      rating,
+      sort,
+      page,
+      materialType,
+    };
     if (c) params.productCategory = c;
+    if (m) params.materialType = m;
     if (p) params.price = p;
     if (r) params.rating = r;
     if (pg) params.page = pg;
@@ -59,7 +82,8 @@ export default async function SearchPage({
   };
 
   const categories = await productServices.getCategories();
-  console.log("Fetched Categories from API:", categories);
+  const materials = await productServices.getMaterialTypes();
+  console.log("Fetched Categories from API:", categories, materials);
 
   const shuffleArray = <T,>(array: T[]): T[] => {
     for (let i = array.length - 1; i > 0; i--) {
@@ -120,7 +144,7 @@ export default async function SearchPage({
 
   // Fetch products
   const { countProducts, products, pages } = await productServices.getByQuery({
-    productCategory: "all", // Ensure fetching all categories
+    productCategory, // Ensure fetching all categories
     q,
     price,
     rating,
@@ -140,9 +164,18 @@ export default async function SearchPage({
     processedProducts = interleaveCategoriesStrict(categoryMap);
   }
 
+  // Debug: Log final processed products before rendering
+  console.log(
+    "Final Processed Products (after filtering & interleaving):",
+    processedProducts.map((p) => ({
+      name: p.name,
+      category: p.productCategory,
+    }))
+  );
+
   // Filter out products with invalid images
-  const validProducts = processedProducts.filter((product) =>
-    isValidImageUrl(product.image)
+  const validProducts = processedProducts?.filter((product) =>
+    isValidImageUrl(product?.image ?? "")
   );
 
   // Log last 5 products
@@ -162,6 +195,17 @@ export default async function SearchPage({
     <div className="grid md:grid-cols-5 gap-6 p-6">
       {/* Filters Section */}
       <div className="space-y-6">
+        <MaterialTypeDropdown
+          materials={materials}
+          selectedMaterialType={materialType}
+          q={q}
+          materialType={materialType}
+          price={price}
+          rating={rating}
+          sort={sort}
+          page={page}
+          productCategory={productCategory}
+        />
         <CategoryDropdown
           categories={categories}
           selectedCategory={productCategory}
@@ -171,6 +215,7 @@ export default async function SearchPage({
           rating={rating}
           sort={sort}
           page={page}
+          materialType={materialType}
         />
         <PriceFilter
           selectedPrice={price}
@@ -179,6 +224,7 @@ export default async function SearchPage({
           rating={rating}
           sort={sort}
           page={page}
+          materialType={materialType}
         />
         <RatingFilter
           selectedRating={rating}
