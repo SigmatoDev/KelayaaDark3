@@ -37,7 +37,7 @@ const cards: Card[] = [
     buttonText: "START MY IDEA",
     bgColor: "bg-[#F8EEE7]",
     textColor: "text-brown-700",
-    buttonColor: "bg-[#EC4999] hover:bg-[#d93d87]",
+    buttonColor: "bg-[#000] hover:bg-[#000]",
     bgImage: "/blob.svg",
     fgImage: "/phone.png",
     image: "",
@@ -125,7 +125,7 @@ const HeroSectionCustomDesign = () => {
                 <div className="flex flex-col sm:flex-row lg:flex-col items-center lg:items-start gap-4 w-full mt-6 lg:mt-8 relative">
                   <Link
                     href={card.linkUrl}
-                    className={`px-6 py-2.5 text-white ${card.buttonColor} text-center w-full sm:w-auto rounded-md shadow-sm hover:shadow transition-all duration-300 font-medium bg-[#EC4999] hover:bg-[#d93d87]`}
+                    className={`px-6 py-2.5 text-white ${card.buttonColor} text-center w-full sm:w-auto rounded-md shadow-sm hover:shadow transition-all duration-300 font-medium bg-[#000] hover:bg-[#d93d87]`}
                   >
                     {card.buttonText}
                   </Link>
