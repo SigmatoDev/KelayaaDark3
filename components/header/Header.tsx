@@ -244,7 +244,7 @@ const menuData: Record<string, MenuItem> = {
           description: "The step-by-step process to create your dream piece"
         },
         { 
-          href: "/custom-jewellery/start-my-idea", 
+          href: "/custom-design", 
           label: "Start my idea",
           description: "Begin your custom jewelry journey"
         }

@@ -104,6 +104,7 @@ export default function CustomDesignForm() {
   };
 
   const handleSubmit = async () => {
+    setShowConfirmation(true);
     try {
       setIsSubmitting(true);
       const response = await fetch("/api/custom-design", {
@@ -153,7 +154,7 @@ export default function CustomDesignForm() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-[#FFF6F6] py-12 px-4">
+    <div className="w-full min-h-screen bg-[#FFF6F6] py-12">
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
         {/* Progress Bar */}
         <div className="bg-[#f8f8f8] p-6">
@@ -199,7 +200,7 @@ export default function CustomDesignForm() {
                   <select
                     value={formData.gender}
                     onChange={(e) => handleChange("gender", e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999]"
+                    className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-[#EC4999]"
                   >
                     <option value="">Select</option>
                     <option value="Women">Women</option>
@@ -223,7 +224,7 @@ export default function CustomDesignForm() {
                       type="tel"
                       value={formData.contactNumber}
                       onChange={(e) => handleChange("contactNumber", e.target.value)}
-                      className="flex-1 p-3 border border-gray-300 rounded-r focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999]"
+                      className="flex-1 p-3 border border-gray-300 rounded-r focus:ring-2 focus:ring-[#EC4999] focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-[#EC4999]"
                       placeholder="Phone Number"
                     />
                   </div>
@@ -236,7 +237,7 @@ export default function CustomDesignForm() {
                   <select
                     value={formData.metalType}
                     onChange={(e) => handleChange("metalType", e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999]"
+                    className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-[#EC4999]"
                   >
                     <option value="">Select</option>
                     <option value="Gold">Gold</option>
@@ -251,7 +252,7 @@ export default function CustomDesignForm() {
                     <select
                       value={formData.materialKarat || ""}
                       onChange={(e) => handleChange("materialKarat", e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999]"
+                      className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-[#EC4999]"
                     >
                       <option value="">Select</option>
                       <option value="Oxidised Silver">Oxidised Silver</option>
@@ -336,7 +337,7 @@ export default function CustomDesignForm() {
                     type="number"
                     value={formData.budget || ""}
                     onChange={(e) => handleChange("budget", parseInt(e.target.value) || 0)}
-                    className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999]"
+                    className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-[#EC4999]"
                     placeholder="Your budget"
                   />
                 </div>
@@ -389,7 +390,7 @@ export default function CustomDesignForm() {
                 <select
                   value={formData.stoneType || ""}
                   onChange={(e) => handleChange("stoneType", e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999] mb-4"
+                  className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-[#EC4999] mb-4"
                 >
                   <option value="">Select</option>
                   <option value="Diamond">Diamond</option>
@@ -404,7 +405,7 @@ export default function CustomDesignForm() {
                     <select
                       value={formData.diamondType || ""}
                       onChange={(e) => handleChange("diamondType", e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999]"
+                      className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:outline-none focus:ring-0 focus:ring-offset-0 focus:ring-[#EC4999] focus:border-[#EC4999]"
                     >
                       {stoneOptions.diamond.map((type) => (
                         <option key={type} value={type}>{type}</option>
@@ -419,7 +420,7 @@ export default function CustomDesignForm() {
                     <select
                       value={formData.gemstoneType || ""}
                       onChange={(e) => handleChange("gemstoneType", e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999]"
+                      className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:outline-none focus:ring-0 focus:ring-offset-0 focus:ring-[#EC4999] focus:border-[#EC4999]"
                     >
                       {stoneOptions.gemstone.map((type) => (
                         <option key={type} value={type}>{type}</option>
@@ -434,7 +435,7 @@ export default function CustomDesignForm() {
                     <select
                       value={formData.semiPreciousType || ""}
                       onChange={(e) => handleChange("semiPreciousType", e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999]"
+                      className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:outline-none focus:ring-0 focus:ring-offset-0 focus:ring-[#EC4999] focus:border-[#EC4999]"
                     >
                       {stoneOptions.semiPrecious.map((type) => (
                         <option key={type} value={type}>{type}</option>

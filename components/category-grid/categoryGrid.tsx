@@ -16,18 +16,18 @@ const categories: Category[] = [
     name: "Pendants",
     slug: "pendants",
     image: "/images/collections/pendants.webp",
-    hoverImage: "/images/collections/pendanthover.webp",
+    hoverImage: "/images/collections/pendantshover.webp",
   },
   {
     name: "Necklaces",
     slug: "necklaces",
-    image: "/images/collections/necklace.webp",
+    image: "/images/collections/necklace-1.webp",
     hoverImage: "/images/collections/necklacehover.webp",
   },
   {
     name: "Bracelets",
     slug: "bracelets",
-    image: "/images/collections/bracelet.webp",
+    image: "/images/collections/bracelets.webp",
     hoverImage: "/images/collections/bracelethover.webp",
   },
   {
@@ -42,7 +42,7 @@ const CategoryCard = ({ category }: { category: Category }) => {
   return (
     <Link
       href={`/category/${category.slug}`}
-      className="group relative w-[calc(100vw-4.5rem)] h-[230px] sm:w-[320px] sm:h-[340px] lg:w-[280px] lg:h-[300px] xl:w-[300px] xl:h-[320px] 2xl:w-[400px] 2xl:h-[420px] overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+      className="group relative w-[calc(100vw-4.5rem)] h-[260px] sm:w-[320px] sm:h-[340px] lg:w-[320px] lg:h-[300px] xl:w-[300px] xl:h-[320px] 2xl:w-[400px] 2xl:h-[420px] overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
     >
       <div className="relative w-full h-full">
         {/* Hover Image - Place it first so it scales underneath the default */}
