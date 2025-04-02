@@ -1,6 +1,7 @@
 import productService from "@/lib/services/productService";
 import ProductItem from "@/components/products/ProductItem";
 import MaterialTypeDropdown from "./materialTypeDropDown";
+import Link from "next/link";
 
 // Define Product interface
 interface Product {
@@ -67,9 +68,9 @@ const CategoryPage = async ({ params }: { params: { slug: string } }) => {
             <p>No products found in this category.</p>
             <p className="mt-2">
               Explore other{" "}
-              <a href="/" className="text-blue-500 underline">
-                collections
-              </a>
+              <Link href="/" className="text-blue-500 underline">
+  Collections
+</Link>
               .
             </p>
           </div>
