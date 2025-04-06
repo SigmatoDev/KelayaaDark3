@@ -7,6 +7,8 @@ import PriceFilter from "./priceFilter";
 import RatingFilter from "./ratingFilter";
 import MaterialTypeDropdown from "./materialDropdown";
 import FilterChips from "./filterChip";
+import ClientSearchWrapper from "./clientSearchWrapper";
+import ClearAllFilters from "./clearAllFilters";
 
 const sortOrders = ["newest", "lowest", "highest", "rating"];
 const pageSize = 10; // Default to 10 products per page
@@ -41,16 +43,6 @@ export default async function SearchPage({
 }) {
   const currentPage = Number(page);
 
-  // Debug: Log current filter selections
-  console.log("Selected Filters:");
-  console.log("Query:", q);
-  console.log("Category:", productCategory);
-  console.log("Price:", price);
-  console.log("Rating:", rating);
-  console.log("Sort:", sort);
-  console.log("Page:", page);
-
-  // Function to construct filter URLs
   const getFilterUrl = ({
     c,
     m,
@@ -90,119 +82,39 @@ export default async function SearchPage({
 
   const categories = await productServices.getCategories();
   const materials = await productServices.getMaterialTypes();
-  console.log("Fetched Categories from API:", categories, materials);
 
-  const shuffleArray = <T,>(array: T[]): T[] => {
-    for (let i = array.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-  };
-
-  const groupByCategory = (products: any[]) => {
-    const categoryMap = new Map<string, any[]>();
-
-    products.forEach((product) => {
-      if (!categoryMap.has(product.productCategory)) {
-        categoryMap.set(product.productCategory, []);
-      }
-      categoryMap.get(product.productCategory)!.push(product);
-    });
-
-    // Debug: Print categories before shuffling
-    console.log("Categories found before shuffling:", [...categoryMap.keys()]);
-
-    // Shuffle products within each category
-    categoryMap.forEach((products, category) => {
-      categoryMap.set(category, shuffleArray(products));
-    });
-
-    return categoryMap;
-  };
-
-  const interleaveCategoriesStrict = (categoryMap: Map<string, any[]>) => {
-    const categoryQueues = Array.from(categoryMap.entries()).map(
-      ([key, value]) => ({
-        category: key,
-        products: value,
-      })
-    );
-
-    const result: any[] = [];
-    let categoryIndex = 0;
-
-    while (categoryQueues.some((q) => q.products.length > 0)) {
-      let attempts = 0;
-      while (attempts < categoryQueues.length) {
-        const queue = categoryQueues[categoryIndex % categoryQueues.length];
-        if (queue.products.length > 0) {
-          result.push(queue.products.shift());
-          categoryIndex++; // Move to the next category in round-robin
-          break;
-        }
-        categoryIndex++; // Try next category
-        attempts++;
-      }
-    }
-
-    return result;
-  };
-
-  // Fetch products
   const { countProducts, products, pages } = await productServices.getByQuery({
-    productCategory, // Ensure fetching all categories
+    productCategory,
     category,
     q,
     price,
     rating,
     page: currentPage.toString(),
     sort,
+    materialType,
   });
 
-  // Debug: Check if we have multiple categories in the fetched products
-  const uniqueCategories = new Set(products.map((p) => p.productCategory));
-  console.log("Unique categories found in fetched products:", uniqueCategories);
-
-  let processedProducts = products;
-
-  // Only shuffle when multiple categories are available
-  if (uniqueCategories.size > 1) {
-    const categoryMap = groupByCategory(products);
-    processedProducts = interleaveCategoriesStrict(categoryMap);
-  }
-
-  // Debug: Log final processed products before rendering
-  console.log(
-    "Final Processed Products (after filtering & interleaving):",
-    processedProducts.map((p) => ({
-      name: p.name,
-      category: p.productCategory,
-    }))
-  );
-
-  // Filter out products with invalid images
-  const validProducts = processedProducts?.filter((product) =>
+  const validProducts = products?.filter((product) =>
     isValidImageUrl(product?.image ?? "")
   );
 
-  // Log last 5 products
-  console.log(
-    "Last 5 processed products:",
-    validProducts.slice(-5).map((p) => ({
-      name: p.name,
-      category: p.productCategory,
-    }))
-  );
-
-  // Pagination Logic: Show only 3 page numbers at a time
+  // Pagination Logic
   const startPage = Math.max(1, currentPage - 1);
   const endPage = Math.min(pages, startPage + 2);
 
   return (
     <div className="grid md:grid-cols-5 gap-6 p-6">
       {/* Filters Section */}
-      <div className="space-y-6">
+      <div className="space-y-4">
+        <div>
+          <span className="flex items-center justify-between">
+            <div>Filters</div>
+            {/* <ClearAllFilters /> */}
+          </span>
+        </div>
+        <div>
+          <hr />
+        </div>
         <MaterialTypeDropdown
           materials={materials}
           selectedMaterialType={materialType}
@@ -213,7 +125,10 @@ export default async function SearchPage({
           sort={sort}
           page={page}
           productCategory={productCategory}
-        />
+        />{" "}
+         <div className="p-0 m-0">
+          <hr />
+        </div>
         <CategoryDropdown
           categories={categories}
           selectedCategory={productCategory}
@@ -224,7 +139,10 @@ export default async function SearchPage({
           sort={sort}
           page={page}
           materialType={materialType}
-        />
+        />{" "}
+        <div className="p-0 m-0">
+          <hr />
+        </div>
         <PriceFilter
           selectedPrice={price}
           q={q}
@@ -233,15 +151,18 @@ export default async function SearchPage({
           sort={sort}
           page={page}
           materialType={materialType}
-        />
-        <RatingFilter
+        />{" "}
+       <div className="p-0 m-0">
+          <hr />
+        </div>
+        {/* <RatingFilter
           selectedRating={rating}
           q={q}
           productCategory={productCategory}
           price={price}
           sort={sort}
           page={page}
-        />
+        /> */}
       </div>
 
       {/* Results Section */}
@@ -257,16 +178,6 @@ export default async function SearchPage({
             page={page}
             materialType={materialType}
           />
-          {/* <div>
-            <span className="text-gray-400 font-semibold">
-              {validProducts.length === 0 ? "No" : validProducts.length} Results
-            </span>
-            {q !== "all" && ` : ${q}`}
-            {productCategory !== "all" && ` : ${productCategory}`}
-            {category !== "all" && ` : ${category}`}
-            {price !== "all" && ` : Price ${price}`}
-            {rating !== "all" && ` : Rating ${rating} & up`}
-          </div> */}
           <div className="flex items-center">
             <span className="mr-2 text-[12px]">Sort by:</span>
             {sortOrders.map((s) => (
@@ -284,53 +195,69 @@ export default async function SearchPage({
             ))}
           </div>
         </div>
+        <ClientSearchWrapper>
+          {validProducts.length > 0 ? (
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {validProducts.map((product) => (
+                  <ProductItem key={product.slug} product={product} />
+                ))}
+              </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {validProducts.map((product) => (
-            <ProductItem key={product.slug} product={product} />
-          ))}
-        </div>
+              {/* Pagination */}
+              <div className="mt-8 flex justify-center items-center gap-2">
+                {currentPage > 1 && (
+                  <Link
+                    href={getFilterUrl({ pg: String(currentPage - 1) })}
+                    className="px-4 py-2 rounded-md border border-pink-500 text-pink-500"
+                  >
+                    {"<<"}
+                  </Link>
+                )}
 
-        {/* Pagination */}
-        <div className="mt-8 flex justify-center items-center gap-2">
-          {/* Previous Button */}
-          {currentPage > 1 && (
-            <Link
-              href={getFilterUrl({ pg: String(currentPage - 1) })}
-              className="px-4 py-2 rounded-md border border-pink-500 text-pink-500"
-            >
-              {"<<"}
-            </Link>
+                {Array.from(
+                  { length: endPage - startPage + 1 },
+                  (_, i) => i + startPage
+                ).map((p) => (
+                  <Link
+                    key={p}
+                    href={getFilterUrl({ pg: String(p) })}
+                    className={`px-4 py-2 rounded-md ${
+                      currentPage === p
+                        ? "bg-pink-500 text-white"
+                        : "hover:bg-pink-100 text-pink-500"
+                    }`}
+                  >
+                    {p}
+                  </Link>
+                ))}
+
+                {currentPage < pages && (
+                  <Link
+                    href={getFilterUrl({ pg: String(currentPage + 1) })}
+                    className="px-4 py-2 rounded-md border border-pink-500 text-pink-500"
+                  >
+                    {">>"}
+                  </Link>
+                )}
+              </div>
+            </>
+          ) : (
+            <div className="flex flex-col items-center justify-center min-h-[50vh] text-center">
+              <div className="animate-bounce text-6xl mb-4">💔</div>
+              <h2 className="text-2xl font-semibold text-pink-600 mb-2">
+                Oops! Nothing Found
+              </h2>
+              <p className="text-gray-500 mb-6">
+                Looks like we couldn’t find what you were looking for.
+              </p>
+              <div className="text-sm italic text-gray-400">
+                “Remember the good ol’ days? We’re working hard to bring that
+                magic back!”
+              </div>
+            </div>
           )}
-
-          {/* Page Numbers */}
-          {Array.from(
-            { length: endPage - startPage + 1 },
-            (_, i) => i + startPage
-          ).map((p) => (
-            <Link
-              key={p}
-              href={getFilterUrl({ pg: String(p) })}
-              className={`px-4 py-2 rounded-md ${
-                currentPage === p
-                  ? "bg-pink-500 text-white"
-                  : "hover:bg-pink-100 text-pink-500"
-              }`}
-            >
-              {p}
-            </Link>
-          ))}
-
-          {/* Next Button */}
-          {currentPage < pages && (
-            <Link
-              href={getFilterUrl({ pg: String(currentPage + 1) })}
-              className="px-4 py-2 rounded-md border border-pink-500 text-pink-500"
-            >
-              {">>"}
-            </Link>
-          )}
-        </div>
+        </ClientSearchWrapper>
       </div>
     </div>
   );

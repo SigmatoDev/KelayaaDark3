@@ -27,6 +27,7 @@ export type Product = {
   quantity?: string;
   size?: string;
   isFeatured: boolean;
+  goldPrice: number;
 };
 
 const productSchema = new mongoose.Schema<Product>(

@@ -95,6 +95,30 @@ const getBySlug = cache(async (slug: string) => {
   return alternativeProduct || product;
 });
 
+const getByProductCode = cache(async (productCode: string) => {
+  await dbConnect();
+
+  // Fetch the product by productCode
+  const product = (await ProductModel.findOne({
+    productCode,
+  }).lean()) as Product | null;
+
+  if (!product) return null;
+
+  // If product has a valid image URL, return it
+  if (product.image && product.image.startsWith("http")) {
+    return product;
+  }
+
+  // If product has no valid image, try finding another with the same productCode that has an image
+  const alternativeProduct = (await ProductModel.findOne({
+    productCode,
+    image: { $regex: /^http/ }, // Find a product with a valid image URL
+  }).lean()) as Product | null;
+
+  return alternativeProduct || product;
+});
+
 const PAGE_SIZE = 50;
 
 const shuffleArray = <T>(array: T[]): T[] => {
@@ -160,6 +184,7 @@ const getByQuery = cache(
     price,
     rating,
     page = "1",
+    materialType,
   }: {
     q: string;
     productCategory: string;
@@ -168,15 +193,26 @@ const getByQuery = cache(
     rating: string;
     sort: string;
     page: string;
+    materialType: string;
   }) => {
+    console.log("price", price);
+    // ----------------------------------------
+    // ✅ Connect to MongoDB
+    // ----------------------------------------
     await dbConnect();
 
-    // Fetch distinct product categories
+    // ----------------------------------------
+    // ✅ Get All Unique Product Categories
+    // Used for dropdown population or default filters
+    // ----------------------------------------
     const categories = await ProductModel.find()
       .distinct("productCategory")
       .lean();
 
-    // Main query search filter
+    // ----------------------------------------
+    // ✅ Full-Text Search Filter (q)
+    // If q is not 'all', apply case-insensitive regex on product name
+    // ----------------------------------------
     const queryFilter =
       q && q !== "all"
         ? {
@@ -187,13 +223,25 @@ const getByQuery = cache(
           }
         : {};
 
-    // Filter by productCategory (dropdown)
+    // ----------------------------------------
+    // ✅ Product Category Filter (dropdown)
+    // If not 'all', use specific category; otherwise include all
+    // ----------------------------------------
     const categoryFilter =
       productCategory && productCategory !== "all"
-        ? { productCategory }
-        : { productCategory: { $in: categories } };
+        ? {
+            productCategory: {
+              $in: productCategory.split(","),
+            },
+          }
+        : {
+            productCategory: { $in: categories },
+          };
 
-    // ✅ Dynamic filter for category or subCategories (based on Pendant logic)
+    // ----------------------------------------
+    // ✅ Dynamic Category/SubCategory Filter
+    // Special handling for Pendant categories (minimalist, etc.)
+    // ----------------------------------------
     let categoryOnlyFilter = {};
     if (category && category !== "all") {
       const isPendantCategory =
@@ -209,6 +257,9 @@ const getByQuery = cache(
       }
     }
 
+    // ----------------------------------------
+    // ✅ Rating Filter (≥ selected rating)
+    // ----------------------------------------
     const ratingFilter =
       rating && rating !== "all"
         ? {
@@ -218,20 +269,70 @@ const getByQuery = cache(
           }
         : {};
 
+    // ----------------------------------------
+    // ✅ Price Filter (single price or range)
+    // Supports "min-max" format or exact number
+    // ----------------------------------------
+    // const priceFilter =
+    //   price && price !== "all"
+    //     ? price.includes("-")
+    //       ? {
+    //           price: {
+    //             $gte: parseFloat(price.split("-")[0]),
+    //             $lte: parseFloat(price.split("-")[1]),
+    //           },
+    //         }
+    //       : {
+    //           price: parseFloat(price),
+    //         }
+    //     : {};
+    const decodedPrice = price;
+
     const priceFilter =
-      price && price !== "all"
-        ? price.includes("-")
+      decodedPrice && decodedPrice !== "all"
+        ? decodedPrice.includes("-")
           ? {
               price: {
-                $gte: parseFloat(price.split("-")[0]),
-                $lte: parseFloat(price.split("-")[1]),
+                $gte: parseFloat(decodedPrice.split("-")[0]),
+                $lte: parseFloat(decodedPrice.split("-")[1]),
               },
             }
-          : {
-              price: parseFloat(price),
-            }
+          : decodedPrice.includes("+")
+            ? {
+                price: {
+                  $gte: parseFloat(decodedPrice.replace("+", "")),
+                },
+              }
+            : {
+                price: parseFloat(decodedPrice),
+              }
         : {};
 
+    console.log("🧮 Price filter:", decodedPrice, priceFilter);
+
+    // ----------------------------------------
+    // ✅ Material Type Filter (e.g., gold, diamond, silver)
+    // If not 'all', filters only matching materialType
+    // ----------------------------------------
+    // ✅ Material Type Filter (e.g., gold, diamond, silver)
+    const materialTypeFilter =
+      materialType && materialType !== "all"
+        ? {
+            materialType: {
+              $in: materialType
+                .split(",")
+                .map((m) => new RegExp(`^${m}$`, "i")),
+            },
+          }
+        : {};
+
+    // ----------------------------------------
+    // ✅ Sort Logic
+    // lowest → price ascending
+    // highest → price descending
+    // toprated → rating descending
+    // default → latest (_id descending)
+    // ----------------------------------------
     const order: Record<string, 1 | -1> =
       sort === "lowest"
         ? { price: 1 }
@@ -241,15 +342,19 @@ const getByQuery = cache(
             ? { rating: -1 }
             : { _id: -1 };
 
-    // Fetch all matching products
+    // ----------------------------------------
+    // ✅ MongoDB Aggregation to Filter & Sort Products
+    // Also prioritize items with valid image URLs
+    // ----------------------------------------
     let products = await ProductModel.aggregate([
       {
         $match: {
           ...queryFilter,
           ...categoryFilter,
-          ...categoryOnlyFilter, // ✅ Included logic for category/subCategories
+          ...categoryOnlyFilter,
           ...priceFilter,
           ...ratingFilter,
+          ...materialTypeFilter,
         },
       },
       {
@@ -273,9 +378,16 @@ const getByQuery = cache(
       { $project: { reviews: 0, hasValidImage: 0 } },
     ]);
 
+    // ----------------------------------------
+    // ✅ Total Product Count After Filtering
+    // ----------------------------------------
     const countProducts = products.length;
 
-    // Group and shuffle
+    // ----------------------------------------
+    // ✅ Category-based Interleaving or Shuffling
+    // If multiple categories → interleave
+    // Else → random shuffle
+    // ----------------------------------------
     const uniqueCategories = new Set(products.map((p) => p.productCategory));
     if (uniqueCategories.size > 1) {
       const categoryMap = groupByCategory(products);
@@ -284,12 +396,19 @@ const getByQuery = cache(
       products = shuffleArray(products);
     }
 
-    // Pagination
+    // ----------------------------------------
+    // ✅ Pagination
+    // Default PAGE_SIZE is assumed to be defined globally
+    // ----------------------------------------
     const paginatedProducts = products.slice(
       PAGE_SIZE * (Number(page) - 1),
       PAGE_SIZE * Number(page)
     );
 
+    // ----------------------------------------
+    // ✅ Return Results
+    // Products, count, pagination info, categories for dropdowns
+    // ----------------------------------------
     return {
       products: paginatedProducts as Product[],
       countProducts,
@@ -411,6 +530,7 @@ const productService = {
   getTopRated,
   getByCategory,
   getMaterialTypes,
+  getByProductCode,
 };
 
 export default productService;

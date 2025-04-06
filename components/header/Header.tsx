@@ -330,14 +330,39 @@ const Header = () => {
       productCategory.toLowerCase() === "bangles";
 
     const isAllBangles = subLabel.toLowerCase() === "all bangles";
-
     const categoryParam = isBangleCategory && isAllBangles ? "all" : subLabel;
 
-    router.push(
-      `/search?productCategory=${encodeURIComponent(
-        productCategory
-      )}&category=${encodeURIComponent(categoryParam)}&materialType=${hoveredMaterialType}`
-    );
+    const isPriceCategory = productCategory.toLowerCase() === "shop by price";
+
+    if (isPriceCategory) {
+      // Clean & convert the value like ₹7.5L to 750000
+      const convertToNumber = (value: string) => {
+        value = value.replace(/[₹,\s]/g, "").toUpperCase();
+        if (value.endsWith("L")) {
+          return Math.round(parseFloat(value.replace("L", "")) * 100000);
+        }
+        return parseInt(value);
+      };
+
+      // Handle '+' case
+      if (subLabel.includes("+")) {
+        const minRaw = subLabel.split("+")[0];
+        const min = convertToNumber(minRaw);
+        router.push(`/search?price=${encodeURIComponent(`${min}+`)}`);
+      } else {
+        const [minRaw, maxRaw] = subLabel.split("-");
+        const min = convertToNumber(minRaw);
+        const max = convertToNumber(maxRaw);
+        router.push(`/search?price=${min}-${max}`);
+      }
+    } else {
+      router.push(
+        `/search?productCategory=${encodeURIComponent(
+          productCategory
+        )}&category=${encodeURIComponent(categoryParam)}&materialType=${hoveredMaterialType}`
+      );
+    }
+
     setIsOpen(false);
   };
 

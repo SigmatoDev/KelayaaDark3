@@ -36,7 +36,6 @@ const RatingFilter = ({
 
   const { theme } = useLayoutService();
 
-
   return (
     <div
       className={`p-4 rounded-lg shadow-md ${
@@ -45,38 +44,29 @@ const RatingFilter = ({
           : "bg-white text-gray-900"
       }`}
     >
-      <h2 className="text-lg font-semibold mb-4">Customer Review</h2>
-      <ul className="space-y-2">
-        {/* <li>
-          <Link
-            href={buildFilterUrl({ r: "all" })}
-            className={`block p-2 rounded-md ${
-              selectedRating === "all"
-                ? "bg-yellow-500 text-white"
-                : "hover:bg-yellow-100"
-            }`}
-          >
-            Any
-          </Link>
-        </li> */}
-        {ratings.map((r) => (
-          <li key={r}>
-            <Link
-              href={buildFilterUrl({ r: `${r}` })}
-              className={`block p-2 rounded-md ${
-                `${r}` === selectedRating
-                  ? "bg-[#EC4999] text-white"
-                  : "hover:bg-pink-50"
-              }`}
-            >
-              <Rating 
-                caption={"& up"} 
-                value={r} 
-                textColor={`${r}` === selectedRating ? "text-white" : undefined}
-              />
-            </Link>
-          </li>
-        ))}
+      <h2 className="text-lg font-semibold mb-4">Customer Rating</h2>
+      <ul className="flex flex-col gap-2">
+        {ratings.map((r) => {
+          const isSelected = `${r}` === selectedRating;
+          return (
+            <li key={r}>
+              <Link
+                href={buildFilterUrl({ r: `${r}` })}
+                className={`flex items-center justify-between gap-2 p-2 rounded-md border transition-all ${
+                  isSelected
+                    ? "border-pink-500 bg-pink-50 text-pink-600 font-semibold"
+                    : "hover:bg-pink-50 border-gray-200"
+                }`}
+              >
+                <Rating
+                  caption="& up"
+                  value={r}
+                  textColor={isSelected ? "text-pink-600" : "text-gray-800"}
+                />
+              </Link>
+            </li>
+          );
+        })}
       </ul>
     </div>
   );
