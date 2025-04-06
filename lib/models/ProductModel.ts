@@ -23,9 +23,13 @@ export type Product = {
   goldPurity?: string;
   subCategories?: string;
   productType?: string;
+  ring_size?: string;
+  quantity?: string;
+  size?: string;
+  isFeatured: boolean;
 };
 
-const productSchema = new mongoose.Schema(
+const productSchema = new mongoose.Schema<Product>(
   {
     name: { type: String },
     productCode: { type: String },
@@ -35,14 +39,13 @@ const productSchema = new mongoose.Schema(
     slug: {
       type: String,
       unique: true,
-      required: true,
       lowercase: true,
       trim: true,
     },
     category: { type: String },
     productCategory: { type: String },
-    image: { type: String, default: "" }, // ✅ Keeps backward compatibility
-    images: { type: [String], default: [] }, // ✅ Supports multiple images
+    image: { type: String, default: "" },
+    images: { type: [String], default: [] },
     price: { type: Number, default: 0 },
     description: { type: String },
     countInStock: { type: Number, default: 0 },
@@ -53,16 +56,50 @@ const productSchema = new mongoose.Schema(
     clarity: { type: String },
     color: { type: String },
     goldPurity: { type: String },
-    subCategories: {
-      type: String,
-      // enum: [
-      //   "Cocktail",
-      //   "Cocktail/Engagement",
-      //   "Dailywear",
-      //   "Dailywear/Engagement",
-      // ],
-    },
+    subCategories: { type: String },
     productType: { type: String },
+    ring_size: {
+      type: String,
+      validate: {
+        validator: function (this: mongoose.Document & Product, value: string) {
+          if (value && this.productCategory) {
+            const cat = this.productCategory.toLowerCase();
+            return cat === "ring" || cat === "rings";
+          }
+          return !value;
+        },
+        message:
+          "ring_size is only allowed when productCategory is 'Ring' or 'Rings'",
+      },
+    },
+    quantity: {
+      type: String,
+      validate: {
+        validator: function (this: mongoose.Document & Product, value: string) {
+          if (value && this.productCategory) {
+            const cat = this.productCategory.toLowerCase();
+            return cat === "bangles";
+          }
+          return !value;
+        },
+        message: "quantity is only allowed when productCategory is 'bangles'",
+      },
+    },
+    size: {
+      type: String,
+      validate: {
+        validator: function (this: mongoose.Document & Product, value: string) {
+          if (value && this.productCategory) {
+            const cat = this.productCategory.toLowerCase();
+            return (
+              cat === "bangles" || cat === "bangle" || cat === "bangle pair"
+            );
+          }
+          return !value;
+        },
+        message: "size is only allowed when productCategory is 'bangles'",
+      },
+    },
   },
   { timestamps: true }
 );

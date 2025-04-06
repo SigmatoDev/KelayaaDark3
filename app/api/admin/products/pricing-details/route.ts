@@ -41,6 +41,7 @@ export const POST = auth(async (req: any) => {
       productCode: product.productCode,
       productType: product.productType,
       gemCut: product.gemCut,
+      size: product.size,
       ringSize: Number(product.ringSize) || 0,
       carats: Number(product.carats) || 0,
       diamondPrice: Number(product.diamondPrice) || 0,

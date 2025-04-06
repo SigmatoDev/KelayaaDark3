@@ -4,6 +4,7 @@ import Form from "./Form";
 import UploadProductExcelFile from "./UploadExcelFile";
 import UploadGoldProductExcelFile from "./UplaodGoldProducts";
 import UploadGoldDiamondProductPricingExcelFile from "./UploadGoldDiamondPricdeatilsExcel";
+import ExcelUploader from "./updatingExcelCloumn";
 
 export function generateMetadata({ params }: { params: { id: string } }) {
   return {
@@ -55,6 +56,7 @@ export default function ProductAddPage() {
           <UploadGoldDiamondProductPricingExcelFile />
         </div>
       </div>
+      <ExcelUploader />
     </AdminLayout>
   );
 }
