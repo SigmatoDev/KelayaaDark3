@@ -155,6 +155,7 @@ const getByQuery = cache(
   async ({
     q,
     productCategory,
+    category,
     sort,
     price,
     rating,
@@ -162,6 +163,7 @@ const getByQuery = cache(
   }: {
     q: string;
     productCategory: string;
+    category: string;
     price: string;
     rating: string;
     sort: string;
@@ -174,6 +176,7 @@ const getByQuery = cache(
       .distinct("productCategory")
       .lean();
 
+    // Main query search filter
     const queryFilter =
       q && q !== "all"
         ? {
@@ -184,11 +187,27 @@ const getByQuery = cache(
           }
         : {};
 
-    // Ensure all categories are included if "all" is selected
+    // Filter by productCategory (dropdown)
     const categoryFilter =
       productCategory && productCategory !== "all"
         ? { productCategory }
-        : { productCategory: { $in: categories } }; // Fetch all categories
+        : { productCategory: { $in: categories } };
+
+    // ✅ Dynamic filter for category or subCategories (based on Pendant logic)
+    let categoryOnlyFilter = {};
+    if (category && category !== "all") {
+      const isPendantCategory =
+        productCategory?.toLowerCase() === "pendant" &&
+        ["minimalist", "statement", "solitaire"].includes(
+          category.toLowerCase()
+        );
+
+      if (isPendantCategory) {
+        categoryOnlyFilter = { subCategories: category };
+      } else {
+        categoryOnlyFilter = { category };
+      }
+    }
 
     const ratingFilter =
       rating && rating !== "all"
@@ -222,12 +241,13 @@ const getByQuery = cache(
             ? { rating: -1 }
             : { _id: -1 };
 
-    // Fetch all matching products first
+    // Fetch all matching products
     let products = await ProductModel.aggregate([
       {
         $match: {
           ...queryFilter,
           ...categoryFilter,
+          ...categoryOnlyFilter, // ✅ Included logic for category/subCategories
           ...priceFilter,
           ...ratingFilter,
         },
@@ -249,24 +269,22 @@ const getByQuery = cache(
           },
         },
       },
-      { $sort: { hasValidImage: -1, ...order } }, // Sort by images and order
-      { $project: { reviews: 0, hasValidImage: 0 } }, // Exclude unnecessary fields
+      { $sort: { hasValidImage: -1, ...order } },
+      { $project: { reviews: 0, hasValidImage: 0 } },
     ]);
 
     const countProducts = products.length;
 
-    // Shuffle if multiple categories exist
+    // Group and shuffle
     const uniqueCategories = new Set(products.map((p) => p.productCategory));
-
     if (uniqueCategories.size > 1) {
       const categoryMap = groupByCategory(products);
       products = interleaveCategoriesStrict(categoryMap);
     } else {
-      // If only one category, shuffle normally
       products = shuffleArray(products);
     }
 
-    // Apply pagination *after* shuffling
+    // Pagination
     const paginatedProducts = products.slice(
       PAGE_SIZE * (Number(page) - 1),
       PAGE_SIZE * Number(page)

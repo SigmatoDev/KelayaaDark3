@@ -6,6 +6,7 @@ import CategoryDropdown from "./dropDownCategories";
 import PriceFilter from "./priceFilter";
 import RatingFilter from "./ratingFilter";
 import MaterialTypeDropdown from "./materialDropdown";
+import FilterChips from "./filterChip";
 
 const sortOrders = ["newest", "lowest", "highest", "rating"];
 const pageSize = 10; // Default to 10 products per page
@@ -20,6 +21,7 @@ export default async function SearchPage({
     q = "all",
     materialType = "all",
     productCategory = "all",
+    category = "all",
     price = "all",
     rating = "all",
     sort = "newest",
@@ -30,6 +32,7 @@ export default async function SearchPage({
     q: string;
     materialType: string;
     productCategory: string;
+    category: string;
     price: string;
     rating: string;
     sort: string;
@@ -51,6 +54,7 @@ export default async function SearchPage({
   const getFilterUrl = ({
     c,
     m,
+    pc,
     s,
     p,
     r,
@@ -58,6 +62,7 @@ export default async function SearchPage({
   }: {
     c?: string;
     m?: string;
+    pc?: string;
     s?: string;
     p?: string;
     r?: string;
@@ -71,9 +76,11 @@ export default async function SearchPage({
       sort,
       page,
       materialType,
+      category,
     };
     if (c) params.productCategory = c;
     if (m) params.materialType = m;
+    if (pc) params.category = pc;
     if (p) params.price = p;
     if (r) params.rating = r;
     if (pg) params.page = pg;
@@ -145,6 +152,7 @@ export default async function SearchPage({
   // Fetch products
   const { countProducts, products, pages } = await productServices.getByQuery({
     productCategory, // Ensure fetching all categories
+    category,
     q,
     price,
     rating,
@@ -239,15 +247,26 @@ export default async function SearchPage({
       {/* Results Section */}
       <div className="md:col-span-4">
         <div className="flex justify-between items-center mb-6">
-          <div>
+          <FilterChips
+            q={q}
+            productCategory={productCategory}
+            category={category}
+            price={price}
+            rating={rating}
+            sort={sort}
+            page={page}
+            materialType={materialType}
+          />
+          {/* <div>
             <span className="text-gray-400 font-semibold">
               {validProducts.length === 0 ? "No" : validProducts.length} Results
             </span>
             {q !== "all" && ` : ${q}`}
             {productCategory !== "all" && ` : ${productCategory}`}
+            {category !== "all" && ` : ${category}`}
             {price !== "all" && ` : Price ${price}`}
             {rating !== "all" && ` : Rating ${rating} & up`}
-          </div>
+          </div> */}
           <div className="flex items-center">
             <span className="mr-2 text-[12px]">Sort by:</span>
             {sortOrders.map((s) => (

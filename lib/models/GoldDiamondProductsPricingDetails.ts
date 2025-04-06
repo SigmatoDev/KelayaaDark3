@@ -19,6 +19,7 @@ const productSchema = new mongoose.Schema(
     diamondTotal: Number,
     goldTotal: Number,
     totalPrice: Number,
+    size: String,
   },
   { timestamps: true }
 );
