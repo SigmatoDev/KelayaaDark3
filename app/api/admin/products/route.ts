@@ -221,30 +221,41 @@ export const GET = auth(async (req: any) => {
 
   console.log("🔄 Fetching latest gold prices...");
   const goldPrices = await GoldPrice.find({});
-  console.log(`✅ Fetched ${goldPrices.length} gold prices:`, goldPrices);
+  console.log(`✅ Fetched ${goldPrices.length} gold prices.`);
 
-  // Process and update each product
+  // Filter only gold products whose productCode starts with "KD"
+  const goldProducts = products.filter(
+    (p) =>
+      p.materialType?.toLowerCase() === "gold" &&
+      p.productCode?.toUpperCase().startsWith("KD")
+  );
+  const goldProductCodes = goldProducts.map((p) => p.productCode);
+
+  // Fetch all pricing data for these gold products
+  const pricingDetailsList = await GoldDiamondProductPricingModel.find({
+    productCode: { $in: goldProductCodes },
+  });
+
+  const pricingDetailsMap = Object.fromEntries(
+    pricingDetailsList.map((item) => [item.productCode, item])
+  );
+
+  // Process all products
   const updatedProducts = await Promise.all(
     products.map(async (product) => {
-      console.log(
-        `🔍 Processing product: ${product.name} (${product.productCode})`
-      );
+      const isGoldKD =
+        product.materialType?.toLowerCase() === "gold" &&
+        product.productCode?.toUpperCase().startsWith("KD");
 
-      const pricingDetails = await GoldDiamondProductPricingModel.findOne({
-        productCode: product.productCode,
-      });
-
-      if (!pricingDetails) {
-        console.log(`⚠️ No pricing details found for ${product.productCode}`);
-        return product;
+      if (!isGoldKD) {
+        return product.toObject(); // No processing for non-gold or KS series
       }
 
-      console.log(
-        `✅ Found pricing details for ${product.productCode}:`,
-        pricingDetails
-      );
+      const pricingDetails = pricingDetailsMap[product.productCode];
+      if (!pricingDetails) {
+        return product.toObject(); // No pricing info found
+      }
 
-      // Find current gold price based on goldPurity
       const goldPriceData = goldPrices.find(
         (g) => g.karat === product.goldPurity
       );
@@ -252,52 +263,37 @@ export const GET = auth(async (req: any) => {
         ? goldPriceData.price
         : pricingDetails.goldPrice;
 
-      console.log(`💰 Gold Price for ${product.goldPurity}: ${goldPrice}`);
-
-      // Calculate final price dynamically
       const finalPrice =
         pricingDetails.grossWeight * goldPrice +
         pricingDetails.makingCharge +
         pricingDetails.diamondTotal;
 
-      console.log(
-        `📊 Final Price Calculation for ${product.productCode}:`,
-        `Gross Weight: ${pricingDetails.grossWeight}, `,
-        `Gold Price: ${goldPrice}, `,
-        `Making Charge: ${pricingDetails.makingCharge}, `,
-        `Diamond Total: ${pricingDetails.diamondTotal}, `,
-        `Final Price: ${finalPrice}`
-      );
-
-      // Update the product in the database
       await ProductModel.findByIdAndUpdate(product._id, {
         pricePerGram: pricingDetails.pricePerGram,
         goldPrice,
         grossWeight: pricingDetails.grossWeight,
         totalPrice: finalPrice,
+        ring_size: pricingDetails?.ringSize,
+        size: pricingDetails?.size,
       });
-
-      console.log(`✅ Updated product ${product.productCode} in the database.`);
 
       return {
         ...product.toObject(),
         pricePerGram: pricingDetails.pricePerGram,
         goldPrice,
         grossWeight: pricingDetails.grossWeight,
-        totalPrice: finalPrice, // Updated dynamically
+        totalPrice: finalPrice,
       };
     })
   );
 
-  // Sort so products with images appear first
   const sortedProducts = updatedProducts.sort((a, b) => {
     const hasImageA = a.image && a.image.startsWith("http");
     const hasImageB = b.image && b.image.startsWith("http");
-    return hasImageB - hasImageA; // Products with image URLs come first
+    return Number(hasImageB) - Number(hasImageA);
   });
 
   console.log("✅ Final sorted products list ready to be sent.");
-
   return Response.json(sortedProducts);
 }) as any;
 

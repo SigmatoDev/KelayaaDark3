@@ -14,10 +14,20 @@ type FilterChipsProps = {
   materialType: string;
 };
 
-const FilterChip = ({ label, href }: { label: string; href: string }) => (
+const FilterChip = ({
+  label,
+  href,
+  isClearAll = false,
+}: {
+  label: string;
+  href: string;
+  isClearAll?: boolean;
+}) => (
   <Link
     href={href}
-    className="inline-flex items-center bg-pink-100 text-pink-600 rounded-full px-3 py-1 text-sm font-medium mr-2 mb-2"
+    className={`inline-flex items-center ${
+      isClearAll ? "bg-gray-200 text-gray-700" : "bg-pink-100 text-pink-600"
+    } rounded-full px-3 py-1 text-sm font-medium mr-2 mb-2`}
   >
     <span>{label}</span>
     <XMarkIcon className="w-4 h-4 ml-2" />
@@ -34,7 +44,7 @@ const FilterChips: React.FC<FilterChipsProps> = ({
   page,
   materialType,
 }) => {
-  const buildUrl = (omit: string) => {
+  const buildUrl = (omit: string, valueToRemove?: string) => {
     const params = new URLSearchParams({
       q,
       productCategory,
@@ -46,40 +56,90 @@ const FilterChips: React.FC<FilterChipsProps> = ({
       materialType,
     });
 
-    params.set(omit, "all");
+    const multiFields = [
+      "productCategory",
+      "category",
+      "price",
+      "rating",
+      "materialType",
+    ];
+
+    if (multiFields.includes(omit) && valueToRemove) {
+      const currentValues = (params.get(omit) || "").split(",");
+      const updatedValues = currentValues.filter(
+        (v) => v !== valueToRemove && v !== "all"
+      );
+
+      if (updatedValues.length === 0) {
+        params.set(omit, "all");
+      } else {
+        params.set(omit, updatedValues.join(","));
+      }
+    } else {
+      params.set(omit, "all");
+    }
+
     return `/search?${params.toString()}`;
   };
+
+  const renderMultiFilterChips = (
+    field: string,
+    values: string,
+    formatLabel?: (v: string) => string
+  ) => {
+    if (values === "all") return null;
+    return values
+      .split(",")
+      .filter((v) => v && v !== "all")
+      .map((v) => (
+        <FilterChip
+          key={`${field}-${v}`}
+          label={formatLabel ? formatLabel(v) : v}
+          href={buildUrl(field, v)}
+        />
+      ));
+  };
+
+  const isAnyFilterApplied = [
+    q,
+    productCategory,
+    category,
+    price,
+    rating,
+    materialType,
+  ].some((v) => v !== "all");
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       {q !== "all" && (
         <FilterChip label={`Search: ${q}`} href={buildUrl("q")} />
       )}
-      {productCategory !== "all" && (
-        <FilterChip
-          // label={`Category: ${productCategory}`}
-          label={`${productCategory}`}
-          href={buildUrl("productCategory")}
-        />
+
+      {renderMultiFilterChips("materialType", materialType, (v) =>
+        v === "gold"
+          ? "Gold & Diamonds"
+          : v.charAt(0).toUpperCase() + v.slice(1)
       )}
-      {category !== "all" && (
+      {renderMultiFilterChips("productCategory", productCategory)}
+      {renderMultiFilterChips("category", category)}
+      {renderMultiFilterChips("price", price, (v) => {
+        if (v.includes("+")) {
+          const min = parseInt(v.replace("+", ""));
+          return `Above ₹${min.toLocaleString("en-IN")}`;
+        } else {
+          const [min, max] = v.split("-").map(Number);
+          if (min === 0) return `Under ₹${max.toLocaleString("en-IN")}`;
+          return `₹${min.toLocaleString("en-IN")} - ₹${max.toLocaleString("en-IN")}`;
+        }
+      })}
+
+      {renderMultiFilterChips("rating", rating, (v) => `${v} & up`)}
+
+      {isAnyFilterApplied && (
         <FilterChip
-          // label={`Subcategory: ${category}`}
-          label={`${category}`}
-          href={buildUrl("category")}
-        />
-      )}
-      {price !== "all" && (
-        <FilterChip
-          // label={`Price: ${price}`}
-          label={`${price}`}
-          href={buildUrl("price")}
-        />
-      )}
-      {rating !== "all" && (
-        <FilterChip
-          label={`${rating} & up`}
-          href={buildUrl("rating")}
+          label="Clear All"
+          href="/search?q=all&productCategory=all&category=all&price=all&rating=all&sort=all&page=1&materialType=all"
+          isClearAll
         />
       )}
     </div>
@@ -87,3 +147,4 @@ const FilterChips: React.FC<FilterChipsProps> = ({
 };
 
 export default FilterChips;
+("500000-10000000");

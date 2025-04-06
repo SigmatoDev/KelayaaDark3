@@ -1,10 +1,22 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState, useEffect } from "react";
 import useLayoutService from "@/lib/hooks/useLayout";
 
-const MaterialTypeDropdown = ({
+type Props = {
+  materials: string[];
+  selectedMaterialType: string; // comma-separated e.g. "gold,silver"
+  q: string;
+  materialType: string;
+  price: string;
+  rating: string;
+  sort: string;
+  page: string;
+  productCategory: string;
+};
+
+const MaterialTypeFilter = ({
   materials,
   selectedMaterialType,
   q,
@@ -14,114 +26,95 @@ const MaterialTypeDropdown = ({
   sort,
   page,
   productCategory,
-}: {
-  materials: string[];
-  selectedMaterialType: string;
-  q: string;
-  materialType: string;
-  price: string;
-  rating: string;
-  sort: string;
-  page: string;
-  productCategory: string;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
+}: Props) => {
+  const initialSelection = selectedMaterialType
+    ? selectedMaterialType.split(",").filter((m) => m !== "all")
+    : [];
+  const [selected, setSelected] = useState<string[]>(initialSelection);
   const { theme } = useLayoutService();
+  const router = useRouter();
 
-  const buildFilterUrl = ({ m }: { m?: string }) => {
+  const updateURL = (newSelection: string[]) => {
     const params: any = {
       q,
-      materialType,
+      materialType: newSelection.length > 0 ? newSelection.join(",") : "all",
       productCategory,
       price,
       rating,
       sort,
       page,
     };
-    if (m) params.materialType = m;
-    return `/search?${new URLSearchParams(params).toString()}`;
+
+    const query = new URLSearchParams(params).toString();
+    router.push(`/search?${query}`);
+    router.refresh(); // Triggers new server data
   };
 
-  const handleSelect = () => setIsOpen(false);
+  const handleChange = (material: string) => {
+    let updatedSelection = [...selected];
+
+    if (selected.includes(material)) {
+      updatedSelection = updatedSelection.filter((m) => m !== material);
+    } else {
+      updatedSelection.push(material);
+    }
+
+    setSelected(updatedSelection);
+    updateURL(updatedSelection);
+  };
+
+  const handleClearAll = () => {
+    setSelected([]);
+    updateURL([]);
+  };
+
+  const checkboxStyle =
+    "flex items-center gap-2 cursor-pointer py-2 px-3 rounded hover:bg-pink-50 dark:hover:bg-gray-700 transition-all";
 
   return (
     <div
-      className={`p-4 rounded-lg shadow-md ${
+      className={`p-4 rounded-lg  ${
         theme === "dark"
           ? "bg-gray-800 text-gray-200"
           : "bg-white text-gray-900"
       }`}
     >
-      <h2 className="text-lg font-semibold mb-4">Material Type</h2>
-      <div className="relative">
-        {/* Dropdown Toggle Button */}
-        <button
-          onClick={() => setIsOpen((prev) => !prev)}
-          className={`w-full px-4 py-2 text-left border rounded-lg focus:outline-none transition-all ${
-            selectedMaterialType !== "all"
-              ? "ring-1 ring-pink-500"
-              : "border-gray-300"
-          }`}
-        >
-          {selectedMaterialType === "all"
-            ? "Select Material Type"
-            : selectedMaterialType.charAt(0).toUpperCase() +
-              selectedMaterialType.slice(1)}
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            className={`w-5 h-5 ml-2 inline-block transition-transform ${isOpen ? "rotate-180" : ""}`}
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
+      <div className="flex justify-between items-center mb-4">
+        <h2 className="text-lg font-semibold">Material Type</h2>
+        {selected.length > 0 && (
+          <button
+            onClick={handleClearAll}
+            className="text-sm text-pink-600 hover:underline"
           >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
-        </button>
-
-        {/* Dropdown Menu */}
-        {isOpen && (
-          <ul className="absolute z-10 mt-2 w-full max-h-60 overflow-y-auto bg-white text-black border rounded-lg shadow-lg">
-            {/* 'All' Option */}
-            <li>
-              <Link
-                href={buildFilterUrl({ m: "all" })}
-                onClick={handleSelect}
-                className={`block px-4 py-2 rounded ${
-                  selectedMaterialType === "all"
-                    ? "bg-[#EC4999] text-white"
-                    : "hover:bg-pink-50"
-                }`}
-              >
-                All
-              </Link>
-            </li>
-
-            {/* Material Options */}
-            {materials.map((material) => (
-              <li key={material}>
-                <Link
-                  href={buildFilterUrl({ m: material })}
-                  onClick={handleSelect}
-                  className={`block px-4 py-2 rounded ${
-                    selectedMaterialType === material
-                      ? "bg-[#EC4999] text-white font-semibold"
-                      : "hover:bg-pink-50"
-                  }`}
-                >
-                  {material.charAt(0).toUpperCase() + material.slice(1)}
-                </Link>
-              </li>
-            ))}
-          </ul>
+            Clear All
+          </button>
         )}
+      </div>
+      <div className="flex flex-col gap-1">
+        {materials.map((material) => (
+          <label key={material} className={checkboxStyle}>
+            <input
+              type="checkbox"
+              checked={selected.includes(material)}
+              onChange={() => handleChange(material)}
+              className="accent-pink-500 w-4 h-4"
+            />
+            <span
+              className={`transition-all ${
+                selected.includes(material)
+                  ? "text-black font-font-medium	"
+                  : "text-inherit"
+              }`}
+            >
+              {material === "gold"
+                ? "Gold & Diamonds"
+                : material.charAt(0).toUpperCase() + material.slice(1)}
+            </span>
+          </label>
+        ))}
       </div>
     </div>
   );
 };
 
-export default MaterialTypeDropdown;
+export default MaterialTypeFilter;

@@ -7,6 +7,7 @@ import { Product } from "@/lib/models/ProductModel";
 import { useSession } from "next-auth/react";
 import { Heart } from "lucide-react";
 import toast from "react-hot-toast";
+import SignInPopup from "../signin/SignIn";
 
 const FALLBACK_IMAGE = "/images/noimage.webp";
 
@@ -16,6 +17,7 @@ const isValidImageUrl = (url: string) => {
 };
 
 const ProductItem = ({ product }: { product: Product }) => {
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
   const { data: session } = useSession();
   const userId = session?.user?.id;
 
@@ -70,7 +72,8 @@ const ProductItem = ({ product }: { product: Product }) => {
   // Optimistic Wishlist Toggle
   const toggleWishlist = async () => {
     if (!userId) {
-      toast.error("Please log in to manage wishlist");
+      setIsSignInOpen(true);
+      // toast.error("Please log in to manage wishlist");
       return;
     }
 
@@ -110,7 +113,8 @@ const ProductItem = ({ product }: { product: Product }) => {
   };
 
   return (
-    <div className="relative card mb-4 w-[300px] h-[333px] xl:w-[300px] xl:h-[333px] 2xl:w-[400px] 2xl:h-[433px] md:w-[200px] md:h-[233px] lg:w-[250px] lg:h-[270px] rounded-xl border border-neutral-200 shadow-sm transition-shadow duration-300 hover:shadow-md hover:shadow-pink-100 bg-white">
+    // <div className="relative card mb-4 w-[300px] h-[333px] xl:w-[300px] xl:h-[333px] 2xl:w-[400px] 2xl:h-[433px] md:w-[200px] md:h-[233px] lg:w-[250px] lg:h-[270px] rounded-xl border border-neutral-200 shadow-sm transition-shadow duration-300 hover:shadow-md hover:shadow-pink-100 bg-white">
+    <div className="relative card mb-4 w-full h-[333px] xl:h-[333px] 2xl:h-[433px] md:h-[233px] lg:h-[270px] rounded-xl border border-neutral-200 shadow-sm transition-shadow duration-300 hover:shadow-md hover:shadow-pink-100 bg-white">
       {/* Loader Overlay */}
       {loading && (
         <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
@@ -120,7 +124,7 @@ const ProductItem = ({ product }: { product: Product }) => {
 
       <figure className="w-full h-full overflow-hidden">
         <Link
-          href={`/product/${product.slug}`}
+          href={`/product/${product?.productCode}`}
           className="relative w-full h-full block"
         >
           <Image
@@ -153,10 +157,21 @@ const ProductItem = ({ product }: { product: Product }) => {
         </Link>
         <div className="card-actions flex items-center justify-start">
           <span className="text-base text-[#000000]">
-            ₹{product.price ? product.price.toFixed(2) : "N/A"}
+            ₹
+            {product.price
+              ? product.price.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              : "N/A"}
           </span>
         </div>
       </div>
+
+      {/* Render SignInPopup and control its visibility */}
+      {isSignInOpen && (
+        <SignInPopup isOpen={isSignInOpen} setIsOpen={setIsSignInOpen} />
+      )}
     </div>
   );
 };
