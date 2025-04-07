@@ -27,7 +27,7 @@ import SignInPopup from "../signin/SignIn";
 import useCartService from "@/lib/hooks/useCartStore";
 import HeroSectionCustomDesign from "../hero-section-customdesign/heroSectionCustomDesign";
 
-const keywords = ["Gold", "Diamond", "Silver", "Platinum", "Special"];
+const keywords = ["Gold", "Diamond", "Silver", "Special"];
 const promotions = [
   "✨ Create Your Dream Jewellery",
   "💎 Get 10% Discount on Your First Order",

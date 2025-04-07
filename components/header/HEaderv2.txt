@@ -15,7 +15,7 @@ import Image from "next/image";
 import CardGrid from "../category-box/CategoryBox";
 import SignInPopup from "../signin/SignIn";
 
-const keywords = ["Gold", "Diamond", "Silver", "Platinum", "Special"];
+const keywords = ["Gold", "Diamond", "Silver", "Special"];
 const promotions = [
   "✨ Create Your Dream Jewellery",
   "💎 Get 10% Discount on Your First Order",

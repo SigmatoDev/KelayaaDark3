@@ -242,7 +242,7 @@ export default function CustomDesignForm() {
                     <option value="">Select</option>
                     <option value="Gold">Gold</option>
                     <option value="Silver">Silver</option>
-                    <option value="Platinum">Platinum</option>
+                   
                   </select>
                 </div>
 
