@@ -114,6 +114,7 @@ export type OrderItem = {
   price: number;
   color?: string;
   size?: string;
+  productCode: string;
 };
 
 export type ShippingAddress = {

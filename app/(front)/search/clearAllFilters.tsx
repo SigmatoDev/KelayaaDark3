@@ -13,6 +13,7 @@ const ClearAllFilters = () => {
     params.set("q", "");
     params.set("materialType", "all");
     params.set("productCategory", "all");
+    params.set("category", "all");
     params.set("price", "all");
     params.set("rating", "all");
     params.set("sort", "default");

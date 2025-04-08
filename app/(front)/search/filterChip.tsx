@@ -107,11 +107,11 @@ const FilterChips: React.FC<FilterChipsProps> = ({
     price,
     rating,
     materialType,
-  ].some((v) => v !== "all");
+  ].some((v) => v && v !== "all");
 
   return (
     <div className="flex flex-wrap items-center gap-2">
-      {q !== "all" && (
+      {q && q !== "all" && (
         <FilterChip label={`Search: ${q}`} href={buildUrl("q")} />
       )}
 

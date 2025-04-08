@@ -11,6 +11,7 @@ import useLayoutService from "@/lib/hooks/useLayout";
 import CheckoutSteps from "@/components/checkout/CheckoutSteps";
 import useCartService from "@/lib/hooks/useCartStore";
 import { useSession } from "next-auth/react";
+import { PencilIcon } from "lucide-react";
 
 const Form = () => {
   const router = useRouter();
@@ -28,6 +29,7 @@ const Form = () => {
     setPaymentStatus,
     gstDetails,
     personalInfo,
+    totalPriceAfterCheckout,
   } = useCartService();
   const { data: session } = useSession();
   const { theme } = useLayoutService();
@@ -116,7 +118,7 @@ const Form = () => {
 
       <div className="my-4 grid md:grid-cols-4 md:gap-5">
         <div className="overflow-x-auto md:col-span-3">
-          <div className="card bg-base-300">
+          <div className="card shadow-md">
             <div className="card-body">
               <h2 className="card-title">Shipping Address</h2>
               <p>{`${shippingAddress.firstName} ${shippingAddress.lastName}`}</p>
@@ -132,7 +134,7 @@ const Form = () => {
             </div>
           </div>
 
-          <div className="card mt-4 bg-base-300">
+          <div className="card mt-4 shadow-md">
             <div className="card-body">
               <h2 className="card-title">Payment Method</h2>
               <p>{paymentMethod}</p>
@@ -144,7 +146,7 @@ const Form = () => {
             </div>
           </div>
 
-          <div className="card mt-4 bg-base-300">
+          <div className="card mt-4 mb-3 shadow-md">
             <div className="card-body">
               <h2 className="card-title">Items</h2>
               <table className="table">
@@ -162,18 +164,16 @@ const Form = () => {
                     <tr key={item.slug}>
                       <td>
                         <Link
-                          href={`/product/${item.slug}`}
+                          href={`/product/${item.productCode}`}
                           className="flex items-center"
                         >
-                          {/* <Image
+                          <Image
                             src={item.image}
                             alt={item.name}
                             width={50}
                             height={50}
-                          ></Image> */}
-                          <span className="px-2">
-                            {item.name}({item.color} {item.size})
-                          </span>
+                          ></Image>
+                          <span className="px-2">{item.name}</span>
                         </Link>
                       </td>
                       <td>
@@ -185,8 +185,11 @@ const Form = () => {
                 </tbody>
               </table>
               <div>
-                <Link className="btn btn-primary" href="/cart">
-                  Edit
+                <Link
+                  className="btn bg-gradient-to-r from-pink-500 to-red-500 text-white"
+                  href="/cart"
+                >
+                 <PencilIcon className="w-5 h-5"/> Edit
                 </Link>
               </div>
             </div>
@@ -194,14 +197,14 @@ const Form = () => {
         </div>
 
         <div>
-          <div className="card bg-base-300">
+          <div className="card shadow-md">
             <div className="card-body">
               <h2 className="card-title text-orange-500">Order Summary</h2>
               <ul className="space-y-3">
                 <li>
                   <div className=" flex justify-between">
                     <div>Items Price</div>
-                    <div>₹{itemsPrice}</div>
+                    <div>₹{totalPriceAfterCheckout}</div>
                   </div>
                 </li>
                 <li>
@@ -228,7 +231,7 @@ const Form = () => {
                   <button
                     onClick={handlePlaceOrder}
                     disabled={isPlacing}
-                    className="btn btn-primary w-full"
+                    className="w-full mt-6 py-3 text-[16px] rounded-md text-white font-semibold bg-gradient-to-r from-pink-500 to-red-500"
                   >
                     {isPlacing && (
                       <span className="loading loading-spinner"></span>

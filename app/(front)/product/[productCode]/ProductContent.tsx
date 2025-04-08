@@ -28,6 +28,14 @@ interface Product {
   reviewsCount: number;
   tags: string[];
   images: string[];
+  materialType?: string; // Example: "18K Yellow Gold"
+  metalWeight?: number; // In grams
+  metalRate?: number; // Per gram
+  diamondWeight?: number; // In carats
+  diamondRate?: number; // Per carat
+  diamondType?: string; // e.g., "SI IJ"
+  makingCharges?: number;
+  additionalCharges?: number;
 }
 
 interface ProductPageContentProps {
@@ -273,6 +281,60 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
               </div>
             )}
           </div>
+        </div>
+        <div>
+          {/* Price Breakup Section (Visible only for gold products) */}
+          {product?.materialType === "gold" && (
+            <div className="bg-gray-50 border text-sm p-4 rounded-md">
+              <h3 className="font-semibold text-lg mb-3 text-pink-600">
+                Price Breakup
+              </h3>
+              <div className="grid grid-cols-2 gap-y-2">
+                <p className="text-gray-600">Metal Type:</p>
+                <p className="font-medium">
+                  {product.materialType || "18K Yellow Gold"}
+                </p>
+
+                <p className="text-gray-600">Gold Weight:</p>
+                <p className="font-medium">
+                  {product.metalWeight?.toFixed(2)} g
+                </p>
+
+                <p className="text-gray-600">Gold Rate:</p>
+                <p className="font-medium">
+                  Rs. {product.metalRate?.toFixed(2)} /g
+                </p>
+
+                <p className="text-gray-600">Diamond Type:</p>
+                <p className="font-medium">{product.diamondType || "SI IJ"}</p>
+
+                <p className="text-gray-600">Diamond Weight:</p>
+                <p className="font-medium">
+                  {product.diamondWeight?.toFixed(2)} ct
+                </p>
+
+                <p className="text-gray-600">Diamond Rate:</p>
+                <p className="font-medium">
+                  Rs. {product.diamondRate?.toFixed(2)} /ct
+                </p>
+
+                <p className="text-gray-600">Making Charges:</p>
+                <p className="font-medium">
+                  Rs. {product.makingCharges?.toFixed(2)}
+                </p>
+
+                <p className="text-gray-600">Additional Charges:</p>
+                <p className="font-medium">
+                  Rs. {product.additionalCharges?.toFixed(2)}
+                </p>
+
+                <p className="text-gray-600 font-semibold mt-2">Total Price:</p>
+                <p className="font-bold text-pink-600 mt-2">
+                  Rs. {product.price.toFixed(2)}
+                </p>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Buttons Grid */}

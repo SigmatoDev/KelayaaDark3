@@ -26,9 +26,9 @@ const StepThree: React.FC<StepThreeProps> = ({
   const [showValidationError, setShowValidationError] = useState(false);
 
   // Calculate prices
-  const basePrice = data.basePrice || 27499.00;
+  const basePrice = data.basePrice || 27499.0;
   const subtotal = basePrice;
-  const gst = data.gst || 281.00;
+  const gst = data.gst || 281.0;
   const deliveryCharge = data.deliveryCharge || 0;
   const discount = couponApplied ? data.discount || 500 : 0;
   const totalPayable = subtotal + gst + deliveryCharge - discount;
@@ -36,18 +36,18 @@ const StepThree: React.FC<StepThreeProps> = ({
   // Format product details
   const getProductDetails = () => {
     const parts = [];
-    parts.push('1 Qty');
+    parts.push("1 Qty");
     if (data.metalType) parts.push(data.metalType);
     if (data.karat) parts.push(`${data.karat} kart`);
     if (data.stoneType) parts.push(`With ${data.stoneType}`);
-    return parts.join(' | ');
+    return parts.join(" | ");
   };
 
   const validateForm = () => {
     return !!(
-      data.personalConsultation && 
-      data.termsAccepted && 
-      data.timeline && 
+      data.personalConsultation &&
+      data.termsAccepted &&
+      data.timeline &&
       data.customizationAccepted
     );
   };
@@ -73,15 +73,20 @@ const StepThree: React.FC<StepThreeProps> = ({
     setShowValidationError(false);
     onChange({
       ...data,
-      timeline: date
+      timeline: date,
     });
   };
 
-  const handleCheckboxChange = (field: keyof Pick<DesignFormData, 'personalConsultation' | 'termsAccepted' | 'customizationAccepted'>) => {
+  const handleCheckboxChange = (
+    field: keyof Pick<
+      DesignFormData,
+      "personalConsultation" | "termsAccepted" | "customizationAccepted"
+    >
+  ) => {
     setShowValidationError(false);
     onChange({
       ...data,
-      [field]: !data[field]
+      [field]: !data[field],
     });
   };
 
@@ -93,19 +98,25 @@ const StepThree: React.FC<StepThreeProps> = ({
         <div className="grid grid-cols-[1fr_400px] gap-16">
           {/* Left Column - Additional Details */}
           <div>
-            <h3 className="text-[15px] text-gray-700 font-medium mb-8">Additional Details</h3>
+            <h3 className="text-[15px] text-gray-700 font-medium mb-8">
+              Additional Details
+            </h3>
             <div className="space-y-6">
               {/* Expected Timeline */}
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <span className="text-[13px] text-gray-700">Expected Timeline for this design requirement</span>
+                  <span className="text-[13px] text-gray-700">
+                    Expected Timeline for this design requirement
+                  </span>
                   <div className="text-[13px] text-gray-500">
-                  {data.timeline ? new Date(data.timeline).toLocaleDateString('en-US', {
-                    day: 'numeric',
-                    month: 'short',
-                    year: 'numeric'
-                  }) : '14th Mar 2025'}
-                </div>
+                    {data.timeline
+                      ? new Date(data.timeline).toLocaleDateString("en-US", {
+                          day: "numeric",
+                          month: "short",
+                          year: "numeric",
+                        })
+                      : "14th Mar 2025"}
+                  </div>
                 </div>
                 <div className="relative">
                   <DatePicker
@@ -122,7 +133,9 @@ const StepThree: React.FC<StepThreeProps> = ({
                     }`}
                   />
                   {showValidationError && !data.timeline && (
-                    <p className="text-red-500 text-[11px] mt-1">Please select a delivery date</p>
+                    <p className="text-red-500 text-[11px] mt-1">
+                      Please select a delivery date
+                    </p>
                   )}
                 </div>
                 <div className="text-[13px] text-gray-500">
@@ -132,19 +145,29 @@ const StepThree: React.FC<StepThreeProps> = ({
 
               {/* Personal Consultation */}
               <label className="flex items-center gap-3 cursor-pointer">
-                <div 
+                <div
                   className={`w-5 h-5 rounded-[4px] border ${
-                    data.personalConsultation 
-                      ? "bg-pink-500 border-pink-500" 
+                    data.personalConsultation
+                      ? "bg-pink-500 border-pink-500"
                       : showValidationError
                         ? "border-red-500"
                         : "border-gray-300"
                   } flex items-center justify-center transition-colors`}
-                  onClick={() => handleCheckboxChange('personalConsultation')}
+                  onClick={() => handleCheckboxChange("personalConsultation")}
                 >
                   {data.personalConsultation && (
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </div>
@@ -155,42 +178,63 @@ const StepThree: React.FC<StepThreeProps> = ({
 
               {/* Terms & Conditions */}
               <label className="flex items-center gap-3 cursor-pointer">
-                <div 
+                <div
                   className={`w-5 h-5 rounded-[4px] border ${
-                    data.termsAccepted 
-                      ? "bg-pink-500 border-pink-500" 
+                    data.termsAccepted
+                      ? "bg-pink-500 border-pink-500"
                       : showValidationError
                         ? "border-red-500"
                         : "border-gray-300"
                   } flex items-center justify-center transition-colors`}
-                  onClick={() => handleCheckboxChange('termsAccepted')}
+                  onClick={() => handleCheckboxChange("termsAccepted")}
                 >
                   {data.termsAccepted && (
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </div>
                 <span className="text-[13px] text-gray-700">
-                  I agree the terms & Conditions & make 15% of advance payment for this design
+                  I agree the terms & Conditions & make 15% of advance payment
+                  for this design
                 </span>
               </label>
 
               {/* Customization Acceptance */}
               <label className="flex items-center gap-3 cursor-pointer">
-                <div 
+                <div
                   className={`w-5 h-5 rounded-[4px] border ${
-                    data.customizationAccepted 
-                      ? "bg-pink-500 border-pink-500" 
+                    data.customizationAccepted
+                      ? "bg-pink-500 border-pink-500"
                       : showValidationError
                         ? "border-red-500"
                         : "border-gray-300"
                   } flex items-center justify-center transition-colors`}
-                  onClick={() => handleCheckboxChange('customizationAccepted')}
+                  onClick={() => handleCheckboxChange("customizationAccepted")}
                 >
                   {data.customizationAccepted && (
-                    <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                    <svg
+                      className="w-3 h-3 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        d="M5 13l4 4L19 7"
+                      />
                     </svg>
                   )}
                 </div>
@@ -200,19 +244,25 @@ const StepThree: React.FC<StepThreeProps> = ({
               </label>
 
               {showValidationError && (
-                <p className="text-red-500 text-[11px]">Please complete all required fields before proceeding</p>
+                <p className="text-red-500 text-[11px]">
+                  Please complete all required fields before proceeding
+                </p>
               )}
             </div>
           </div>
 
           {/* Right Column - Order Summary */}
           <div>
-            <h3 className="text-[15px] text-gray-700 font-medium mb-8">Order Summary</h3>
+            <h3 className="text-[15px] text-gray-700 font-medium mb-8">
+              Order Summary
+            </h3>
             <div className="bg-white rounded-lg p-6 space-y-6">
               {/* Selected Design Preview */}
               {data.customImage && (
                 <div className="mb-6">
-                  <p className="text-[13px] text-gray-700 mb-3">Selected Design</p>
+                  <p className="text-[13px] text-gray-700 mb-3">
+                    Selected Design
+                  </p>
                   <div className="relative h-48 w-full rounded-lg overflow-hidden">
                     <Image
                       src={data.customImage}
@@ -227,14 +277,30 @@ const StepThree: React.FC<StepThreeProps> = ({
               {/* Product Details */}
               <div className="flex gap-4">
                 <div className="w-14 h-14 bg-gray-50 rounded-lg flex items-center justify-center">
-                  <svg className="w-6 h-6 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor">
-                    <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <svg
+                    className="w-6 h-6 text-gray-400"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                  >
+                    <path
+                      d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
                   </svg>
                 </div>
                 <div>
-                  <h4 className="font-medium text-[15px]">{data.productName}</h4>
-                  <p className="text-[13px] text-gray-500">{getProductDetails()}</p>
-                  <p className="text-[13px] font-medium mt-1">₹{basePrice.toLocaleString()}.00</p>
+                  <h4 className="font-medium text-[15px]">
+                    {data.productName}
+                  </h4>
+                  <p className="text-[13px] text-gray-500">
+                    {getProductDetails()}
+                  </p>
+                  <p className="text-[13px] font-medium mt-1">
+                    ₹{basePrice.toLocaleString()}.00
+                  </p>
                 </div>
               </div>
 
@@ -256,19 +322,41 @@ const StepThree: React.FC<StepThreeProps> = ({
                   <div className="flex justify-between text-[13px] items-center">
                     <div className="flex items-center gap-2 text-gray-600">
                       <span>COUPON APPLIED</span>
-                      <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      <svg
+                        className="w-4 h-4 text-green-500"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth="2"
+                          d="M5 13l4 4L19 7"
+                        />
                       </svg>
                     </div>
-                    <span className="text-green-600">-₹{discount.toLocaleString()}.00</span>
+                    <span className="text-green-600">
+                      -₹{discount.toLocaleString()}.00
+                    </span>
                   </div>
                 )}
               </div>
 
               {/* Bank Offers */}
               <div className="flex items-center gap-2 text-[13px] text-pink-500 border border-dashed border-pink-200 rounded-lg p-3">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="1.5"
+                    d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"
+                  />
                 </svg>
                 <span>SBI Bank Offers Available</span>
               </div>
@@ -277,7 +365,9 @@ const StepThree: React.FC<StepThreeProps> = ({
               <div className="pt-4 border-t border-gray-100">
                 <div className="flex justify-between text-[15px]">
                   <span className="font-medium">Estimated Total Payable</span>
-                  <span className="font-medium">₹{totalPayable.toLocaleString()}.00</span>
+                  <span className="font-medium">
+                    ₹{totalPayable.toLocaleString()}.00
+                  </span>
                 </div>
               </div>
             </div>

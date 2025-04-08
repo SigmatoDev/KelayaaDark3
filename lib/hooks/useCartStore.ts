@@ -1,15 +1,18 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-
 import { OrderItem, ShippingAddress } from "../models/OrderModel";
 import { round2 } from "../utils";
 
+type CartItem = OrderItem & { basePrice: number };
+
 type Cart = {
-  items: OrderItem[];
+  items: CartItem[];
+  originalItemsPrice: number;
   itemsPrice: number;
   taxPrice: number;
   shippingPrice: number;
   totalPrice: number;
+  totalPriceAfterCheckout: number; // ✅ NEW STATE
   totalCartQuantity: number;
   paymentMethod: string;
   shippingAddress: ShippingAddress;
@@ -31,10 +34,12 @@ type Cart = {
 
 const initialState: Cart = {
   items: [],
+  originalItemsPrice: 0,
   itemsPrice: 0,
   taxPrice: 0,
   shippingPrice: 0,
   totalPrice: 0,
+  totalPriceAfterCheckout: 0, // ✅ INITIAL VALUE
   totalCartQuantity: 0,
   paymentMethod: "Stripe",
   shippingAddress: {
@@ -73,10 +78,12 @@ export const cartStore = create<Cart>()(
 const useCartService = () => {
   const {
     items,
+    originalItemsPrice,
     itemsPrice,
     taxPrice,
     shippingPrice,
     totalPrice,
+    totalPriceAfterCheckout,
     totalCartQuantity,
     paymentMethod,
     shippingAddress,
@@ -91,10 +98,12 @@ const useCartService = () => {
 
   return {
     items,
+    originalItemsPrice,
     itemsPrice,
     taxPrice,
     shippingPrice,
     totalPrice,
+    totalPriceAfterCheckout,
     totalCartQuantity,
     paymentMethod,
     shippingAddress,
@@ -106,15 +115,13 @@ const useCartService = () => {
     gstDetails,
     personalInfo,
 
-    // ✅ Include missing functions
     increase: (item: OrderItem) => {
       const exist = items.find((x) => x.slug === item.slug);
       const updatedCartItems = exist
         ? items.map((x) =>
-            x.slug === item.slug ? { ...exist, qty: exist.qty + 1 } : x
+            x.slug === item.slug ? { ...x, qty: x.qty + 1 } : x
           )
-        : [...items, { ...item, qty: 1 }];
-
+        : [...items, { ...item, qty: 1, basePrice: item.price }];
       updateCart(updatedCartItems);
     },
 
@@ -126,9 +133,8 @@ const useCartService = () => {
         exist.qty === 1
           ? items.filter((x) => x.slug !== item.slug)
           : items.map((x) =>
-              x.slug === item.slug ? { ...exist, qty: exist.qty - 1 } : x
+              x.slug === item.slug ? { ...x, qty: x.qty - 1 } : x
             );
-
       updateCart(updatedCartItems);
     },
 
@@ -149,6 +155,7 @@ const useCartService = () => {
       const discountPrice = itemsPrice >= 2500 ? itemsPrice * 0.1 : 0;
       cartStore.setState({ discountPrice });
 
+      const { items } = cartStore.getState();
       updateCart(items);
     },
 
@@ -158,6 +165,7 @@ const useCartService = () => {
         couponDiscount: 0,
         discountPrice: 0,
       });
+      const { items } = cartStore.getState();
       updateCart(items);
     },
 
@@ -189,6 +197,10 @@ const useCartService = () => {
       cartStore.setState({ lastOrderId });
     },
 
+    setTotalPriceAfterCheckout: (amount: number) => {
+      cartStore.setState({ totalPriceAfterCheckout: amount }); // ✅ NEW SETTER
+    },
+
     clear: () => {
       cartStore.setState({
         ...initialState,
@@ -200,28 +212,36 @@ const useCartService = () => {
 
 export default useCartService;
 
-const updateCart = (items: OrderItem[]) => {
-  const { itemsPrice, shippingPrice, taxPrice, totalPrice } = calcPrice(items);
+const updateCart = (items: CartItem[]) => {
+  const {
+    itemsPrice: newItemsPrice,
+    shippingPrice,
+    taxPrice,
+    totalPrice,
+  } = calcPrice(items);
 
-  // ✅ Calculate total quantity
+  const originalItemsPrice = round2(
+    items.reduce((acc, item) => acc + item.basePrice * item.qty, 0)
+  );
   const totalCartQuantity = items.reduce((acc, item) => acc + item.qty, 0);
 
   cartStore.setState({
     items,
-    itemsPrice,
+    originalItemsPrice,
+    itemsPrice: newItemsPrice,
     shippingPrice,
     taxPrice,
     totalPrice,
-    totalCartQuantity, // ✅ Update total quantity in state
+    totalCartQuantity,
   });
 };
 
-export const calcPrice = (items: OrderItem[]) => {
+export const calcPrice = (items: CartItem[]) => {
   const itemsPrice = round2(
     items.reduce((acc, item) => acc + item.price * item.qty, 0)
   );
   const shippingPrice = round2(itemsPrice > 100 ? 0 : 100);
-  const taxPrice = round2(Number(0.15 * itemsPrice));
+  const taxPrice = round2(0.15 * itemsPrice);
   const totalPrice = Math.round(
     itemsPrice +
       shippingPrice +

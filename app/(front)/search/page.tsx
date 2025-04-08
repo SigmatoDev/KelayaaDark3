@@ -7,8 +7,11 @@ import PriceFilter from "./priceFilter";
 import RatingFilter from "./ratingFilter";
 import MaterialTypeDropdown from "./materialDropdown";
 import FilterChips from "./filterChip";
-import ClientSearchWrapper from "./clientSearchWrapper";
+import StyleFilter from "./styleFilter";
 import ClearAllFilters from "./clearAllFilters";
+import ClientSearchWrapper from "./clientSearchWrapper";
+// import ClientSearchWrapper from "./clientSearchWrapper";
+// import ClearAllFilters from "./clearAllFilters";
 
 const sortOrders = ["newest", "lowest", "highest", "rating"];
 const pageSize = 10; // Default to 10 products per page
@@ -44,44 +47,47 @@ export default async function SearchPage({
   const currentPage = Number(page);
 
   const getFilterUrl = ({
-    c,
+    q: qParam,
     m,
     pc,
-    s,
+    c,
     p,
     r,
+    s,
     pg,
   }: {
-    c?: string;
+    q?: string;
     m?: string;
     pc?: string;
-    s?: string;
+    c?: string;
     p?: string;
     r?: string;
+    s?: string;
     pg?: string;
   }) => {
-    const params: any = {
-      q,
-      productCategory,
-      price,
-      rating,
-      sort,
-      page,
-      materialType,
-      category,
-    };
-    if (c) params.productCategory = c;
-    if (m) params.materialType = m;
-    if (pc) params.category = pc;
-    if (p) params.price = p;
-    if (r) params.rating = r;
-    if (pg) params.page = pg;
-    if (s) params.sort = s;
-    return `/search?${new URLSearchParams(params).toString()}`;
+    const finalParams: Record<string, string> = {};
+
+    if (qParam ?? q) finalParams.q = qParam ?? q;
+    if (m ?? materialType) finalParams.materialType = m ?? materialType;
+    if (pc ?? productCategory)
+      finalParams.productCategory = pc ?? productCategory;
+    if ((pc || c) && (c ?? category)) finalParams.category = c ?? category; // only include if pc or c exists
+    if (p ?? price) finalParams.price = p ?? price;
+    if (r ?? rating) finalParams.rating = r ?? rating;
+    if (s ?? sort) finalParams.sort = s ?? sort;
+    if (pg ?? page) finalParams.page = pg ?? page;
+
+    const params = new URLSearchParams(finalParams);
+    const finalUrl = `/search?${params.toString()}`;
+
+    console.log("🔗 Generated Filter URL:", finalUrl);
+    return finalUrl;
   };
 
   const categories = await productServices.getCategories();
   const materials = await productServices.getMaterialTypes();
+  const combineCategoryAndSubcategory =
+    await productServices.getCombinedCategoriesAndSubcategories();
 
   const { countProducts, products, pages } = await productServices.getByQuery({
     productCategory,
@@ -109,13 +115,14 @@ export default async function SearchPage({
         <div>
           <span className="flex items-center justify-between">
             <div>Filters</div>
-            {/* <ClearAllFilters /> */}
+            <ClearAllFilters />
           </span>
         </div>
         <div>
           <hr />
         </div>
         <MaterialTypeDropdown
+          // categories={combineCategoryAndSubcategory}
           materials={materials}
           selectedMaterialType={materialType}
           q={q}
@@ -126,12 +133,26 @@ export default async function SearchPage({
           page={page}
           productCategory={productCategory}
         />{" "}
-         <div className="p-0 m-0">
+        <div className="p-0 m-0">
           <hr />
         </div>
         <CategoryDropdown
           categories={categories}
           selectedCategory={productCategory}
+          q={q}
+          productCategory={productCategory}
+          price={price}
+          rating={rating}
+          sort={sort}
+          page={page}
+          materialType={materialType}
+        />{" "}
+        <div className="p-0 m-0">
+          <hr />
+        </div>
+        <StyleFilter
+          category={combineCategoryAndSubcategory}
+          selectedCategory={category}
           q={q}
           productCategory={productCategory}
           price={price}
@@ -152,7 +173,7 @@ export default async function SearchPage({
           page={page}
           materialType={materialType}
         />{" "}
-       <div className="p-0 m-0">
+        <div className="p-0 m-0">
           <hr />
         </div>
         {/* <RatingFilter

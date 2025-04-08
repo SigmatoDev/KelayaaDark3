@@ -21,6 +21,8 @@ const CartDetails = () => {
     decrease,
     applyCoupon,
     removeCoupon,
+    originalItemsPrice,
+    setTotalPriceAfterCheckout,
   } = useCartService();
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -46,6 +48,11 @@ const CartDetails = () => {
   const handleRemoveCoupon = () => {
     removeCoupon();
     setCouponInput("");
+  };
+
+  const handleProceedToCheckOut = () => {
+    router.push("/shipping");
+    setTotalPriceAfterCheckout(totalPrice);
   };
 
   return (
@@ -155,7 +162,7 @@ const CartDetails = () => {
             <ul className="space-y-4 text-gray-700">
               <li className="flex justify-between text-sm">
                 <span>Price:</span>
-                <span>₹ {itemsPrice.toFixed(2)}</span>
+                <span>₹ {originalItemsPrice.toFixed(2)}</span>
               </li>
               <li className="flex justify-between text-sm">
                 <span>Discount:</span>
@@ -216,7 +223,7 @@ const CartDetails = () => {
             <button
               type="button"
               className="w-full mt-6 py-3 text-[12px] text-white font-semibold bg-gradient-to-r from-pink-500 to-red-500"
-              onClick={() => router.push("/shipping")}
+              onClick={() => handleProceedToCheckOut()}
             >
               PROCEED TO CHECKOUT
             </button>
