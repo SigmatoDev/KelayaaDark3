@@ -4,6 +4,18 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useLayoutService from "@/lib/hooks/useLayout";
 
+interface CategoryFilterProps {
+  categories: string[];
+  selectedCategory: string;
+  q: string;
+  productCategory: string;
+  price: string;
+  rating: string;
+  sort: string;
+  page: string;
+  materialType: string;
+}
+
 const CategoryFilter = ({
   categories,
   selectedCategory,
@@ -14,17 +26,7 @@ const CategoryFilter = ({
   sort,
   page,
   materialType,
-}: {
-  categories: string[];
-  selectedCategory: string;
-  q: string;
-  productCategory: string;
-  price: string;
-  rating: string;
-  sort: string;
-  page: string;
-  materialType: string;
-}) => {
+}: CategoryFilterProps) => {
   const initialSelection =
     selectedCategory && selectedCategory !== "all"
       ? selectedCategory.split(",")
@@ -36,19 +38,16 @@ const CategoryFilter = ({
   const { theme } = useLayoutService();
 
   const handleSelect = (category: string) => {
-    const isSelected = selected.includes(category);
-    const updated = isSelected
+    const updated = selected.includes(category)
       ? selected.filter((c) => c !== category)
       : [...selected, category];
     setSelected(updated);
   };
 
-  const handleClear = () => {
-    setSelected([]);
-  };
+  const handleClear = () => setSelected([]);
 
   useEffect(() => {
-    const params: any = {
+    const params: Record<string, string> = {
       q,
       materialType,
       productCategory: selected.length > 0 ? selected.join(",") : "all",
@@ -72,6 +71,12 @@ const CategoryFilter = ({
     `${isActive ? "font-medium text-black" : ""}`;
 
   const visibleCategories = showMore ? categories : categories.slice(0, 4);
+
+  useEffect(() => {
+    if (productCategory === "all" && selected.length > 0) {
+      setSelected([]);
+    }
+  }, [productCategory]);
 
   return (
     <div
@@ -113,7 +118,6 @@ const CategoryFilter = ({
           );
         })}
 
-        {/* Show More / Show Less toggle */}
         {categories.length > 4 && (
           <button
             onClick={() => setShowMore((prev) => !prev)}

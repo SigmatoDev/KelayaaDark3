@@ -243,14 +243,14 @@ const getByQuery = cache(
     // Special handling for Pendant categories (minimalist, etc.)
     // ----------------------------------------
     let categoryOnlyFilter = {};
-    if (category && category !== "all") {
-      const isPendantCategory =
-        productCategory?.toLowerCase() === "pendant" &&
-        ["minimalist", "statement", "solitaire"].includes(
-          category.toLowerCase()
-        );
 
-      if (isPendantCategory) {
+    if (category && category !== "all") {
+      // Check if the given category is a subcategory
+      const isSubCategory = await ProductModel.exists({
+        subCategories: category,
+      });
+
+      if (isSubCategory) {
         categoryOnlyFilter = { subCategories: category };
       } else {
         categoryOnlyFilter = { category };
@@ -521,6 +521,32 @@ const getByCategory = cache(async (category: string) => {
   return shuffledProducts as unknown as Product[];
 });
 
+const getCombinedCategoriesAndSubcategories = cache(async () => {
+  await dbConnect();
+
+  const categories = await ProductModel.distinct("category", {
+    image: { $regex: /^http/ },
+  });
+
+  const subcategories = await ProductModel.distinct("subCategories", {
+    image: { $regex: /^http/ },
+  });
+
+  // Combine and filter out bad values
+  const combined = Array.from(
+    new Set([...categories, ...subcategories])
+  ).filter(
+    (item) =>
+      item &&
+      typeof item === "string" &&
+      item.trim().toLowerCase() !== "na" &&
+      item.trim().toLowerCase() !== "n/a" &&
+      item.trim().toLowerCase() !== "null"
+  );
+
+  return combined;
+});
+
 const productService = {
   getLatest,
   getFeatured,
@@ -531,6 +557,7 @@ const productService = {
   getByCategory,
   getMaterialTypes,
   getByProductCode,
+  getCombinedCategoriesAndSubcategories,
 };
 
 export default productService;

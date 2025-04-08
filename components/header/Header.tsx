@@ -151,7 +151,7 @@ const menuData: Record<string, MenuItem> = {
         ],
       },
       {
-        label: "Pendant",
+        label: "Pendants",
         subcategories: [
           { label: "All Pendants" },
           { label: "Minimalist" },
@@ -160,7 +160,7 @@ const menuData: Record<string, MenuItem> = {
         ],
       },
       {
-        label: "Ring",
+        label: "Rings",
         subcategories: [
           { label: "All Rings" },
           { label: "Dailywear" },
@@ -178,11 +178,11 @@ const menuData: Record<string, MenuItem> = {
         ],
       },
       {
-        label: "Bangle",
+        label: "Bangles",
         subcategories: [{ label: "All Bangles" }],
       },
       {
-        label: "Bracelet",
+        label: "Bracelets",
         subcategories: [{ label: "All Bracelets" }],
       },
       {
@@ -324,13 +324,13 @@ const Header = () => {
     setIsOpen(false);
   };
 
-  const handleSubClick = (productCategory: string, subLabel: string) => {
+  const handleSubClick = (productCategory: string, categor: string) => {
     const isBangleCategory =
       productCategory.toLowerCase() === "bangle" ||
       productCategory.toLowerCase() === "bangles";
 
-    const isAllBangles = subLabel.toLowerCase() === "all bangles";
-    const categoryParam = isBangleCategory && isAllBangles ? "all" : subLabel;
+    const isAllBangles = categor.toLowerCase() === "all bangles";
+    const categoryParam = isBangleCategory && isAllBangles ? "all" : categor;
 
     const isPriceCategory = productCategory.toLowerCase() === "shop by price";
 
@@ -345,21 +345,23 @@ const Header = () => {
       };
 
       // Handle '+' case
-      if (subLabel.includes("+")) {
-        const minRaw = subLabel.split("+")[0];
+      if (categor.includes("+")) {
+        const minRaw = categor.split("+")[0];
         const min = convertToNumber(minRaw);
         router.push(`/search?price=${encodeURIComponent(`${min}+`)}`);
       } else {
-        const [minRaw, maxRaw] = subLabel.split("-");
+        const [minRaw, maxRaw] = categor.split("-");
         const min = convertToNumber(minRaw);
         const max = convertToNumber(maxRaw);
         router.push(`/search?price=${min}-${max}`);
       }
     } else {
       router.push(
-        `/search?productCategory=${encodeURIComponent(
+        `/search?q=all&productCategory=${encodeURIComponent(
           productCategory
-        )}&category=${encodeURIComponent(categoryParam)}&materialType=${hoveredMaterialType}`
+        )}&category=${encodeURIComponent(
+          categoryParam
+        )}&materialType=${hoveredMaterialType}&price=all&rating=all&sort=newest&page=1`
       );
     }
 
@@ -788,7 +790,7 @@ const Header = () => {
             {/* <HeroSection /> */}
             <HeroSectionCustomDesign />
           </div>
-          <CardGrid />
+          {/* <CardGrid /> */}
         </>
       )}
 

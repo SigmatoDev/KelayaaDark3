@@ -33,7 +33,7 @@ const Form = () => {
         <div className="card-body">
           <h1 className="card-title">Payment Method</h1>
           <form onSubmit={handleSubmit}>
-            {["PayPal", "Stripe", "CashOnDelivery"].map((payment) => (
+            {["Razorpay", "Stripe", "CashOnDelivery"].map((payment) => (
               <div key={payment}>
                 <label className="label cursor-pointer">
                   <span className="label-text">{payment}</span>
@@ -49,7 +49,7 @@ const Form = () => {
               </div>
             ))}
             <div className="my-2">
-              <button type="submit" className="btn btn-primary w-full">
+              <button type="submit" className="btn text-white font-semibold bg-gradient-to-r from-pink-500 to-red-500 w-full">
                 Next
               </button>
             </div>
