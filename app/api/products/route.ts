@@ -3,6 +3,7 @@ import dbConnect from "@/lib/dbConnect";
 import GoldDiamondProductPricingModel from "@/lib/models/GoldDiamondProductsPricingDetails";
 import GoldPrice from "@/lib/models/GoldPriceSchema";
 import ProductModel from "@/lib/models/ProductModel";
+import SetsProductModel from "@/lib/models/SetsProductsModel";
 
 export const GET = auth(async (req: any) => {
   await dbConnect();
@@ -21,13 +22,16 @@ export const GET = auth(async (req: any) => {
 
 // export const GET = auth(async (req: any) => {
 //   await dbConnect();
-//   console.log("🔄 Fetching products from DB...");
+//   console.log("🔄 Fetching products and sets from DB...");
 
-//   const products = await ProductModel.find().sort({ createdAt: -1 });
+//   const [products, sets, goldPricesList] = await Promise.all([
+//     ProductModel.find().sort({ createdAt: -1 }),
+//     SetsProductModel.find().sort({ createdAt: -1 }),
+//     GoldPrice.find({}),
+//   ]);
+
 //   console.log(`✅ Retrieved ${products.length} products.`);
-
-//   console.log("🔄 Fetching latest gold prices...");
-//   const goldPricesList = await GoldPrice.find({});
+//   console.log(`✅ Retrieved ${sets.length} sets.`);
 //   console.log(`✅ Retrieved ${goldPricesList.length} gold prices.`);
 
 //   const goldPriceMap = goldPricesList.reduce(
@@ -38,6 +42,7 @@ export const GET = auth(async (req: any) => {
 //     {} as Record<string, number>
 //   );
 
+//   // 🔁 Update Regular Products (Gold + KD prefix only)
 //   const updatedProducts = await Promise.all(
 //     products.map(async (product) => {
 //       const isGoldKD =
@@ -48,7 +53,9 @@ export const GET = auth(async (req: any) => {
 //         return product.toObject(); // Skip non-gold or KS series
 //       }
 
-//       console.log(`🔍 Processing: ${product.name} (${product.productCode})`);
+//       console.log(
+//         `🔍 Processing Product: ${product.name} (${product.productCode})`
+//       );
 
 //       const pricingDetails = await GoldDiamondProductPricingModel.findOne({
 //         productCode: product.productCode,
@@ -59,27 +66,11 @@ export const GET = auth(async (req: any) => {
 //         return product.toObject();
 //       }
 
-//       console.log(`✅ Found pricing details for ${product.productCode}`);
-
 //       const goldPrice =
 //         goldPriceMap[product.goldPurity] ?? pricingDetails.goldPrice;
-
-//       console.log(`💰 Gold Price for ${product.goldPurity}: ${goldPrice}`);
-
 //       const goldTotal = pricingDetails.grossWeight * goldPrice;
-
-//       console.log(
-//         `📊 Gold Total: ${goldTotal} (Weight: ${pricingDetails.grossWeight} * Price: ${goldPrice})`
-//       );
-
 //       const totalPrice =
 //         goldTotal + pricingDetails.makingCharge + pricingDetails.diamondTotal;
-
-//       console.log(
-//         `📊 Final Price Calculation for ${product.productCode}:`,
-//         `Gold Total: ${goldTotal}, Making Charge: ${pricingDetails.makingCharge},`,
-//         `Diamond Total: ${pricingDetails.diamondTotal}, Final Price: ${totalPrice}`
-//       );
 
 //       await GoldDiamondProductPricingModel.findByIdAndUpdate(
 //         pricingDetails._id,
@@ -94,7 +85,9 @@ export const GET = auth(async (req: any) => {
 //         price: totalPrice,
 //       });
 
-//       console.log(`✅ Updated ${product.productCode} in DB.`);
+//       console.log(
+//         `✅ Updated ${product.productCode} | Final Price: ₹${totalPrice}`
+//       );
 
 //       return {
 //         ...product.toObject(),
@@ -105,13 +98,88 @@ export const GET = auth(async (req: any) => {
 //     })
 //   );
 
-//   const sortedProducts = updatedProducts.sort((a, b) => {
+//   // 🔁 Update Sets Products (Only Gold + KD prefixed codes)
+//   const updatedSets = await Promise.all(
+//     sets.map(async (set) => {
+//       const isGoldKD =
+//         set.materialType?.toLowerCase() === "gold" &&
+//         set.productCode?.toUpperCase().startsWith("KD");
+
+//       if (!isGoldKD) {
+//         return set.toObject(); // Skip non-gold or non-KD sets
+//       }
+
+//       console.log(`🔍 Processing Set: ${set.name} (${set.productCode})`);
+
+//       const updatedItems = await Promise.all(
+//         set.items.map(
+//           async (item: { productCode: any; goldPurity: any; pricing: any }) => {
+//             const productCode = item.productCode;
+//             const purity = item.goldPurity;
+
+//             if (!productCode || !purity) return item;
+
+//             const latestGoldPrice = goldPriceMap[purity];
+//             if (!latestGoldPrice) {
+//               console.log(`⚠️ No gold price found for purity: ${purity}`);
+//               return item;
+//             }
+
+//             const grossWeight = item?.pricing?.grossWeight ?? 0;
+//             const diamondTotal = item?.pricing?.diamondTotal ?? 0;
+//             const makingCharges = item?.pricing?.makingCharges ?? 0;
+//             const goldTotal = grossWeight * latestGoldPrice;
+//             const totalPrice = goldTotal + diamondTotal + makingCharges;
+
+//             console.log(
+//               `📦 ${productCode} | Gold: ₹${latestGoldPrice} x ${grossWeight}g = ₹${goldTotal}, ` +
+//                 `Diamond: ₹${diamondTotal}, Making: ₹${makingCharges}, Total: ₹${totalPrice}`
+//             );
+
+//             return {
+//               ...item,
+//               pricing: {
+//                 ...item.pricing,
+//                 goldPrice: latestGoldPrice,
+//                 goldTotal,
+//                 totalPrice,
+//               },
+//             };
+//           }
+//         )
+//       );
+
+//       const totalSetPrice = updatedItems.reduce((sum, item) => {
+//         return sum + (item?.pricing?.totalPrice ?? 0);
+//       }, 0);
+
+//       await SetsProductModel.findByIdAndUpdate(set._id, {
+//         items: updatedItems,
+//         price: totalSetPrice,
+//       });
+
+//       console.log(
+//         `✅ Updated Set ${set.productCode} | Final Price: ₹${totalSetPrice}`
+//       );
+
+//       return {
+//         ...set.toObject(),
+//         items: updatedItems,
+//         price: totalSetPrice,
+//       };
+//     })
+//   );
+
+//   // ✅ Merge and sort all products by image presence
+//   const allProducts = [...updatedProducts, ...updatedSets];
+
+//   const sortedProducts = allProducts.sort((a, b) => {
 //     const hasImageA = a.image && a.image.startsWith("http");
 //     const hasImageB = b.image && b.image.startsWith("http");
 //     return Number(hasImageB) - Number(hasImageA);
 //   });
 
-//   console.log("✅ Final sorted products list ready to send.");
+//   console.log("✅ Final sorted product list ready to send.");
 
 //   return Response.json(sortedProducts);
 // }) as any;

@@ -1,12 +1,13 @@
 "use client";
 import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation"; // Import useRouter for navigation
+import { useRouter } from "next/navigation";
 import AddToCart from "@/components/products/AddToCart";
 import { convertDocToObj } from "@/lib/utils";
 import { Heart } from "lucide-react";
 
 interface Product {
+  productCode: string;
   _id: string;
   name: string;
   price: string;
@@ -26,12 +27,12 @@ const Wishlist = () => {
     null
   );
   const { data: session } = useSession();
-  console.log("data", session);
-  const userId = session?.user?.id; // You can get this from session or auth context
-  const router = useRouter(); // Initialize router for navigation
+  const userId = session?.user?.id;
+  const router = useRouter();
 
   useEffect(() => {
     const fetchWishlist = async () => {
+      if (!userId) return;
       const res = await fetch(`/api/wishlist?userId=${userId}`);
       const data = await res.json();
       setWishlistData(data);
@@ -39,6 +40,34 @@ const Wishlist = () => {
 
     fetchWishlist();
   }, [userId]);
+
+  const handleNavigateToProduct = (slug: string) => {
+    router.push(`/product/${slug}`);
+  };
+
+  const handleRemoveFromWishlist = async (productId: string) => {
+    if (!userId) return;
+
+    const res = await fetch("/api/wishlist", {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ userId, productId }),
+    });
+
+    const result = await res.json();
+    if (result.status) {
+      setWishlistData((prev) =>
+        prev
+          ? {
+              ...prev,
+              products: prev.products.filter((p) => p._id !== productId),
+            }
+          : prev
+      );
+    }
+  };
 
   if (!wishlistData) {
     return (
@@ -58,47 +87,53 @@ const Wishlist = () => {
     );
   }
 
-  const handleNavigateToProduct = (productId: string) => {
-    router.push(`/product/${productId}`); // Navigate to the product page
-  };
-
   return (
-    <div className="container mx-auto py-10 px-5">
-      <h2 className="text-3xl  mb-8 text-center flex items-center justify-center">
-        Your Wishlist <Heart className="ml-2 w-8 h-8 stroke-pink-700" />
+    <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
+      <h2 className="text-3xl mb-8 text-center flex items-center justify-center font-bold text-gray-800">
+        Your Wishlist <Heart className="ml-2 w-7 h-7 stroke-pink-700" />
       </h2>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {wishlistData.products.length === 0 ? (
-          <p className="text-center text-xl col-span-2">
-            Your wishlist is empty
-          </p>
-        ) : (
-          wishlistData.products.map((product) => (
+
+      {wishlistData.products.length === 0 ? (
+        <p className="text-center text-xl text-gray-500">
+          Your wishlist is empty
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {wishlistData.products.map((product) => (
             <div
               key={product._id}
-              onClick={() => handleNavigateToProduct(product?.slug)}
-              className="flex flex-col md:flex-row bg-white shadow-md p-4 cursor-pointer"
+              className="flex flex-col bg-white shadow rounded-lg p-4 hover:shadow-lg transition-shadow duration-300"
             >
               {/* Image */}
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-32 h-32 object-cover mb-4 md:mb-0 md:mr-6"
+                className="w-full h-48 object-cover rounded-md mb-4 cursor-pointer"
+                onClick={() => handleNavigateToProduct(product?.productCode)}
               />
-              {/* Product Details */}
-              <div className="flex-1">
-                <h3 className="text-sm font-semibold text-gray-800">
+
+              {/* Details */}
+              <div
+                className="flex flex-col flex-grow justify-between cursor-pointer"
+                onClick={() => handleNavigateToProduct(product?.productCode)}
+              >
+                <h3 className="text-lg font-semibold text-gray-800">
                   {product.name}
                 </h3>
-                {/* Description */}
-                <p className="text-sm text-gray-600 mt-2 line-clamp-1">
+                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
                   {product.description}
                 </p>
-                {/* Price */}
-                <p className="text-md font-semibold text-black my-3">
-                  ₹{product.price}
+                <p className="text-md font-semibold text-black my-2">
+                  ₹
+                  {new Intl.NumberFormat("en-IN", {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  }).format(Number(product.price))}
                 </p>
-                {/* Add to Cart Button */}
+              </div>
+
+              {/* Actions */}
+              <div className="mt-4 flex flex-col sm:flex-row gap-2">
                 <AddToCart
                   item={{
                     ...convertDocToObj(product),
@@ -107,11 +142,17 @@ const Wishlist = () => {
                     size: "",
                   }}
                 />
+                <button
+                  onClick={() => handleRemoveFromWishlist(product._id)}
+                  className="px-4 py-2 text-sm text-white bg-red-500 hover:bg-red-600 rounded-md transition-all duration-200"
+                >
+                  Remove
+                </button>
               </div>
             </div>
-          ))
-        )}
-      </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

@@ -2,26 +2,40 @@ import { cache } from "react";
 
 import dbConnect from "@/lib/dbConnect";
 import ProductModel, { Product } from "@/lib/models/ProductModel";
+import SetsProductModel from "../models/SetsProductsModel";
 
 export const revalidate = 3600;
 
 const getLatest = cache(async () => {
+  // ✅ 1. Connect to MongoDB
   await dbConnect();
 
-  // Fetch all products sorted by latest (_id in descending order)
-  const allProducts = await ProductModel.find({})
-    .sort({ _id: -1 }) // Get the latest products first
-    .lean(); // Convert to plain JavaScript objects
+  // ✅ 2. Fetch Latest Products from ProductModel
+  const regularProducts = await ProductModel.find({})
+    .sort({ _id: -1 }) // Latest first
+    .lean();
 
-  // Filter out products with invalid or missing image URLs
-  const validProducts = allProducts.filter(
+  // ✅ 3. Fetch Gold Sets from SetProductModel
+  const goldSetProducts = await SetsProductModel.find({
+    productType: { $regex: /^sets$/i },
+    materialType: { $regex: /^gold$/i },
+  })
+    .sort({ _id: -1 }) // Latest first
+    .lean();
+
+  // ✅ 4. Combine Both Product Types
+  const combinedProducts = [...regularProducts, ...goldSetProducts];
+
+  console.log("combinedProducts", combinedProducts.length);
+  // ✅ 5. Filter Out Invalid Image URLs
+  const validProducts = combinedProducts.filter(
     (product) => product.image && /^https?:\/\//.test(product.image)
   );
 
-  // Shuffle the filtered products
+  // ✅ 6. Shuffle the Products
   const shuffledProducts = shuffleArray(validProducts);
 
-  // Return the top 8 shuffled products
+  // ✅ 7. Return Top 8 Latest Products
   return shuffledProducts.slice(0, 8) as unknown as Product[];
 });
 
@@ -98,25 +112,41 @@ const getBySlug = cache(async (slug: string) => {
 const getByProductCode = cache(async (productCode: string) => {
   await dbConnect();
 
-  // Fetch the product by productCode
-  const product = (await ProductModel.findOne({
+  // ✅ 1. Try to Find Product in ProductModel
+  let product = (await ProductModel.findOne({
     productCode,
   }).lean()) as Product | null;
 
-  if (!product) return null;
-
-  // If product has a valid image URL, return it
-  if (product.image && product.image.startsWith("http")) {
-    return product;
+  // ✅ 2. If Found but No Valid Image, Try Finding Same Code with Valid Image
+  if (product && !(product.image && product.image.startsWith("http"))) {
+    const alt = (await ProductModel.findOne({
+      productCode,
+      image: { $regex: /^http/ },
+    }).lean()) as Product | null;
+    if (alt) return alt;
   }
 
-  // If product has no valid image, try finding another with the same productCode that has an image
-  const alternativeProduct = (await ProductModel.findOne({
-    productCode,
-    image: { $regex: /^http/ }, // Find a product with a valid image URL
-  }).lean()) as Product | null;
+  // ✅ 3. If Not Found in ProductModel, Try SetProductModel (Only Gold Sets)
+  if (!product) {
+    product = (await SetsProductModel.findOne({
+      productCode,
+      productType: { $regex: /^sets$/i },
+      materialType: { $regex: /^gold$/i },
+    }).lean()) as Product | null;
 
-  return alternativeProduct || product;
+    // ✅ 4. If Found, But No Valid Image, Look for Image Variant
+    if (product && !(product.image && /^http/.test(product.image))) {
+      const altSet = (await SetsProductModel.findOne({
+        productCode,
+        image: { $regex: /^http/ },
+      }).lean()) as Product | null;
+
+      return altSet || product;
+    }
+  }
+
+  // ✅ 5. Return the Found Product or Null
+  return product;
 });
 
 const PAGE_SIZE = 50;
@@ -195,99 +225,36 @@ const getByQuery = cache(
     page: string;
     materialType: string;
   }) => {
-    console.log("price", price);
-    // ----------------------------------------
-    // ✅ Connect to MongoDB
-    // ----------------------------------------
+    console.log("🟡 [Input Price]:", price);
+
     await dbConnect();
 
-    // ----------------------------------------
-    // ✅ Get All Unique Product Categories
-    // Used for dropdown population or default filters
-    // ----------------------------------------
     const categories = await ProductModel.find()
       .distinct("productCategory")
       .lean();
 
-    // ----------------------------------------
-    // ✅ Full-Text Search Filter (q)
-    // If q is not 'all', apply case-insensitive regex on product name
-    // ----------------------------------------
     const queryFilter =
-      q && q !== "all"
-        ? {
-            name: {
-              $regex: q,
-              $options: "i",
-            },
-          }
-        : {};
+      q && q !== "all" ? { name: { $regex: q, $options: "i" } } : {};
 
-    // ----------------------------------------
-    // ✅ Product Category Filter (dropdown)
-    // If not 'all', use specific category; otherwise include all
-    // ----------------------------------------
     const categoryFilter =
       productCategory && productCategory !== "all"
-        ? {
-            productCategory: {
-              $in: productCategory.split(","),
-            },
-          }
-        : {
-            productCategory: { $in: categories },
-          };
+        ? { productCategory: { $in: productCategory.split(",") } }
+        : { productCategory: { $in: categories } };
 
-    // ----------------------------------------
-    // ✅ Dynamic Category/SubCategory Filter
-    // Special handling for Pendant categories (minimalist, etc.)
-    // ----------------------------------------
     let categoryOnlyFilter = {};
-
     if (category && category !== "all") {
-      // Check if the given category is a subcategory
       const isSubCategory = await ProductModel.exists({
         subCategories: category,
       });
-
-      if (isSubCategory) {
-        categoryOnlyFilter = { subCategories: category };
-      } else {
-        categoryOnlyFilter = { category };
-      }
+      categoryOnlyFilter = isSubCategory
+        ? { subCategories: category }
+        : { category };
     }
 
-    // ----------------------------------------
-    // ✅ Rating Filter (≥ selected rating)
-    // ----------------------------------------
     const ratingFilter =
-      rating && rating !== "all"
-        ? {
-            rating: {
-              $gte: Number(rating),
-            },
-          }
-        : {};
+      rating && rating !== "all" ? { rating: { $gte: Number(rating) } } : {};
 
-    // ----------------------------------------
-    // ✅ Price Filter (single price or range)
-    // Supports "min-max" format or exact number
-    // ----------------------------------------
-    // const priceFilter =
-    //   price && price !== "all"
-    //     ? price.includes("-")
-    //       ? {
-    //           price: {
-    //             $gte: parseFloat(price.split("-")[0]),
-    //             $lte: parseFloat(price.split("-")[1]),
-    //           },
-    //         }
-    //       : {
-    //           price: parseFloat(price),
-    //         }
-    //     : {};
     const decodedPrice = price;
-
     const priceFilter =
       decodedPrice && decodedPrice !== "all"
         ? decodedPrice.includes("-")
@@ -307,14 +274,8 @@ const getByQuery = cache(
                 price: parseFloat(decodedPrice),
               }
         : {};
+    console.log("🧮 [Price Filter]:", decodedPrice, priceFilter);
 
-    console.log("🧮 Price filter:", decodedPrice, priceFilter);
-
-    // ----------------------------------------
-    // ✅ Material Type Filter (e.g., gold, diamond, silver)
-    // If not 'all', filters only matching materialType
-    // ----------------------------------------
-    // ✅ Material Type Filter (e.g., gold, diamond, silver)
     const materialTypeFilter =
       materialType && materialType !== "all"
         ? {
@@ -326,13 +287,6 @@ const getByQuery = cache(
           }
         : {};
 
-    // ----------------------------------------
-    // ✅ Sort Logic
-    // lowest → price ascending
-    // highest → price descending
-    // toprated → rating descending
-    // default → latest (_id descending)
-    // ----------------------------------------
     const order: Record<string, 1 | -1> =
       sort === "lowest"
         ? { price: 1 }
@@ -342,10 +296,6 @@ const getByQuery = cache(
             ? { rating: -1 }
             : { _id: -1 };
 
-    // ----------------------------------------
-    // ✅ MongoDB Aggregation to Filter & Sort Products
-    // Also prioritize items with valid image URLs
-    // ----------------------------------------
     let products = await ProductModel.aggregate([
       {
         $match: {
@@ -378,16 +328,60 @@ const getByQuery = cache(
       { $project: { reviews: 0, hasValidImage: 0 } },
     ]);
 
-    // ----------------------------------------
-    // ✅ Total Product Count After Filtering
-    // ----------------------------------------
+    // ✅ Add Gold Set Products
+    const shouldAddGoldSets =
+      productCategory?.toLowerCase() === "sets" &&
+      materialType?.toLowerCase().includes("gold");
+
+    const isDefaultSearch =
+      (!productCategory || productCategory === "all") &&
+      (!category || category === "all") &&
+      (!materialType || materialType === "all") &&
+      (!price || price === "all") &&
+      (!rating || rating === "all") &&
+      (!q || q === "all");
+
+    if (shouldAddGoldSets || isDefaultSearch) {
+      const setQuery: any = {
+        materialType: /gold/i,
+        productType: /sets/i,
+      };
+
+      if (category && category !== "all") {
+        setQuery.subCategories = category;
+      }
+
+      if (q && q !== "all") {
+        setQuery.name = { $regex: q, $options: "i" };
+      }
+
+      if (rating && rating !== "all") {
+        setQuery.rating = { $gte: Number(rating) };
+      }
+
+      if (decodedPrice && decodedPrice !== "all") {
+        if (decodedPrice.includes("-")) {
+          setQuery["price"] = {
+            $gte: parseFloat(decodedPrice.split("-")[0]),
+            $lte: parseFloat(decodedPrice.split("-")[1]),
+          };
+        } else if (decodedPrice.includes("+")) {
+          setQuery["price"] = {
+            $gte: parseFloat(decodedPrice.replace("+", "")),
+          };
+        } else {
+          setQuery["price"] = parseFloat(decodedPrice);
+        }
+      }
+
+      const setProducts = await SetsProductModel.find(setQuery)
+        .sort(order)
+        .lean();
+      products = [...products, ...setProducts];
+    }
+
     const countProducts = products.length;
 
-    // ----------------------------------------
-    // ✅ Category-based Interleaving or Shuffling
-    // If multiple categories → interleave
-    // Else → random shuffle
-    // ----------------------------------------
     const uniqueCategories = new Set(products.map((p) => p.productCategory));
     if (uniqueCategories.size > 1) {
       const categoryMap = groupByCategory(products);
@@ -396,19 +390,11 @@ const getByQuery = cache(
       products = shuffleArray(products);
     }
 
-    // ----------------------------------------
-    // ✅ Pagination
-    // Default PAGE_SIZE is assumed to be defined globally
-    // ----------------------------------------
     const paginatedProducts = products.slice(
       PAGE_SIZE * (Number(page) - 1),
       PAGE_SIZE * Number(page)
     );
 
-    // ----------------------------------------
-    // ✅ Return Results
-    // Products, count, pagination info, categories for dropdowns
-    // ----------------------------------------
     return {
       products: paginatedProducts as Product[],
       countProducts,
@@ -524,17 +510,35 @@ const getByCategory = cache(async (category: string) => {
 const getCombinedCategoriesAndSubcategories = cache(async () => {
   await dbConnect();
 
+  // From ProductModel
   const categories = await ProductModel.distinct("category", {
     image: { $regex: /^http/ },
   });
 
-  const subcategories = await ProductModel.distinct("subCategories", {
-    image: { $regex: /^http/ },
-  });
+  const subcategoriesFromProducts = await ProductModel.distinct(
+    "subCategories",
+    {
+      image: { $regex: /^http/ },
+    }
+  );
 
-  // Combine and filter out bad values
+  // From SetProductModel
+  const subcategoriesFromSets = await SetsProductModel.distinct(
+    "subCategories",
+    {
+      image: { $regex: /^http/ },
+    }
+  );
+
+  // Flatten in case subCategories are stored as arrays
+  const allSubcategories = [
+    ...subcategoriesFromProducts,
+    ...subcategoriesFromSets,
+  ].flat();
+
+  // Combine all and filter
   const combined = Array.from(
-    new Set([...categories, ...subcategories])
+    new Set([...categories, ...allSubcategories])
   ).filter(
     (item) =>
       item &&
