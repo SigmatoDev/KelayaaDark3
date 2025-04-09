@@ -10,6 +10,7 @@ import useCartService from "@/lib/hooks/useCartStore";
 import { useSession } from "next-auth/react";
 
 interface Product {
+  productType: string;
   size: string;
   ring_size: number;
   _id: string;
@@ -218,7 +219,12 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
           {/* <p className="text-gray-600">SKU</p>
           <p className="font-semibold">: {product?.productCode}</p> */}
           <p className="text-gray-600">Category</p>
-          <p className="font-semibold">: {product?.productCategory}</p>
+          <p className="font-semibold">
+            :{" "}
+            {product?.productType === "Sets"
+              ? product?.productType
+              : product?.productCategory}
+          </p>
           {/* <p className="text-gray-600">Tags</p>
           <p className="font-semibold capitalize">
             : {product?.tags?.join(", ")}
@@ -245,22 +251,6 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
 
         {/* Size & Availability */}
         <div className="flex items-center gap-4 w-full mb-4">
-          {/* Size Selector (Visible only if productCategory is "Rings") */}
-          {/* {product?.productCategory === "Rings" && (
-            <div className="flex items-center bg-[#FFF6F8] rounded-md px-3 py-2 w-1/2">
-              <span className="text-gray-600 text-[12px] font-medium mr-2">
-                SIZE
-              </span>
-              <span className="px-1">|</span>
-              <select className="bg-transparent text-pink-500 font-semibold text-[12px] focus:outline-none w-full">
-                <option className="text-black text-[12px]">18.00 MM</option>
-                <option className="text-black text-[12px]">19.00 MM</option>
-                <option className="text-black text-[12px]">20.00 MM</option>
-              </select>
-            </div>
-          )} */}
-          {/* <p className="font-semibold">Size: {product?.ring_size}</p> */}
-
           {/* Check Availability Button + Message */}
           <div
             className={`flex flex-col ${product?.productCategory === "Rings" || product?.productCategory === "Ring" ? "w-1/2" : "w-full"}`}
