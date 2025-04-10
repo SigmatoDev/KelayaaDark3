@@ -375,6 +375,7 @@ const getByQuery = cache(
     const ratingFilter =
       rating && rating !== "all" ? { rating: { $gte: Number(rating) } } : {};
 
+      
     const decodedPrice = price;
     const priceFilter =
       decodedPrice && decodedPrice !== "all"
