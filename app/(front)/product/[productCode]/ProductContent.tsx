@@ -108,21 +108,12 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
     }
   };
 
-  const hasFetchedWishlistRef = useRef(false);
-
   useEffect(() => {
-    if (!session || !userId || !product._id || hasFetchedWishlistRef.current)
-      return;
+    if (!session || !userId || !product._id) return;
 
-    const debounceTimer = setTimeout(() => {
-      hasFetchedWishlistRef.current = true;
-
-      fetch(`/api/wishlist?userId=${userId}&productId=${product._id}`)
-        .then((res) => res.json())
-        .then((data) => setIsWishlisted(data.status));
-    }, 300); // adjust debounce time (ms) as needed
-
-    return () => clearTimeout(debounceTimer); // clean up on dependency change
+    fetch(`/api/wishlist?userId=${userId}&productId=${product._id}`)
+      .then((res) => res.json())
+      .then((data) => setIsWishlisted(data.status));
   }, [session, userId, product._id]);
 
   const toggleWishlist = async () => {
