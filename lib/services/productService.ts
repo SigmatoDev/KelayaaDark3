@@ -332,13 +332,44 @@ const getByQuery = cache(
         : { productCategory: { $in: categories } };
 
     let categoryOnlyFilter = {};
+
     if (category && category !== "all") {
-      const isSubCategory = await ProductModel.exists({
-        subCategories: category,
-      });
-      categoryOnlyFilter = isSubCategory
-        ? { subCategories: category }
-        : { category };
+      const isGold =
+        materialType && materialType.toLowerCase().includes("gold");
+
+      const isSilver =
+        materialType && materialType.toLowerCase().includes("silver");
+
+      // Dynamically determine where to search: subCategories or category
+      if (isGold) {
+        // For gold, category might be inside subCategories
+        const isSubCategory = await ProductModel.exists({
+          subCategories: { $regex: new RegExp(`^${category}$`, "i") },
+        });
+
+        categoryOnlyFilter = isSubCategory
+          ? { subCategories: { $regex: new RegExp(`^${category}$`, "i") } }
+          : { category: { $regex: new RegExp(`^${category}$`, "i") } };
+      } else if (isSilver) {
+        // For silver, search only in the category field
+        categoryOnlyFilter = {
+          category: { $regex: new RegExp(`^${category}$`, "i") },
+        };
+      } else {
+        // Default fallback if materialType not provided
+        const isSubCategory = await ProductModel.exists({
+          subCategories: { $regex: new RegExp(`^${category}$`, "i") },
+        });
+
+        categoryOnlyFilter = isSubCategory
+          ? { subCategories: { $regex: new RegExp(`^${category}$`, "i") } }
+          : { category: { $regex: new RegExp(`^${category}$`, "i") } };
+      }
+
+      console.log("🔍 [Category Debug]");
+      console.log("➡️ Input category:", category);
+      console.log("🔩 Material Type:", materialType);
+      console.log("📦 categoryOnlyFilter:", categoryOnlyFilter);
     }
 
     const ratingFilter =
@@ -619,7 +650,7 @@ const getCombinedCategoriesAndSubcategories = cache(async () => {
     //   image: { $regex: /^http/ },
     // }
   );
-  console.log("subcategoriesFromSets", subcategoriesFromSets);
+  // console.log("subcategoriesFromSets", subcategoriesFromSets);
   // Flatten in case subCategories are stored as arrays
   const allSubcategories = [
     ...subcategoriesFromProducts,
