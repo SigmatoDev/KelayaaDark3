@@ -19,7 +19,7 @@ export default function RingDetails({ product }: { product: ProductType }) {
   return (
     <div className="space-y-4">
       {/* Info row with customize button */}
-      <div className="flex rounded-full border border-yellow-400 overflow-hidden divide-x divide-yellow-400 text-center">
+      <div className="flex  border border-yellow-400 overflow-hidden divide-x divide-yellow-400 text-center">
         {/* Size */}
         <div className="flex-1 px-4 py-2">
           <p className="text-xs text-gray-500 mb-1">Size</p>
@@ -62,7 +62,7 @@ export default function RingDetails({ product }: { product: ProductType }) {
       </div>
 
       {/* Learn how box */}
-      <div className="relative bg-purple-100 text-purple-700 px-4 py-3 rounded-xl">
+      <div className="relative bg-purple-100 text-purple-700 px-4 py-3 ">
         <div className="absolute -top-2 left-6 w-4 h-4 bg-purple-100 rotate-45"></div>
         <div className="flex justify-between items-center">
           <p className="text-sm font-medium">Not sure about your ring size?</p>
