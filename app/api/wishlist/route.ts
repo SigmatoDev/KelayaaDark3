@@ -87,61 +87,46 @@ export async function POST(req: Request) {
 
 // ✅ Check Wishlist Status (For a Single Product)
 // ✅ Fetch Wishlist Details (for a user)
-
 export async function GET(req: NextRequest) {
   try {
+    // 📌 Connect to database
     await dbConnect();
 
+    // 📌 Get and validate userId
     const userId = req.nextUrl.searchParams.get("userId");
-
-    console.log("📥 userId received:", userId);
-
     if (!userId) {
       return NextResponse.json({ message: "Missing userId" }, { status: 400 });
     }
-
     const objectUserId = new Types.ObjectId(userId);
-    console.log("🧾 Converted to ObjectId:", objectUserId);
 
+    // 📌 Fetch wishlist for the user
     const wishlist = await Wishlist.findOne({ userId: objectUserId });
-    if (!wishlist) {
-      console.log("📭 No wishlist found");
+    if (!wishlist || !wishlist.productIds || wishlist.productIds.length === 0) {
       return NextResponse.json([]);
     }
 
-    console.log("✅ Wishlist found:", wishlist);
+    // 📌 Convert productIds to ObjectId and reverse order
+    const productIds = wishlist.productIds
+      .slice()
+      .reverse()
+      .map((id: any) => (typeof id === "string" ? new Types.ObjectId(id) : id));
 
-    const rawProductIds = (wishlist.productIds || []).slice().reverse();
-
-    if (rawProductIds.length === 0) {
-      console.log("📭 No productIds in wishlist");
-      return NextResponse.json([]);
-    }
-
-    // Convert all productIds to ObjectId (safely)
-    const productIds = rawProductIds.map((id: any) =>
-      typeof id === "string" ? new Types.ObjectId(id) : id
-    );
-
-    console.log("🔁 Converted productIds:", productIds);
-
-    // Query both models
+    // 📌 Fetch products from both models
     const [products, sets] = await Promise.all([
       ProductModel.find({ _id: { $in: productIds } }),
       SetsProductModel.find({ _id: { $in: productIds } }),
     ]);
 
+    // 📌 Combine all matching products
     const all = [...products, ...sets];
 
-    console.log("📦 Products to return:", all);
-
+    // 📌 Return response
     return NextResponse.json({
       status: true,
       message: "Wishlist fetched successfully",
-      products: all, // Array of products with required fields
+      products: all,
     });
   } catch (err) {
-    console.error("❌ Error in GET /api/wishlist", err);
     return NextResponse.json(
       { message: "Internal Server Error" },
       { status: 500 }

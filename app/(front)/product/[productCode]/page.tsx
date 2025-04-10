@@ -3,6 +3,27 @@ import productService from "@/lib/services/productService";
 import ProductPageContent from "./ProductContent";
 
 // Define Product interface
+interface Pricing {
+  diamondPrice: number;
+  goldPrice: number;
+  grossWeight: number;
+  pricePerGram: number;
+  makingCharges: number;
+  diamondTotal: number;
+  goldTotal: number;
+  totalPrice: number;
+}
+
+interface Item {
+  productCategory: string;
+  gemCut: string;
+  carats: number;
+  clarity: string;
+  color: string;
+  goldPurity: string;
+  pricing: Pricing;
+}
+
 interface Product {
   _id: string;
   name: string;
@@ -20,6 +41,14 @@ interface Product {
   reviewsCount: number;
   tags: string[];
   images: string[];
+
+  // ✅ Additional fields required by ProductPageContent
+  productType?: string;
+  size?: string;
+  ring_size?: string;
+  carats?: number;
+  pricing?: Pricing;
+  items?: Item[]; // For jewelry sets
 }
 
 // 🔄 Updated: fetch product using productCode

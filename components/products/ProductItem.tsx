@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Product } from "@/lib/models/ProductModel";
@@ -20,6 +20,7 @@ const ProductItem = ({ product }: { product: Product }) => {
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const { data: session } = useSession();
   const userId = session?.user?.id;
+  const hasFetchedRef = useRef(false);
 
   // Validate the product image or fallback
   // Validate the product image or fallback
@@ -37,36 +38,42 @@ const ProductItem = ({ product }: { product: Product }) => {
 
     const timer = setTimeout(() => {
       setLoading(false);
-    }, 2000);
+    }, 1000);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // Fetch wishlist status for this specific product
   useEffect(() => {
-    if (!userId || !product._id) {
+    if (!userId || !product._id || hasFetchedRef.current) {
       setLoading(false);
       return;
     }
 
-    const fetchWishlistStatus = async () => {
-      try {
-        const res = await fetch(`/api/wishlist?userId=${userId}`);
-        const data = await res.json();
+    const debounceTimer = setTimeout(() => {
+      hasFetchedRef.current = true;
 
-        const isInWishlist = data.products.some(
-          (item: Product) => item._id === product._id
-        );
+      const fetchWishlistStatus = async () => {
+        try {
+          const res = await fetch(`/api/wishlist?userId=${userId}`);
+          const data = await res.json();
 
-        setIsWishlisted(isInWishlist);
-      } catch (error) {
-        console.error("Error fetching wishlist status:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+          const isInWishlist = data.products.some(
+            (item: Product) => item._id === product._id
+          );
 
-    fetchWishlistStatus();
+          setIsWishlisted(isInWishlist);
+        } catch (error) {
+          console.error("Error fetching wishlist status:", error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchWishlistStatus();
+    }, 300); // Debounce delay in milliseconds (300ms is common)
+
+    // Cleanup to prevent overlapping calls
+    return () => clearTimeout(debounceTimer);
   }, [userId, product._id]);
 
   // Optimistic Wishlist Toggle
@@ -125,14 +132,18 @@ const ProductItem = ({ product }: { product: Product }) => {
       <figure className="w-full h-full overflow-hidden">
         <Link
           href={`/product/${product?.productCode}`}
-          className="relative w-full h-full block"
+          className="relative block w-full h-full"
         >
           <Image
             key={imageSrc}
-            src={imageSrc || FALLBACK_IMAGE} // Ensure a valid string is passed
+            src={imageSrc || FALLBACK_IMAGE}
             alt={product.name || "Product Image Unavailable"}
-            fill
-            className="object-cover w-full h-full transition-transform duration-700 ease-in-out hover:scale-125"
+            width={500} // Set a fixed or responsive size
+            height={500}
+            quality={70} // Compress for performance
+            placeholder="empty" // or "blur" if you provide blurDataURL
+            loading="lazy"
+            className="object-cover w-full h-full transition-transform duration-700 ease-in-out hover:scale-110"
             onError={() => setImageSrc(FALLBACK_IMAGE)}
           />
         </Link>

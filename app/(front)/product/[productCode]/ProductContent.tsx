@@ -1,13 +1,23 @@
 "use client";
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { FaStar, FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
+import {
+  FaStar,
+  FaFacebookF,
+  FaTwitter,
+  FaInstagram,
+  FaWhatsapp,
+} from "react-icons/fa";
 import AddToCart from "@/components/products/AddToCart";
 import { convertDocToObj } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { CheckCircle, ShoppingCartIcon } from "lucide-react";
 import useCartService from "@/lib/hooks/useCartStore";
 import { useSession } from "next-auth/react";
+import PriceBreakupCard from "./detailsCard";
+import toast from "react-hot-toast";
+import RingDetails from "./ringDetails";
+import AvailabilityChecker from "./checkAvailabilty";
 
 interface Product {
   productType: string;
@@ -35,8 +45,20 @@ interface Product {
   diamondWeight?: number; // In carats
   diamondRate?: number; // Per carat
   diamondType?: string; // e.g., "SI IJ"
-  makingCharges?: number;
-  additionalCharges?: number;
+  gemCut?: string;
+  carats: number;
+  clarity?: string;
+  color?: string;
+  pricing: {
+    grossWeight: number;
+    goldPrice: number;
+    goldTotal: number;
+    diamondPrice: number;
+    diamondTotal: number;
+    makingCharge: number;
+    additionalCharges?: number;
+    totalPrice: number;
+  };
 }
 
 interface ProductPageContentProps {
@@ -58,13 +80,50 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
   const [scale, setScale] = useState(1); // Initial scale of 1
   const [position, setPosition] = useState({ x: 0, y: 0 }); // Position for dragging the image
 
-  // Fetch Wishlist Status
+  // sharing
+  const [shareUrl, setShareUrl] = useState("");
+
   useEffect(() => {
-    if (!userId) return;
-    fetch(`/api/wishlist?userId=${userId}&productId=${product._id}`)
-      .then((res) => res.json())
-      .then((data) => setIsWishlisted(data.status));
-  }, [userId, product._id]);
+    setShareUrl(window.location.href);
+  }, []);
+
+  const shareText = `Check out this product: ${product?.name} - ${shareUrl}`;
+  const encodedText = encodeURIComponent(shareText);
+
+  const handleNativeShare = async () => {
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title: product?.name,
+          text: shareText,
+          url: shareUrl,
+        });
+      } catch (error) {
+        console.error("Sharing failed:", error);
+      }
+    } else {
+      toast.error(
+        "Sharing not supported on this browser. Please use the icons."
+      );
+    }
+  };
+
+  const hasFetchedWishlistRef = useRef(false);
+
+  useEffect(() => {
+    if (!session || !userId || !product._id || hasFetchedWishlistRef.current)
+      return;
+
+    const debounceTimer = setTimeout(() => {
+      hasFetchedWishlistRef.current = true;
+
+      fetch(`/api/wishlist?userId=${userId}&productId=${product._id}`)
+        .then((res) => res.json())
+        .then((data) => setIsWishlisted(data.status));
+    }, 300); // adjust debounce time (ms) as needed
+
+    return () => clearTimeout(debounceTimer); // clean up on dependency change
+  }, [session, userId, product._id]);
 
   const toggleWishlist = async () => {
     if (!userId) return alert("Please log in to add items to wishlist");
@@ -120,11 +179,12 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
   };
 
   return (
-    <div className="max-w-6xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+    <div className="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Left Section - Image Gallery */}
       <div className="flex flex-col md:flex-row gap-4">
         {product.images.length > 0 ? (
           <>
+            {/* Thumbnail previews */}
             <div className="flex md:flex-col gap-2">
               {product.images.map((img, index) => {
                 const imageUrl = img.startsWith("http") ? img : `/${img}`;
@@ -140,9 +200,13 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
                   >
                     <Image
                       src={imageUrl}
-                      alt="product image"
+                      alt={`Thumbnail ${index + 1}`}
                       width={60}
                       height={60}
+                      quality={50}
+                      placeholder="empty"
+                      loading="lazy"
+                      className="object-cover"
                       onError={(e) =>
                         ((e.target as HTMLImageElement).style.display = "none")
                       }
@@ -152,42 +216,36 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
               })}
             </div>
 
-            {/* Main image */}
+            {/* Main image display */}
             {selectedImage && (
               <div
-                className="relative w-full h-[400px] md:h-[500px] overflow-hidden"
+                className="relative w-full max-w-[500px] h-[400px] md:h-[500px] overflow-hidden"
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
                 onMouseDown={handleMouseDown}
-                style={{
-                  cursor: "grab", // Change the cursor to indicate dragging
-                }}
+                style={{ cursor: "grab" }}
               >
-                <div
+                <Image
+                  src={
+                    selectedImage.startsWith("http")
+                      ? selectedImage
+                      : `/${selectedImage}`
+                  }
+                  alt="Main product image"
+                  width={800}
+                  height={800}
+                  quality={75}
+                  priority // optional: only if above the fold
+                  placeholder="empty"
+                  className="w-full h-full object-contain transition-transform duration-300 ease-in-out"
                   style={{
                     transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
                     transformOrigin: "center center",
-                    transition: "transform 0.3s ease",
-                    width: "100%",
-                    height: "100%",
-                    position: "absolute",
                   }}
-                >
-                  <Image
-                    src={
-                      selectedImage.startsWith("http")
-                        ? selectedImage
-                        : `/${selectedImage}`
-                    }
-                    alt="product image"
-                    layout="fill"
-                    objectFit="cover"
-                    quality={100}
-                    onError={(e) =>
-                      ((e.target as HTMLImageElement).style.display = "none")
-                    }
-                  />
-                </div>
+                  onError={(e) =>
+                    ((e.target as HTMLImageElement).style.display = "none")
+                  }
+                />
               </div>
             )}
           </>
@@ -198,11 +256,26 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
 
       {/* Right Section - Product Details */}
       <div className="flex flex-col gap-4">
-        <h1 className="text-2xl font-semibold">{product?.name}</h1>
-        <p className="text-[16px] text-gray-700">
-          Rs. {product?.price.toFixed(2)}
-        </p>
-        <div className="flex items-center gap-2 my-2">
+        <h1 className="text-2xl font-semibold text-gray-800">
+          {product?.name}
+        </h1>
+        <div className="space-y-1 my-2">
+          <div className="text-[26px] font-bold text-pink-600 leading-snug">
+            ₹
+            {product.price
+              ? product.price.toLocaleString("en-IN", {
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
+              : "N/A"}
+          </div>
+
+          <div className="text-sm text-gray-500">
+            MRP (exclusive of all taxes)
+          </div>
+        </div>
+
+        {/* <div className="flex items-center gap-2 my-2">
           <div className="flex text-yellow-500">
             {[...Array(5)].map((_, i) => (
               <FaStar key={i} />
@@ -211,7 +284,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
           <span className="text-gray-500 text-[14px]">
             | {product?.reviewsCount} Customer Reviews
           </span>
-        </div>
+        </div> */}
         <p className="text-gray-600 text-sm">{product?.description}</p>
 
         {/* SKU, Category, Tags */}
@@ -229,7 +302,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
           <p className="font-semibold capitalize">
             : {product?.tags?.join(", ")}
           </p> */}
-          {(product?.size || product?.ring_size) && (
+          {(Number(product?.size) > 0 || Number(product?.ring_size) > 0) && (
             <>
               <p className="text-gray-600">Size</p>
               <p className="font-semibold">
@@ -241,89 +314,65 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
             </>
           )}
 
-          <p className="text-gray-600">Share</p>
-          <div className="flex gap-1 items-center text-gray-500">
-            : <FaFacebookF size={14} />
-            {/* <FaTwitter size={14} /> */}
-            <FaInstagram size={14} />
+          <p className="text-gray-600 font-medium ">Share</p>
+          <div className="flex flex-wrap gap-2 items-center text-gray-500">
+            {/* Facebook */}
+            {/* Facebook */}:
+            <a
+              href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Share on Facebook"
+              className="text-[#1877F2] hover:text-blue-700 transition"
+            >
+              <FaFacebookF size={14} />
+            </a>
+            {/* Instagram */}
+            <a
+              href="https://www.instagram.com/"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Instagram"
+              className="text-[#E1306C] hover:text-pink-600 transition"
+            >
+              <FaInstagram size={14} />
+            </a>
+            {/* WhatsApp */}
+            <a
+              href={`https://wa.me/?text=${encodedText}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Share on WhatsApp"
+              className="text-[#25D366] hover:text-green-600 transition"
+            >
+              <FaWhatsapp size={14} />
+            </a>
+            {/* Native Share (Mobile) */}
+            <button
+              onClick={handleNativeShare}
+              className="text-sm underline text-pink-600 hover:text-pink-700"
+            >
+              More options
+            </button>
           </div>
+        </div>
+
+        <div>
+          {/* Check Availability Button + Message */}
+          <AvailabilityChecker product={product} />
         </div>
 
         {/* Size & Availability */}
-        <div className="flex items-center gap-4 w-full mb-4">
-          {/* Check Availability Button + Message */}
-          <div
-            className={`flex flex-col ${product?.productCategory === "Rings" || product?.productCategory === "Ring" ? "w-1/2" : "w-full"}`}
-          >
-            <button
-              className="bg-[#FFF6F8] text-pink-500 text-[12px] px-6 py-2 font-semibold rounded-none w-full"
-              onClick={() => {
-                setShowAvailability(true);
-                setTimeout(() => setShowAvailability(false), 3000);
-              }}
-            >
-              CHECK AVAILABILITY
-            </button>
-            {showAvailability && product.countInStock > 1 && (
-              <div className="flex items-center text-green-600 text-sm font-semibold mt-2">
-                <CheckCircle className="w-4 h-4 mr-2" />
-                This product is available
-              </div>
-            )}
+        {product?.productCategory === "Rings" && (
+          <div>
+            <RingDetails product={product} />
           </div>
-        </div>
+        )}
+
         <div>
           {/* Price Breakup Section (Visible only for gold products) */}
           {product?.materialType === "gold" && (
-            <div className="bg-gray-50 border text-sm p-4 rounded-md">
-              <h3 className="font-semibold text-lg mb-3 text-pink-600">
-                Price Breakup
-              </h3>
-              <div className="grid grid-cols-2 gap-y-2">
-                <p className="text-gray-600">Metal Type:</p>
-                <p className="font-medium">
-                  {product.materialType || "18K Yellow Gold"}
-                </p>
-
-                <p className="text-gray-600">Gold Weight:</p>
-                <p className="font-medium">
-                  {product.metalWeight?.toFixed(2)} g
-                </p>
-
-                <p className="text-gray-600">Gold Rate:</p>
-                <p className="font-medium">
-                  Rs. {product.metalRate?.toFixed(2)} /g
-                </p>
-
-                <p className="text-gray-600">Diamond Type:</p>
-                <p className="font-medium">{product.diamondType || "SI IJ"}</p>
-
-                <p className="text-gray-600">Diamond Weight:</p>
-                <p className="font-medium">
-                  {product.diamondWeight?.toFixed(2)} ct
-                </p>
-
-                <p className="text-gray-600">Diamond Rate:</p>
-                <p className="font-medium">
-                  Rs. {product.diamondRate?.toFixed(2)} /ct
-                </p>
-
-                <p className="text-gray-600">Making Charges:</p>
-                <p className="font-medium">
-                  Rs. {product.makingCharges?.toFixed(2)}
-                </p>
-
-                <p className="text-gray-600">Additional Charges:</p>
-                <p className="font-medium">
-                  Rs. {product.additionalCharges?.toFixed(2)}
-                </p>
-
-                <p className="text-gray-600 font-semibold mt-2">Total Price:</p>
-                <p className="font-bold text-pink-600 mt-2">
-                  Rs. {product.price.toFixed(2)}
-                </p>
-              </div>
-            </div>
+            <PriceBreakupCard product={product} />
           )}
         </div>
 

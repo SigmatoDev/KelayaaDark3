@@ -77,7 +77,7 @@ export default function UploadGoldDiamondProductPricingExcelFile() {
         await createProduct({ products: productData });
         setIsUploading(false);
         toast.success("Products uploaded successfully!");
-        router.push(`/admin/products`);
+        // router.push(`/admin/products`);
       } catch (error) {
         toast.error("Failed to parse Excel file.");
       }
