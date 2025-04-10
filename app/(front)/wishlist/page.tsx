@@ -1,10 +1,11 @@
 "use client";
 import { useSession } from "next-auth/react";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import AddToCart from "@/components/products/AddToCart";
 import { convertDocToObj } from "@/lib/utils";
 import { Heart } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 interface Product {
   productCode: string;
@@ -29,17 +30,24 @@ const Wishlist = () => {
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const router = useRouter();
+  const pathname = usePathname();
+
+  const hasFetchedRef = useRef(false);
 
   useEffect(() => {
     const fetchWishlist = async () => {
-      if (!userId) return;
+      if (!userId || hasFetchedRef.current) return;
+
+      hasFetchedRef.current = true;
       const res = await fetch(`/api/wishlist?userId=${userId}`);
       const data = await res.json();
       setWishlistData(data);
     };
 
-    fetchWishlist();
-  }, [userId]);
+    if (pathname === "/wishlist" && userId) {
+      fetchWishlist();
+    }
+  }, [userId, pathname]);
 
   const handleNavigateToProduct = (slug: string) => {
     router.push(`/product/${slug}`);

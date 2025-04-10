@@ -105,6 +105,7 @@ export type Order = {
 };
 
 export type OrderItem = {
+  countInStock: number;
   prodcutCategory: string;
   category: string;
   name: string;

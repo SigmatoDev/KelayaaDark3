@@ -3,8 +3,42 @@ import { cache } from "react";
 import dbConnect from "@/lib/dbConnect";
 import ProductModel, { Product } from "@/lib/models/ProductModel";
 import SetsProductModel from "../models/SetsProductsModel";
+import GoldDiamondProductPricingModel from "../models/GoldDiamondProductsPricingDetails";
 
 export const revalidate = 3600;
+
+// utilitlity
+// export const mergeProductWithGoldPricing = async (
+//   product: Product
+// ): Promise<Product> => {
+//   const isGold = product.materialType === "gold";
+//   const isSet = product.productType?.toLowerCase() === "sets";
+
+//   if (isGold && !isSet) {
+//     const pricing = await GoldPricingModel.findOne({
+//       productCode: product.productCode,
+//     }).lean();
+//     if (pricing) {
+//       return {
+//         ...product,
+//         pricing: {
+//           diamondPrice: pricing.diamondPrice,
+//           goldPrice: pricing.goldPrice,
+//           grossWeight: pricing.grossWeight,
+//           pricePerGram: pricing.pricePerGram,
+//           makingCharge: pricing.makingCharge,
+//           diamondTotal: pricing.diamondTotal,
+//           goldTotal: pricing.goldTotal,
+//           totalPrice: pricing.totalPrice,
+//         },
+//       };
+//     }
+//   }
+
+//   return product;
+// };
+
+// return await mergeProductWithGoldPricing(product);
 
 const getLatest = cache(async () => {
   // ✅ 1. Connect to MongoDB
@@ -109,45 +143,101 @@ const getBySlug = cache(async (slug: string) => {
   return alternativeProduct || product;
 });
 
-const getByProductCode = cache(async (productCode: string) => {
-  await dbConnect();
+// Pricing Interface
+interface GoldDiamondPricing {
+  diamondPrice: number;
+  goldPrice: number;
+  grossWeight: number;
+  pricePerGram: number;
+  makingCharge: number;
+  diamondTotal: number;
+  goldTotal: number;
+  totalPrice: number;
+}
 
-  // ✅ 1. Try to Find Product in ProductModel
-  let product = (await ProductModel.findOne({
-    productCode,
-  }).lean()) as Product | null;
+// Extended Product Interface with Optional Pricing
+interface ProductWithPricing extends Product {
+  pricing?: GoldDiamondPricing;
+}
 
-  // ✅ 2. If Found but No Valid Image, Try Finding Same Code with Valid Image
-  if (product && !(product.image && product.image.startsWith("http"))) {
-    const alt = (await ProductModel.findOne({
+const getByProductCode = cache(
+  async (productCode: string): Promise<ProductWithPricing | null> => {
+    await dbConnect();
+
+    // ✅ 1. Try to find product in ProductModel
+    let product = (await ProductModel.findOne({
       productCode,
-      image: { $regex: /^http/ },
-    }).lean()) as Product | null;
-    if (alt) return alt;
-  }
-
-  // ✅ 3. If Not Found in ProductModel, Try SetProductModel (Only Gold Sets)
-  if (!product) {
-    product = (await SetsProductModel.findOne({
-      productCode,
-      productType: { $regex: /^sets$/i },
-      materialType: { $regex: /^gold$/i },
     }).lean()) as Product | null;
 
-    // ✅ 4. If Found, But No Valid Image, Look for Image Variant
-    if (product && !(product.image && /^http/.test(product.image))) {
-      const altSet = (await SetsProductModel.findOne({
+    // ✅ 2. If found but no valid image, try alternate variant
+    if (product && !(product.image && product.image.startsWith("http"))) {
+      const alt = (await ProductModel.findOne({
         productCode,
         image: { $regex: /^http/ },
       }).lean()) as Product | null;
-
-      return altSet || product;
+      if (alt) product = alt;
     }
-  }
 
-  // ✅ 5. Return the Found Product or Null
-  return product;
-});
+    // ✅ 3. If not found in ProductModel, check SetsProductModel (only gold sets)
+    if (!product) {
+      product = (await SetsProductModel.findOne({
+        productCode,
+        productType: { $regex: /^sets$/i },
+        materialType: { $regex: /^gold$/i },
+      }).lean()) as Product | null;
+
+      if (product && !(product.image && /^http/.test(product.image))) {
+        const altSet = (await SetsProductModel.findOne({
+          productCode,
+          image: { $regex: /^http/ },
+        }).lean()) as Product | null;
+
+        return altSet || product;
+      }
+
+      return product; // Sets don't need pricing merge
+    }
+
+    // ✅ 4. If product is gold and not a set, merge pricing info
+    const isGold = product.materialType === "gold";
+    const isSet = product.productType?.toLowerCase() === "sets";
+
+    if (isGold && !isSet) {
+      const pricing = (await GoldDiamondProductPricingModel.findOne({
+        productCode,
+      }).lean()) as GoldDiamondPricing | null;
+
+      if (pricing) {
+        const {
+          diamondPrice,
+          goldPrice,
+          grossWeight,
+          pricePerGram,
+          makingCharge,
+          diamondTotal,
+          goldTotal,
+          totalPrice,
+        } = pricing;
+
+        return {
+          ...product,
+          pricing: {
+            diamondPrice,
+            goldPrice,
+            grossWeight,
+            pricePerGram,
+            makingCharge,
+            diamondTotal,
+            goldTotal,
+            totalPrice,
+          },
+        };
+      }
+    }
+
+    return product;
+  }
+);
 
 const PAGE_SIZE = 50;
 
@@ -516,20 +606,20 @@ const getCombinedCategoriesAndSubcategories = cache(async () => {
   });
 
   const subcategoriesFromProducts = await ProductModel.distinct(
-    "subCategories",
-    {
-      image: { $regex: /^http/ },
-    }
+    "subCategories"
+    // {
+    //   image: { $regex: /^http/ },
+    // }
   );
 
   // From SetProductModel
   const subcategoriesFromSets = await SetsProductModel.distinct(
-    "subCategories",
-    {
-      image: { $regex: /^http/ },
-    }
+    "subCategories"
+    // {
+    //   image: { $regex: /^http/ },
+    // }
   );
-
+  console.log("subcategoriesFromSets", subcategoriesFromSets);
   // Flatten in case subCategories are stored as arrays
   const allSubcategories = [
     ...subcategoriesFromProducts,

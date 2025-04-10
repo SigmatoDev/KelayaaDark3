@@ -316,8 +316,28 @@ const Header = () => {
     }
   }, []);
 
+  const handleMainMenuClick = (label: string) => {
+    console.log("label", label, typeof label);
+
+    if (label === "custom-jewellery") {
+      router.push("/custom-design");
+      setIsOpen(false);
+      return; // ⛔ prevent the next line from executing
+    }
+
+    if (label === "collections") {
+      router.push("/collections");
+      setIsOpen(false);
+      return; // ⛔ prevent the next line from executing
+    }
+
+    router.push(`/search?materialType=${hoveredMaterialType}`);
+    setIsOpen(false);
+  };
+
   // dynamic routing based on menu items
   const handleMainClick = (label: string) => {
+    console.log("main kabel", label);
     router.push(
       `/search?productCategory=${encodeURIComponent(label)}&materialType=${hoveredMaterialType}`
     );
@@ -325,29 +345,23 @@ const Header = () => {
   };
 
   const handleSubClick = (productCategory: string, categor: string) => {
-    const isBangleCategory =
-      productCategory.toLowerCase() === "bangle" ||
-      productCategory.toLowerCase() === "bangles";
+    const lowerProductCategory = productCategory.toLowerCase();
+    const lowerCategor = categor.toLowerCase();
 
-    const isAllBangles = categor.toLowerCase() === "all bangles";
-    const categoryParam = isBangleCategory && isAllBangles ? "all" : categor;
+    const isPriceCategory = lowerProductCategory === "shop by price";
 
-    const isPriceCategory = productCategory.toLowerCase() === "shop by price";
+    const convertToNumber = (value: string) => {
+      value = value.replace(/[₹,\s]/g, "").toUpperCase();
+      if (value.endsWith("L")) {
+        return Math.round(parseFloat(value.replace("L", "")) * 100000);
+      }
+      return parseInt(value);
+    };
 
     if (isPriceCategory) {
-      // Clean & convert the value like ₹7.5L to 750000
-      const convertToNumber = (value: string) => {
-        value = value.replace(/[₹,\s]/g, "").toUpperCase();
-        if (value.endsWith("L")) {
-          return Math.round(parseFloat(value.replace("L", "")) * 100000);
-        }
-        return parseInt(value);
-      };
-
-      // Handle '+' case
+      // Handle price-based filtering
       if (categor.includes("+")) {
-        const minRaw = categor.split("+")[0];
-        const min = convertToNumber(minRaw);
+        const min = convertToNumber(categor.split("+")[0]);
         router.push(`/search?price=${encodeURIComponent(`${min}+`)}`);
       } else {
         const [minRaw, maxRaw] = categor.split("-");
@@ -356,6 +370,10 @@ const Header = () => {
         router.push(`/search?price=${min}-${max}`);
       }
     } else {
+      // General case: Handle "All [Category]" logic
+      const isAllCategory = lowerCategor.startsWith("all ");
+      const categoryParam = isAllCategory ? "all" : categor;
+
       router.push(
         `/search?q=all&productCategory=${encodeURIComponent(
           productCategory
@@ -460,7 +478,11 @@ const Header = () => {
                           return (
                             <Link
                               key={key}
-                              href={"/search"}
+                              href="#"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                handleMainMenuClick(key);
+                              }}
                               className={`w-[140px] text-center text-white ${
                                 pathname === "/" && !isScrolled
                                   ? "group-hover:text-white"
@@ -681,7 +703,7 @@ const Header = () => {
                                   (item, idx) => (
                                     <div key={idx} className="mb-6 last:mb-0">
                                       <Link
-                                        href={"item.href"}
+                                        href={"/custom-design"}
                                         onClick={() => setIsOpen(false)}
                                         className="text-gray-800 uppercase hover:text-pink-500 text-sm font-[500] block mb-1"
                                       >
@@ -743,30 +765,31 @@ const Header = () => {
                         {/* Collections Special Layout */}
                         {activeMenu === "collections" && (
                           <div className="col-span-5 grid grid-cols-4 gap-6">
-                            {" "}
-                            {/* Override parent grid */}
-                            {menuData[activeMenu].subitems.map((item, idx) => (
-                              <div key={idx} className="flex flex-col">
-                                <Link
-                                  href={"item.href"}
-                                  onClick={() => setIsOpen(false)}
-                                  className="text-gray-800 uppercase hover:text-pink-500 text-lg font-[600] block mb-1"
-                                >
-                                  {item.label}
-                                </Link>
-                                <p className="text-gray-500 text-sm mb-6">
-                                  {item.description}
-                                </p>
-                                <div className="relative w-full h-80 rounded-lg overflow-hidden pt-8">
-                                  <Image
-                                    src={menuData[activeMenu].images[idx]}
-                                    alt={`${item.label} collection`}
-                                    fill
-                                    className="object-cover hover:scale-105 transition-transform duration-300"
-                                  />
+                            {menuData[activeMenu].subitems.map((item, idx) => {
+                              const path = `/collections/${item.label.toLowerCase()}`;
+                              return (
+                                <div key={idx} className="flex flex-col">
+                                  <Link
+                                    href={path}
+                                    onClick={() => setIsOpen(false)}
+                                    className="text-gray-800 uppercase hover:text-pink-500 text-lg font-[600] block mb-1"
+                                  >
+                                    {item.label}
+                                  </Link>
+                                  <p className="text-gray-500 text-sm mb-6">
+                                    {item.description}
+                                  </p>
+                                  <div className="relative w-full h-80 rounded-lg overflow-hidden pt-8">
+                                    <Image
+                                      src={menuData[activeMenu].images[idx]}
+                                      alt={`${item.label} collection`}
+                                      fill
+                                      className="object-cover hover:scale-105 transition-transform duration-300"
+                                    />
+                                  </div>
                                 </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         )}
                       </motion.div>

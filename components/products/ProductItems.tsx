@@ -5,7 +5,7 @@ import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 
 const ProductItems = async () => {
-  await delay(4000);
+  // await delay(1000);
   const latestProducts = await productService.getLatest();
   console.log("latestProducts", latestProducts);
   return (
