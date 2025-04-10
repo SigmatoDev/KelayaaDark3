@@ -11,7 +11,7 @@ import {
 import AddToCart from "@/components/products/AddToCart";
 import { convertDocToObj } from "@/lib/utils";
 import { useRouter } from "next/navigation";
-import { CheckCircle, ShoppingCartIcon } from "lucide-react";
+import { CheckCircle, ShoppingCartIcon, Truck } from "lucide-react";
 import useCartService from "@/lib/hooks/useCartStore";
 import { useSession } from "next-auth/react";
 import PriceBreakupCard from "./detailsCard";
@@ -402,6 +402,20 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
               GO TO CART
             </button>
           )}
+        </div>
+        <div className="bg-[#faf4e9] p-4 flex items-start gap-4 shadow-sm mt-4">
+          <Truck className="text-yellow-600 w-6 h-6 mt-1" />
+          <div>
+            <h3 className="text-sm font-semibold text-gray-800">
+              Delivery Information
+            </h3>
+            <p className="text-sm text-gray-600">
+              Products are usually delivered in{" "}
+              <span className="font-medium text-gray-800">3 to 5 days</span>. If
+              currently unavailable, delivery may take{" "}
+              <span className="font-medium text-gray-800">14 to 21 days</span>.
+            </p>
+          </div>
         </div>
       </div>
     </div>
