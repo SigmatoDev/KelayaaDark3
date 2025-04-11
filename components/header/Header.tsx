@@ -326,7 +326,7 @@ const Header = () => {
     }
 
     if (label === "collections") {
-      router.push("/search¸¸¸");
+      router.push("/search");
       setIsOpen(false);
       return; // ⛔ prevent the next line from executing
     }
