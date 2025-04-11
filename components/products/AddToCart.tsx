@@ -106,7 +106,7 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
       disabled={parsedCountInStock === 0}
       style={{
         background:
-          "linear-gradient(90.25deg, #EC008C 36.97%, #FC6767 101.72%)",
+          "linear-gradient(90.25deg, #df6383 36.97%, #FC6767 101.72%)",
       }}
     >
       <div className="relative flex items-center justify-center">

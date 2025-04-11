@@ -1,5 +1,5 @@
 "use client";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, Suspense, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import {
   FaStar,
@@ -7,6 +7,7 @@ import {
   FaTwitter,
   FaInstagram,
   FaWhatsapp,
+  FaHeart,
 } from "react-icons/fa";
 import AddToCart from "@/components/products/AddToCart";
 import { convertDocToObj } from "@/lib/utils";
@@ -18,6 +19,7 @@ import PriceBreakupCard from "./detailsCard";
 import toast from "react-hot-toast";
 import RingDetails from "./ringDetails";
 import AvailabilityChecker from "./checkAvailabilty";
+import ProductItems, { ProductItemsSkeleton } from "@/components/products/ProductItems";
 
 interface Product {
   productType: string;
@@ -172,7 +174,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
   return (
     <div className="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
       {/* Left Section - Image Gallery */}
-      <div className="flex flex-col md:flex-row gap-4">
+      <div className="flex flex-col md:flex-row gap-4 sticky top-24 self-start">
         {product.images.length > 0 ? (
           <>
             {/* Thumbnail previews */}
@@ -251,7 +253,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
           {product?.name}
         </h1>
         <div className="space-y-1 my-2">
-          <div className="text-[26px] font-bold text-pink-600 leading-snug">
+          <div className="text-[26px] font-bold text-[#bb5683] leading-snug">
             ₹
             {product.price
               ? product.price.toLocaleString("en-IN", {
@@ -261,7 +263,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
               : "N/A"}
           </div>
 
-          <div className="text-sm text-gray-500">
+          <div className="text-xs text-gray-400">
             MRP (exclusive of all taxes)
           </div>
         </div>
@@ -276,7 +278,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
             | {product?.reviewsCount} Customer Reviews
           </span>
         </div> */}
-        <p className="text-gray-600 text-sm">{product?.description}</p>
+        <p className="text-gray-500 text-xs">{product?.description}</p>
 
         {/* SKU, Category, Tags */}
         <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm items-center">
@@ -305,10 +307,87 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
             </>
           )}
 
-          <p className="text-gray-600 font-medium ">Share</p>
+        
+
+        </div>
+
+      
+
+        {/* Size & Availability */}
+        {product?.productCategory === "Rings" && (
+          <div>
+            <RingDetails product={product} />
+          </div>
+        )}
+
+        <div>
+          {/* Price Breakup Section (Visible only for gold products) */}
+          {product?.materialType === "gold" && (
+            <PriceBreakupCard product={product} />
+          )}
+        </div>
+
+        {/* Buttons Grid */}
+        <div
+          className={`grid ${existItem ? "grid-cols-3" : "grid-cols-2"} gap-4 w-full`}
+        >
+         <button
+  onClick={toggleWishlist}
+  className="bg-[#FFF] text-[#Dd91a6] border text-[12px] font-bold px-6 py-3 rounded-none w-full flex items-center justify-center gap-2"
+>
+  <FaHeart className={`text-[14px] ${isWishlisted ? "text-red-500" : "text-[#Dd91a6]"}`} />
+  {isWishlisted ? "REMOVE FROM WISHLIST" : "ADD TO WISHLIST"}
+</button>
+
+
+          {product.countInStock !== 0 && (
+            <AddToCart
+              item={{
+                ...convertDocToObj(product),
+                qty: 0,
+                color: "",
+                size: "",
+              }}
+            />
+          )}
+
+          {existItem && (
+            <button
+              className="text-white px-6 py-3 rounded-none text-[12px] font-bold w-full flex items-center justify-center"
+              onClick={() => router.push("/cart")}
+              style={{
+                background:
+                  "linear-gradient(90.25deg, #df6383 36.97%, #FC6767 101.72%)",
+              }}
+            >
+              <ShoppingCartIcon className="w-4 h-4 mr-4" />
+              GO TO CART
+            </button>
+          )}
+        </div>
+        <div>
+          {/* Check Availability Button + Message */}
+          <AvailabilityChecker product={product} />
+        </div>
+        <div className="bg-[#faf4e9] p-4 flex items-start gap-4 shadow-sm mt-4">
+          <Truck className="text-yellow-600 w-6 h-6 mt-1" />
+          <div>
+            <h3 className="text-sm font-semibold text-gray-800">
+              Delivery Information
+            </h3>
+            <p className="text-sm text-gray-600">
+              Products are usually delivered in{" "}
+              <span className="font-medium text-gray-800">3 to 5 days</span>. If
+              currently unavailable, delivery may take{" "}
+              <span className="font-medium text-gray-800">14 to 21 days</span>.
+            </p>
+          </div>
+        </div>
+
+        <p className="text-gray-600 font-medium ">Share :</p>
           <div className="flex flex-wrap gap-2 items-center text-gray-500">
             {/* Facebook */}
-            {/* Facebook */}:
+            {/* Facebook */}
             <a
               href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
               target="_blank"
@@ -339,85 +418,19 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
               <FaWhatsapp size={14} />
             </a>
             {/* Native Share (Mobile) */}
-            <button
+            {/* <button
               onClick={handleNativeShare}
               className="text-sm underline text-pink-600 hover:text-pink-700"
             >
               More options
-            </button>
+            </button> */}
           </div>
-        </div>
 
-        <div>
-          {/* Check Availability Button + Message */}
-          <AvailabilityChecker product={product} />
-        </div>
-
-        {/* Size & Availability */}
-        {product?.productCategory === "Rings" && (
-          <div>
-            <RingDetails product={product} />
-          </div>
-        )}
-
-        <div>
-          {/* Price Breakup Section (Visible only for gold products) */}
-          {product?.materialType === "gold" && (
-            <PriceBreakupCard product={product} />
-          )}
-        </div>
-
-        {/* Buttons Grid */}
-        <div
-          className={`grid ${existItem ? "grid-cols-3" : "grid-cols-2"} gap-4 w-full`}
-        >
-          <button
-            onClick={toggleWishlist}
-            className="bg-[#FFF6F8] text-pink-500 text-[12px] font-bold px-6 py-3 rounded-none w-full"
-          >
-            {isWishlisted ? "REMOVE FROM WISHLIST" : "ADD TO WISHLIST"}
-          </button>
-
-          {product.countInStock !== 0 && (
-            <AddToCart
-              item={{
-                ...convertDocToObj(product),
-                qty: 0,
-                color: "",
-                size: "",
-              }}
-            />
-          )}
-
-          {existItem && (
-            <button
-              className="text-white px-6 py-3 rounded-none text-[12px] font-bold w-full flex items-center justify-center"
-              onClick={() => router.push("/cart")}
-              style={{
-                background:
-                  "linear-gradient(90.25deg, #EC008C 36.97%, #FC6767 101.72%)",
-              }}
-            >
-              <ShoppingCartIcon className="w-4 h-4 mr-4" />
-              GO TO CART
-            </button>
-          )}
-        </div>
-        <div className="bg-[#faf4e9] p-4 flex items-start gap-4 shadow-sm mt-4">
-          <Truck className="text-yellow-600 w-6 h-6 mt-1" />
-          <div>
-            <h3 className="text-sm font-semibold text-gray-800">
-              Delivery Information
-            </h3>
-            <p className="text-sm text-gray-600">
-              Products are usually delivered in{" "}
-              <span className="font-medium text-gray-800">3 to 5 days</span>. If
-              currently unavailable, delivery may take{" "}
-              <span className="font-medium text-gray-800">14 to 21 days</span>.
-            </p>
-          </div>
-        </div>
       </div>
+
+
+    
+      
     </div>
   );
 };

@@ -37,7 +37,7 @@ const cards: Card[] = [
     buttonText: "START MY IDEA",
     bgColor: "bg-[#F8EEE7]",
     textColor: "text-brown-700",
-    buttonColor: "bg-[#000] hover:bg-[#000]",
+    buttonColor: "bg-[#Dd91a6] hover:bg-[#000]",
     bgImage: "/blob.svg",
     fgImage: "/phone.png",
     image: "",
@@ -125,13 +125,13 @@ const HeroSectionCustomDesign = () => {
                 <div className="flex flex-col sm:flex-row lg:flex-col items-center lg:items-start gap-4 w-full mt-6 lg:mt-8 relative">
                   <Link
                     href={card.linkUrl}
-                    className={`px-6 py-2.5 text-white ${card.buttonColor} text-center w-full sm:w-auto rounded-md shadow-sm hover:shadow transition-all duration-300 font-medium bg-[#000] hover:bg-[#d93d87]`}
+                    className={`px-6 py-2.5 text-white ${card.buttonColor} text-center w-full sm:w-auto rounded-md shadow-sm hover:shadow transition-all duration-300 font-medium bg-[#] hover:bg-[#d93d87]`}
                   >
                     {card.buttonText}
                   </Link>
                   <Link
                     href={card.howTextUrl}
-                    className="inline-flex items-center gap-1.5 text-[#EC4999] hover:text-[#d93d87] border-b border-[#EC4999]/30 hover:border-[#EC4999] transition-all duration-300 group px-2"
+                    className="inline-flex items-center gap-1.5 text-[#000] hover:text-[#d93d87] border-b border-[#EC4999]/30 hover:border-[#EC4999] transition-all duration-300 group px-2"
                   >
                     <span>{card.howText}</span>
                     <span className="transform transition-transform duration-300 group-hover:translate-x-1">
@@ -162,7 +162,7 @@ const HeroSectionCustomDesign = () => {
             />
 
             {/* Gradient Bar - Always visible on mobile, hover on desktop */}
-            <div className="absolute bottom-0 left-0 w-full h-[3.5rem] sm:h-14 lg:h-0 lg:group-hover:h-16 transition-all duration-500 ease-in-out bg-[#EC4999] hover:bg-[#d93d87] flex items-center justify-center overflow-hidden shadow-sm">
+            <div className="absolute bottom-0 left-0 w-full h-[3.5rem] sm:h-14 lg:h-0 lg:group-hover:h-16 transition-all duration-500 ease-in-out bg-[#Dd91a6] hover:bg-[#Dd91a6] flex items-center justify-center overflow-hidden shadow-sm">
               <div className="text-white text-[0.9375rem] font-medium flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 text-center min-h-[3.25rem] hover:scale-[1.02] transition-transform duration-300">
                 <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-px after:bg-white/30 after:transition-all after:duration-300">
                   Explore More Custom Designs
@@ -178,8 +178,8 @@ const HeroSectionCustomDesign = () => {
         {/* Column 3 */}
         <div className="w-full sm:w-1/2 h-[300px] sm:h-[350px] lg:h-[400px] group relative">
           <div
-            onClick={() => router.push("/collections")}
-            className="relative w-full h-full overflow-hidden rounded-lg bg-[#EFEFEF] hover:bg-pink-50 cursor-pointer group-hover:scale-105 transition-all duration-300"
+            onClick={() => router.push("/search")}
+            className="relative w-full h-full overflow-hidden rounded-lg bg-[#EFEFEF] hover:bg-[#Dd91a6] cursor-pointer group-hover:scale-105 transition-all duration-300"
           >
             <Image
               src="/images/categories/custom4.webp"
@@ -189,7 +189,7 @@ const HeroSectionCustomDesign = () => {
             />
 
             {/* Gradient Bar - Always visible on mobile, hover on desktop */}
-            <div className="absolute bottom-0 left-0 w-full h-[3.5rem] sm:h-14 lg:h-0 lg:group-hover:h-16 transition-all duration-500 ease-in-out bg-[#EC4999] hover:bg-[#d93d87] flex items-center justify-center overflow-hidden shadow-sm">
+            <div className="absolute bottom-0 left-0 w-full h-[3.5rem] sm:h-14 lg:h-0 lg:group-hover:h-16 transition-all duration-500 ease-in-out bg-[#Dd91a6] hover:bg-[#Dd91a6] flex items-center justify-center overflow-hidden shadow-sm">
               <div className="text-white text-[0.9375rem] font-medium flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 text-center min-h-[3.25rem] hover:scale-[1.02] transition-transform duration-300">
                 <span className="relative after:absolute after:bottom-0 after:left-0 after:w-0 hover:after:w-full after:h-px after:bg-white/30 after:transition-all after:duration-300">
                   Explore More Custom Designs

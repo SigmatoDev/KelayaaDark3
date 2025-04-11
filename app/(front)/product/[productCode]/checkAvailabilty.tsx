@@ -56,7 +56,7 @@ export default function AvailabilityChecker({ product }: { product: any }) {
   return (
     <div className="relative">
       <button
-        className="bg-[#FFF6F8] text-pink-500 text-[12px] px-6 py-2 font-semibold rounded-none w-full flex justify-center items-center"
+        className="bg-[#FFF6F8] text-[#bb5683] text-[12px] px-6 py-2 font-semibold rounded-none w-full flex justify-center items-center"
         onClick={handleCheck}
         disabled={checking}
       >

@@ -120,7 +120,7 @@ const CartDetails = () => {
 
                 <div className="flex justify-end items-start">
                   <span className="text-xl font-semibold text-gray-900">
-                    ₹ {item.price.toFixed(2)}
+                    ₹ {item?.price?.toFixed(2)}
                   </span>
                 </div>
               </div>
@@ -136,16 +136,16 @@ const CartDetails = () => {
                   </h2>
                 </div>
 
-                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-600 mb-2">
+                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-400 mb-2">
                   <span className="font-semibold">10% Instant Discount</span> on
                   orders above ₹25,000.
                 </div>
-                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-600 mb-2">
+                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-400 mb-2">
                   <span className="font-semibold">₹500 Off</span> on first order
                   above ₹10,000. Use code:{" "}
                   <span className="font-semibold">FIRST500</span>.
                 </div>
-                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-600 mb-2">
+                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-400 mb-2">
                   <span className="font-semibold">₹200 Off</span> on orders
                   above ₹5,000. Use code:{" "}
                   <span className="font-semibold">WELCOME200</span>.
@@ -162,7 +162,7 @@ const CartDetails = () => {
             <ul className="space-y-4 text-gray-700">
               <li className="flex justify-between text-sm">
                 <span>Price:</span>
-                <span>₹ {originalItemsPrice.toFixed(2)}</span>
+                <span>₹ {originalItemsPrice?.toFixed(2)}</span>
               </li>
               <li className="flex justify-between text-sm">
                 <span>Discount:</span>

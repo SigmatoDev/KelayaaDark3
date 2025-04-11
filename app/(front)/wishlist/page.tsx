@@ -1,4 +1,5 @@
 "use client";
+
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -18,20 +19,17 @@ interface Product {
 }
 
 interface WishlistResponse {
-  status: boolean;
-  message: string;
-  products: Product[];
+  status?: boolean;
+  message?: string;
+  products?: Product[]; // made optional
 }
 
 const Wishlist = () => {
-  const [wishlistData, setWishlistData] = useState<WishlistResponse | null>(
-    null
-  );
+  const [wishlistData, setWishlistData] = useState<WishlistResponse | null>(null);
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const router = useRouter();
   const pathname = usePathname();
-
   const hasFetchedRef = useRef(false);
 
   useEffect(() => {
@@ -39,9 +37,16 @@ const Wishlist = () => {
       if (!userId || hasFetchedRef.current) return;
 
       hasFetchedRef.current = true;
-      const res = await fetch(`/api/wishlist?userId=${userId}`);
-      const data = await res.json();
-      setWishlistData(data);
+
+      try {
+        const res = await fetch(`/api/wishlist?userId=${userId}`);
+        const data = await res.json();
+        console.log("Fetched wishlist data:", data);
+        setWishlistData(data);
+      } catch (err) {
+        console.error("Error fetching wishlist:", err);
+        setWishlistData({ status: false, message: "Failed to fetch wishlist" });
+      }
     };
 
     if (pathname === "/wishlist" && userId) {
@@ -70,13 +75,14 @@ const Wishlist = () => {
         prev
           ? {
               ...prev,
-              products: prev.products.filter((p) => p._id !== productId),
+              products: prev.products?.filter((p) => p._id !== productId) || [],
             }
           : prev
       );
     }
   };
 
+  // Show loading state
   if (!wishlistData) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -85,15 +91,18 @@ const Wishlist = () => {
     );
   }
 
-  if (!wishlistData.status) {
+  // Show error state
+  if (wishlistData.status === false) {
     return (
       <div className="flex justify-center items-center h-screen">
         <span className="text-lg font-semibold text-red-500">
-          {wishlistData.message}
+          {wishlistData.message || "Unable to load wishlist"}
         </span>
       </div>
     );
   }
+
+  const products = wishlistData.products || [];
 
   return (
     <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
@@ -101,36 +110,29 @@ const Wishlist = () => {
         Your Wishlist <Heart className="ml-2 w-7 h-7 stroke-pink-700" />
       </h2>
 
-      {wishlistData.products.length === 0 ? (
+      {products.length === 0 ? (
         <p className="text-center text-xl text-gray-500">
           Your wishlist is empty
         </p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {wishlistData.products.map((product) => (
+          {products.map((product) => (
             <div
               key={product._id}
               className="flex flex-col bg-white shadow rounded-lg p-4 hover:shadow-lg transition-shadow duration-300"
             >
-              {/* Image */}
               <img
                 src={product.image}
                 alt={product.name}
                 className="w-full h-48 object-cover rounded-md mb-4 cursor-pointer"
                 onClick={() => handleNavigateToProduct(product?.productCode)}
               />
-
-              {/* Details */}
               <div
                 className="flex flex-col flex-grow justify-between cursor-pointer"
                 onClick={() => handleNavigateToProduct(product?.productCode)}
               >
-                <h3 className="text-lg font-semibold text-gray-800">
-                  {product.name}
-                </h3>
-                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
-                  {product.description}
-                </p>
+                <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
+                <p className="text-sm text-gray-600 mt-1 line-clamp-2">{product.description}</p>
                 <p className="text-md font-semibold text-black my-2">
                   ₹
                   {new Intl.NumberFormat("en-IN", {
@@ -140,7 +142,6 @@ const Wishlist = () => {
                 </p>
               </div>
 
-              {/* Actions */}
               <div className="mt-4 flex flex-col sm:flex-row gap-2">
                 <AddToCart
                   item={{

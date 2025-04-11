@@ -33,7 +33,7 @@ const cards: Card[] = [
     description:
       "Featuring Rings, Bangles, Bracelets, Chains, Anklets & Antique",
     buttonText: "START MY IDEA",
-    bgColor: "bg-[#F8EEE7]",
+    bgColor: "bg-[#Dd91a6]",
     textColor: "text-brown-700",
     buttonColor: "bg-gradient-to-r from-pink-500 to-orange-400",
     bgImage: "/blob.svg",

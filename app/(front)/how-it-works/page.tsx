@@ -19,7 +19,7 @@ export default function HowItWorks() {
           Featuring Rings, Bangles, Bracelets, Chains, Anklets & Antique Pieces —
           designed with your story, your style, and your sparkle.
         </p>
-        <button onClick={() => router.push("/custom-design")}  className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-black text-white font-medium rounded-full hover:bg-gray-800 transition">
+        <button onClick={() => router.push("/custom-design")}  className="mt-6 inline-flex items-center gap-2 px-6 py-3 bg-[#Dd91a6] text-white font-medium rounded-full hover:bg-gray-800 transition">
           START MY IDEA <span className="text-xl">→</span>
         </button>
       </div>

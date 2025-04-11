@@ -326,7 +326,7 @@ const Header = () => {
     }
 
     if (label === "collections") {
-      router.push("/collections");
+      router.push("/search¸¸¸");
       setIsOpen(false);
       return; // ⛔ prevent the next line from executing
     }
@@ -412,13 +412,10 @@ const Header = () => {
   return (
     <>
       <div
-        className={`${pathname === "/" ? "xl:fixed" : "block"} top-0 z-30 w-screen ${
-          isScrolled
+        className={`xl:fixed top-0 z-30 w-screen ${isScrolled
             ? "bg-[#000] backdrop-blur-sm"
-            : pathname === "/"
-              ? "xl:bg-[#0000006d] xl:backdrop-blur-md bg-black"
-              : "bg-black"
-        } transition-all duration-1000 ${!isScrolled ? "group" : ""}`}
+            : "xl:bg-[#000] xl:backdrop-blur-md bg-black"
+          } transition-all duration-1000 group`}
       >
         <header
           className={`text-gray-800 w-full xl:h-[80px] my-0 transition-[margin] xl:flex xl:justify-center items-center duration-1000 ease-in-out ${isScrolled ? " mt-1" : " my-1"}`}
@@ -458,7 +455,7 @@ const Header = () => {
                       <ShoppingCart
                         className={`w-[50px] h-5 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-black" : ""} hover:text-pink-500 transition`}
                       />
-                      <span className="absolute -top-3 -right-0.5 bg-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                      <span className="absolute -top-3 -right-0.5 bg-[#af5772] text-white text-xs px-1.5 py-0.5 rounded-full">
                         {totalCartQuantity || 0}
                       </span>
                     </Link>
@@ -483,11 +480,10 @@ const Header = () => {
                                 e.preventDefault();
                                 handleMainMenuClick(key);
                               }}
-                              className={`w-[140px] text-center text-white ${
-                                pathname === "/" && !isScrolled
+                              className={`w-[140px] text-center text-white ${pathname === "/" && !isScrolled
                                   ? "group-hover:text-white"
                                   : ""
-                              } transition-all duration-300 ease-in-out hover:text-pink-300 text-xs`}
+                                } transition-all duration-300 ease-in-out hover:text-pink-300 text-xs`}
                               onMouseEnter={() => {
                                 setActiveMenu(key);
                                 setIsOpen(true);
@@ -511,7 +507,7 @@ const Header = () => {
                               <div className="relative">
                                 <button
                                   onClick={() => setMenuOpen(!menuOpen)}
-                                  className="flex items-center px-3 py-2 text-white bg-transparent rounded-lg hover:bg-gray-800 transition"
+                                  className="flex items-center px-3 py-2 text-white bg-black rounded-lg hover:bg-gray-800 transition"
                                 >
                                   <User className="h-4 w-4 mr-1" />{" "}
                                   {session.user.name}
@@ -519,15 +515,15 @@ const Header = () => {
                                 </button>
                                 {/* Dropdown menu */}
                                 {menuOpen && (
-                                  <ul className="absolute right-0 z-[9999] mt-2 w-52 rounded-lg bg-white/10 backdrop-blur-md p-4 shadow-lg border border-white/20">
+                                  <ul className="absolute right-0 z-[9999] mt-2 w-52 rounded-lg bg-white backdrop-blur-md p-4 shadow-lg border border-white/20">
                                     <li
                                       onClick={handleClick}
                                       className="flex items-center z-[9999] px-3 py-2 hover:bg-white/20 rounded-md"
                                     >
-                                      <History className="w-4 h-4 text-white" />
+                                      <History className="w-4 h-4 text-black" />
                                       <Link
                                         href="/order-history"
-                                        className="text-white ml-2"
+                                        className="text-black ml-2 text-xs"
                                       >
                                         Order History
                                       </Link>
@@ -536,10 +532,10 @@ const Header = () => {
                                       onClick={handleClick}
                                       className="flex items-center px-3 py-2 hover:bg-white/20 rounded-md"
                                     >
-                                      <User className="w-4 h-4 text-white" />
+                                      <User className="w-4 h-4 text-black" />
                                       <Link
                                         href="/profile"
-                                        className="text-white ml-2"
+                                        className="text-black ml-2 text-xs"
                                       >
                                         Profile
                                       </Link>
@@ -548,10 +544,10 @@ const Header = () => {
                                       onClick={handleClick}
                                       className="flex items-center px-3 py-2 hover:bg-white/20 rounded-md"
                                     >
-                                      <History className="w-4 h-4 text-white" />
+                                      <History className="w-4 h-4 text-black" />
                                       <Link
                                         href="/custom-order-history"
-                                        className="text-white ml-2"
+                                        className="text-black ml-2 text-xs"
                                       >
                                         Custom Orders
                                       </Link>
@@ -560,7 +556,7 @@ const Header = () => {
                                       <button
                                         type="button"
                                         onClick={signOutHandler}
-                                        className="flex items-center w-full px-3 py-2 text-white bg-pink-700 hover:bg-pink-500 rounded-md"
+                                        className="flex items-center w-full px-3 py-2 text-white bg-[#Dd91a6] hover:bg-[#000] rounded-md"
                                       >
                                         <LogOut className="w-4 h-4 text-white" />
                                         <span className="ml-2">Sign Out</span>
@@ -584,14 +580,18 @@ const Header = () => {
                         </div>
 
                         {/* Wishlist */}
-                        <Link
-                          href="/wishlist"
-                          className="flex flex-col items-center text-center"
-                        >
-                          <Heart
-                            className={`w-5 h-5 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-white" : ""} hover:text-pink-500 transition`}
-                          />
-                        </Link>
+
+                        {session && session.user ? (
+                          <Link
+                            href="/wishlist"
+                            className="flex flex-col items-center text-center"
+                          >
+                            <Heart
+                              className={`w-5 h-5 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-white" : ""} hover:text-pink-500 transition`}
+                            />
+                          </Link>
+                        ) : ''}
+
 
                         <Link
                           href="/cart"
@@ -600,7 +600,7 @@ const Header = () => {
                           <ShoppingCart
                             className={`w-[50px] h-5 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-white" : ""} hover:text-pink-500 transition`}
                           />
-                          <span className="absolute -top-3 -right-0.5 bg-pink-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                          <span className="absolute -top-3 -right-0.5 bg-[#af5772] text-white text-xs px-1.5 py-0.5 rounded-full">
                             {totalCartQuantity || 0}
                           </span>
                         </Link>
@@ -626,7 +626,7 @@ const Header = () => {
                               {[0, 2, 4, 6].map((startIdx, colIdx) => (
                                 <div
                                   key={colIdx}
-                                  className="flex flex-col justify-between h-full"
+                                  className="flex flex-col h-full"
                                 >
                                   {menuData[activeMenu].subitems
                                     .slice(startIdx, startIdx + 2)
@@ -638,9 +638,10 @@ const Header = () => {
                                             e.preventDefault();
                                             handleMainClick(item.label);
                                           }}
-                                          className="text-gray-800 uppercase hover:text-pink-500 text-md font-[500] block mb-2"
+                                          className="text-gray-800 uppercase hover:text-[#af5772] text-sm font-[500] block mb-2"
                                         >
                                           {item.label}
+
                                         </Link>
 
                                         {item.subcategories && (
@@ -657,7 +658,7 @@ const Header = () => {
                                                       subItem.label
                                                     );
                                                   }}
-                                                  className="text-gray-500 hover:text-pink-400 text-sm font-[400] block"
+                                                  className="text-gray-500 hover:text-[#af5772] text-sm font-[300] block"
                                                 >
                                                   {subItem.label}
                                                 </Link>
@@ -766,7 +767,7 @@ const Header = () => {
                         {activeMenu === "collections" && (
                           <div className="col-span-5 grid grid-cols-4 gap-6">
                             {menuData[activeMenu].subitems.map((item, idx) => {
-                              const path = `/collections/${item.label.toLowerCase()}`;
+                              const path = `/search/${item.label.toLowerCase()}`;
                               return (
                                 <div key={idx} className="flex flex-col">
                                   <Link
@@ -780,12 +781,14 @@ const Header = () => {
                                     {item.description}
                                   </p>
                                   <div className="relative w-full h-80 rounded-lg overflow-hidden pt-8">
-                                    <Image
-                                      src={menuData[activeMenu].images[idx]}
-                                      alt={`${item.label} collection`}
-                                      fill
-                                      className="object-cover hover:scale-105 transition-transform duration-300"
-                                    />
+                                    <Link href={path}>
+                                      <Image
+                                        src={menuData[activeMenu].images[idx]}
+                                        alt={`${item.label} collection`}
+                                        fill
+                                        className="object-cover hover:scale-105 transition-transform duration-300"
+                                      />
+                                    </Link>
                                   </div>
                                 </div>
                               );

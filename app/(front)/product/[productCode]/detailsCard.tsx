@@ -50,11 +50,11 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
       {/* Gold and Diamond Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Gold Section */}
-        <div className="border rounded-lg p-4 shadow bg-gradient-to-br from-yellow-50 to-yellow-100">
-          <h3 className="text-lg font-semibold text-yellow-700 flex items-center">
+        <div className="border border-yellow-200 rounded-lg p-4 shadow bg-gradient-to-br from-yellow-50 to-yellow-100">
+          <h3 className="text-md font-semibold text-yellow-600 flex items-center">
             {goldIcon} Gold Details
           </h3>
-          <div className="text-sm mt-2 space-y-1">
+          <div className="text-xs mt-2 space-y-1">
             <p>
               Purity:{" "}
               <span className="font-medium">{product.goldPurity || "18K"}</span>
@@ -76,11 +76,11 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
         </div>
 
         {/* Diamond Section */}
-        <div className="border rounded-lg p-4 shadow bg-gradient-to-br from-blue-50 to-blue-100">
-          <h3 className="text-lg font-semibold text-blue-600 flex items-center">
+        <div className="border border-blue-200 rounded-lg p-4 shadow bg-gradient-to-br from-blue-50 to-blue-100">
+          <h3 className="text-md font-semibold text-blue-600 flex items-center">
             {diamondIcon} Diamond Details
           </h3>
-          <div className="text-sm mt-2 space-y-1">
+          <div className="text-xs mt-2 space-y-1">
             <p>Cut: {product.gemCut || "Brilliant Round"}</p>
             <p>
               Carats:{" "}
@@ -112,7 +112,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
 
       {/* Price and Button */}
       <div className="flex justify-between items-center mt-4 p-4 bg-pink-50 rounded-md shadow">
-        <span className="text-xl font-bold text-pink-600">
+        <span className="text-xl font-bold text-gray">
           Total Price: ₹
           {totalPrice
             ? totalPrice.toLocaleString("en-IN", {
@@ -123,7 +123,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
         </span>
         <Button
           onClick={openDrawer}
-          className="bg-pink-600 text-white hover:bg-pink-700"
+          className="bg-[#fff] text-black hover:bg-gray"
         >
           View Price Breakup
         </Button>
@@ -155,7 +155,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
               leaveTo="translate-x-full"
             >
               <Dialog.Panel className="w-full max-w-md bg-white p-6 overflow-y-auto shadow-xl rounded-l-2xl">
-                <Dialog.Title className="text-xl font-bold text-pink-600 mb-6">
+                <Dialog.Title className="text-xl font-bold text-[#Dd91a6] mb-6">
                   Price Breakup Details
                 </Dialog.Title>
                 <div className="space-y-4 text-sm text-gray-800">
@@ -259,10 +259,10 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
                   ) : null}
 
                   <div className="border-t pt-4 mt-4 flex justify-between items-center bg-pink-50 rounded-lg px-4 py-2">
-                    <span className="text-lg font-semibold text-pink-600">
+                    <span className="text-lg font-semibold text-[#Dd91a6]">
                       Final Price
                     </span>
-                    <span className="text-lg font-bold text-pink-600">
+                    <span className="text-lg font-bold text-[#Dd91a6]">
                       ₹
                       {totalPrice
                         ? totalPrice.toLocaleString("en-IN", {
