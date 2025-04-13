@@ -375,7 +375,6 @@ const getByQuery = cache(
     const ratingFilter =
       rating && rating !== "all" ? { rating: { $gte: Number(rating) } } : {};
 
-      
     const decodedPrice = price;
     const priceFilter =
       decodedPrice && decodedPrice !== "all"
@@ -508,9 +507,10 @@ const getByQuery = cache(
     if (uniqueCategories.size > 1) {
       const categoryMap = groupByCategory(products);
       products = interleaveCategoriesStrict(categoryMap);
-    } else {
-      products = shuffleArray(products);
     }
+    // else {
+    //   products = shuffleArray(products);
+    // }
 
     const paginatedProducts = products.slice(
       PAGE_SIZE * (Number(page) - 1),

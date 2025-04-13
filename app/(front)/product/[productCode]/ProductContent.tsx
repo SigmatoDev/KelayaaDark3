@@ -19,7 +19,9 @@ import PriceBreakupCard from "./detailsCard";
 import toast from "react-hot-toast";
 import RingDetails from "./ringDetails";
 import AvailabilityChecker from "./checkAvailabilty";
-import ProductItems, { ProductItemsSkeleton } from "@/components/products/ProductItems";
+import ProductItems, {
+  ProductItemsSkeleton,
+} from "@/components/products/ProductItems";
 
 interface Product {
   productType: string;
@@ -306,19 +308,15 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
               </p>
             </>
           )}
-
-        
-
         </div>
 
-      
-
         {/* Size & Availability */}
-        {product?.productCategory === "Rings" && (
-          <div>
-            <RingDetails product={product} />
-          </div>
-        )}
+        {product?.materialType === "gold" &&
+          product?.productCategory === "Rings" && (
+            <div>
+              <RingDetails product={product} />
+            </div>
+          )}
 
         <div>
           {/* Price Breakup Section (Visible only for gold products) */}
@@ -331,14 +329,15 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
         <div
           className={`grid ${existItem ? "grid-cols-3" : "grid-cols-2"} gap-4 w-full`}
         >
-         <button
-  onClick={toggleWishlist}
-  className="bg-[#FFF] text-[#Dd91a6] border text-[12px] font-bold px-6 py-3 rounded-none w-full flex items-center justify-center gap-2"
->
-  <FaHeart className={`text-[14px] ${isWishlisted ? "text-red-500" : "text-[#Dd91a6]"}`} />
-  {isWishlisted ? "REMOVE FROM WISHLIST" : "ADD TO WISHLIST"}
-</button>
-
+          <button
+            onClick={toggleWishlist}
+            className="bg-[#FFF] text-[#Dd91a6] border text-[12px] font-bold px-6 py-3 rounded-none w-full flex items-center justify-center gap-2"
+          >
+            <FaHeart
+              className={`text-[14px] ${isWishlisted ? "text-red-500" : "text-[#Dd91a6]"}`}
+            />
+            {isWishlisted ? "REMOVE FROM WISHLIST" : "ADD TO WISHLIST"}
+          </button>
 
           {product.countInStock !== 0 && (
             <AddToCart
@@ -385,52 +384,47 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
         </div>
 
         <p className="text-gray-600 font-medium ">Share :</p>
-          <div className="flex flex-wrap gap-2 items-center text-gray-500">
-            {/* Facebook */}
-            {/* Facebook */}
-            <a
-              href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Share on Facebook"
-              className="text-[#1877F2] hover:text-blue-700 transition"
-            >
-              <FaFacebookF size={14} />
-            </a>
-            {/* Instagram */}
-            <a
-              href="https://www.instagram.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Instagram"
-              className="text-[#E1306C] hover:text-pink-600 transition"
-            >
-              <FaInstagram size={14} />
-            </a>
-            {/* WhatsApp */}
-            <a
-              href={`https://wa.me/?text=${encodedText}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Share on WhatsApp"
-              className="text-[#25D366] hover:text-green-600 transition"
-            >
-              <FaWhatsapp size={14} />
-            </a>
-            {/* Native Share (Mobile) */}
-            {/* <button
+        <div className="flex flex-wrap gap-2 items-center text-gray-500">
+          {/* Facebook */}
+          {/* Facebook */}
+          <a
+            href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Share on Facebook"
+            className="text-[#1877F2] hover:text-blue-700 transition"
+          >
+            <FaFacebookF size={14} />
+          </a>
+          {/* Instagram */}
+          <a
+            href="https://www.instagram.com/"
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Instagram"
+            className="text-[#E1306C] hover:text-pink-600 transition"
+          >
+            <FaInstagram size={14} />
+          </a>
+          {/* WhatsApp */}
+          <a
+            href={`https://wa.me/?text=${encodedText}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            title="Share on WhatsApp"
+            className="text-[#25D366] hover:text-green-600 transition"
+          >
+            <FaWhatsapp size={14} />
+          </a>
+          {/* Native Share (Mobile) */}
+          {/* <button
               onClick={handleNativeShare}
               className="text-sm underline text-pink-600 hover:text-pink-700"
             >
               More options
             </button> */}
-          </div>
-
+        </div>
       </div>
-
-
-    
-      
     </div>
   );
 };
