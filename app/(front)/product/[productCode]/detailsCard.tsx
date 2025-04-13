@@ -111,7 +111,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
       </div>
 
       {/* Price and Button */}
-      <div className="flex justify-between items-center mt-4 p-4 bg-pink-50 rounded-md shadow">
+      {/* <div className="flex justify-between items-center mt-4 p-4 bg-pink-50 rounded-md shadow">
         <span className="text-xl font-bold text-gray">
           Total Price: ₹
           {totalPrice
@@ -127,7 +127,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
         >
           View Price Breakup
         </Button>
-      </div>
+      </div> */}
 
       {/* Slide Drawer */}
       <Transition appear show={isOpen} as={Fragment}>
