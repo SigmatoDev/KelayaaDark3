@@ -27,7 +27,7 @@ export default function ProductAddPage() {
         {/* Upload Product Excel File */}
         <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full max-w-[400px] overflow-hidden">
           <h2 className="text-xl font-semibold text-gray-700 mb-4">
-            Upload General Products
+            Upload Silver Products
           </h2>
           <p className="text-sm text-gray-500 mb-4">
             Upload an Excel file containing general product details.
@@ -58,7 +58,7 @@ export default function ProductAddPage() {
           <UploadGoldDiamondProductPricingExcelFile />
         </div>
       </div>
-      
+
       {/* <ExcelUploader /> */}
       {/* <UploadSetProductExcelFile /> */}
       {/* <SetPricingUpload /> */}

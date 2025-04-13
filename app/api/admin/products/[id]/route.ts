@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/dbConnect";
 import ProductModel from "@/lib/models/ProductModel";
-import RingProductModel from "@/lib/models/RingProductModel"; // Import your RingProduct model
 
 export const GET = auth(async (...args: any) => {
   const [req, { params }] = args;

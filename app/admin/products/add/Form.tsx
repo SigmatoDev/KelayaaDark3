@@ -1,377 +1,393 @@
 "use client";
 
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { ValidationRule, useForm } from "react-hook-form";
+import React, { useState } from "react";
+import axios from "axios";
 import toast from "react-hot-toast";
-import useSWRMutation from "swr/mutation";
-import { Product } from "@/lib/models/ProductModel";
-import { Upload } from "lucide-react";
 
-export default function ProductCreateForm() {
-  const router = useRouter();
-  // const { trigger: createProduct, isMutating: isCreating } = useSWRMutation(
-  //   `/api/admin/products`,
-  //   async (url, { arg }) => {
-  //     const res = await fetch(url, {
-  //       method: "POST",
-  //       headers: {
-  //         "Content-Type": "application/json",
-  //       },
-  //       body: JSON.stringify(arg),
-  //     });
-  //     const data = await res.json();
-  //     if (!res.ok) return toast.error(data.message);
+const ProductCreateForm = () => {
+  const [formData, setFormData] = useState<any>({
+    name: "",
+    productCode: "",
+    productCategory: "",
+    productType: "",
+    materialType: "",
+    price: "",
+    countInStock: "",
+    description: "",
+    image: "",
+    images: [],
+    size: "",
+    ring_size: "",
+    weight: "",
+    price_per_gram: "",
+    info: "",
+  });
 
-  //     toast.success("Product created successfully");
-  //     router.push(`/admin/products`);
-  //   }
-  // );
+  const [pricingData, setPricingData] = useState<any>({
+    gemCut: "",
+    carats: "",
+    clarity: "",
+    color: "",
+    goldPurity: "",
+    // goldPrice: "",
+    grossWeight: "",
+    pricePerGram: "",
+    makingCharge: "",
+    diamondPrice: "",
+    diamondTotal: "",
+    goldTotal: "",
+    totalPrice: "",
+  });
 
+  const [galleryFiles, setGalleryFiles] = useState<File[]>([]);
+  const [mainImageFile, setMainImageFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
-  const { trigger: createProduct, isMutating: isCreating } = useSWRMutation(
-    `/api/admin/products`,
-    async (url, { arg }) => {
-      try {
-        const res = await fetch(url, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(arg),
-        });
-  
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.message || "Failed to create product");
-  
-        toast.success("Product created successfully");
-        router.push(`/admin/products`);
-      } catch (error: any) {
-        toast.error(error.message);
+  const handleInputChange = (e: any) => {
+    const { name, value } = e.target;
+    setFormData((prev: any) => ({ ...prev, [name]: value }));
+  };
+
+  const handlePricingChange = (e: any) => {
+    const { name, value } = e.target;
+    setPricingData((prev: any) => ({ ...prev, [name]: value }));
+  };
+
+  const uploadToS3 = async (file: File) => {
+    const data = new FormData();
+    data.append("files", file);
+    const res = await axios.post("/api/upload", data);
+    const fileName = res.data.uploadResults[0].fileName;
+    return `https://kelayaaimages.s3.ap-south-1.amazonaws.com/uploads/${fileName}`;
+  };
+
+  const validateForm = () => {
+    const requiredFields = [
+      "name",
+      "productCode",
+      "productCategory",
+      "productType",
+      "materialType",
+      "price",
+      "countInStock",
+      "description",
+    ];
+
+    for (let field of requiredFields) {
+      if (!formData[field]) {
+        toast.error(`${field} is required.`);
+        return false;
       }
     }
-  );
-  
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    setValue,
-    watch,
-  } = useForm<Product>();
 
-  const [subcategories, setSubcategories] = useState<string[]>([]);
-  const [additionalFields, setAdditionalFields] = useState<string[]>([]);
-  const [fileName, setFileName] = useState<string | null>(null);
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
-  const categoryMapping: { [key: string]: string[] } = {
-    Men: ["Ring", "Earring", "Bracelet"],
-    Women: ["Necklace", "Earring", "Bangle", "Ring"],
-    Children: ["Ring", "Pendant", "Charm"],
-  };
-
-  const productTypes: string[] = [
-    "Pendants",
-    "Rings",
-    "Earrings",
-    "Bangles",
-    "Bracelets",
-    "Sets",
-    "Toe Rings",
-    "Necklaces",
-    "Chain",
-  ];
-
-  const categoryTypes: string[] = [
-    "Turquoise",
-    "Silver",
-    "Enamel",
-    "Coral",
-    "Moon Stone",
-    "Semi-Precious Stones",
-    "Amathyst",
-    "Garnet",
-    "Agate",
-    "Onyx",
-    "Agate and Semi Precious Stones",
-    "Synthetic Stones",
-    "Crystal",
-    "Rose Quartz",
-    "Pearl",
-    "Topaz",
-    "AD",
-    "Ox-Silver",
-    "Lapis Lazuli",
-    "Ox-Silver (Beads)",
-  ];
-
-  const ringCategoryTypes: string[] = [
-    "Cocktail Ring",
-    "Silver",
-    "Minimalist",
-  ];
-
-  const additionalFieldMapping: {
-    [key: string]: { name: string; type: string };
-  } = {
-    ringSize: { name: "Ring Size", type: "text" },
-    grossWeight: { name: "Gross Weight", type: "number" },
-    goldWeight: { name: "Gold Weight", type: "number" },
-  };
-
-  const selectedProductCategory = watch("productCategory");
-
-  useEffect(() => {
-    if (selectedProductCategory) {
-      setSubcategories(categoryMapping[selectedProductCategory] || []);
+    // For Ring or Bangle type, size or ring_size should not be empty
+    if (
+      (formData.productType === "Ring" && !formData.ring_size) ||
+      (formData.productType === "Bangle" && !formData.size)
+    ) {
+      toast.error("Size or Ring Size is required.");
+      return false;
     }
-  }, [selectedProductCategory, categoryMapping]);
 
-  useEffect(() => {
-    if (selectedProductCategory === "Ring") {
-      setAdditionalFields(["ringSize", "grossWeight", "goldWeight"]);
-    } else {
-      setAdditionalFields([]);
-    }
-  }, [selectedProductCategory]);
+    // If material is gold, check pricing details
+    if (formData.materialType === "gold") {
+      const pricingFields = [
+        "gemCut",
+        "carats",
+        "clarity",
+        "color",
+        "goldPurity",
+        // "goldPrice",
+        "grossWeight",
+        "pricePerGram",
+        "makingCharge",
+        "diamondPrice",
+        // "diamondTotal",
+        // "goldTotal",
+        // "totalPrice",
+      ];
 
-  // Dynamically calculate price
-  useEffect(() => {
-    const weight = Number(watch("weight") || "0");
-    const pricePerGram = Number(watch("price_per_gram") || "0");
-    const calculatedPrice = weight * pricePerGram;
-
-    if (!isNaN(calculatedPrice)) {
-      // Convert the calculated price to string and set it
-      setValue("price", parseFloat(calculatedPrice.toFixed(2)));
-    }
-  }, [watch("weight"), watch("price_per_gram"), setValue]);
-
-
-
-  const formSubmit = async (formData: any) => {
-    // Ensure price is a string when submitting
-    formData.price = formData.price.toString();
-
-    await createProduct(formData);
-  };
-
-  const uploadHandler = async (e: any) => {
-    const toastId = toast.loading("Uploading image...");
-    try {
-      const resSign = await fetch("/api/cloudinary-sign", {
-        method: "POST",
-      });
-      const { signature, timestamp } = await resSign.json();
-      const file = e.target.files[0];
-      const formData = new FormData();
-      formData.append("file", file);
-      formData.append("signature", signature);
-      formData.append("timestamp", timestamp);
-      formData.append("api_key", process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!);
-      const res = await fetch(
-        `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
-        {
-          method: "POST",
-          body: formData,
+      for (let field of pricingFields) {
+        if (!pricingData[field]) {
+          toast.error(`${field} is required in Gold Pricing Details.`);
+          return false;
         }
-      );
-      const data = await res.json();
-      setValue("image", data.secure_url);
-      setFileName(file.name); // Set file name
-      setImageUrl(data.secure_url); // Set image URL for preview
-      toast.success("File uploaded successfully", {
-        id: toastId,
+      }
+    }
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setUploading(true);
+
+    // Validate form before submitting
+    if (!validateForm()) {
+      setUploading(false);
+      return;
+    }
+
+    try {
+      const mainImageUrl = mainImageFile ? await uploadToS3(mainImageFile) : "";
+      const galleryImageUrls = await Promise.all(galleryFiles.map(uploadToS3));
+
+      const payload: any = {
+        ...formData,
+        image: mainImageUrl,
+        images: galleryImageUrls,
+      };
+
+      // Attach pricing only if materialType is gold
+      if (formData.materialType === "gold") {
+        payload.pricingDetails = {
+          ...pricingData,
+          productCode: formData.productCode,
+          productName: formData.name,
+        };
+      }
+
+      const res = await axios.post("/api/admin/products", {
+        products: [payload],
       });
-    } catch (err: any) {
-      toast.error(err.message, {
-        id: toastId,
-      });
+
+      toast.success("Product created successfully!");
+      setFormData({});
+      setPricingData({});
+      setGalleryFiles([]);
+      setMainImageFile(null);
+    } catch (err) {
+      console.error("Error creating product:", err);
+      toast.error("Error occurred!");
+    } finally {
+      setUploading(false);
     }
   };
 
-  const FormInput = ({
-    id,
-    name,
-    required,
-    pattern,
-    type = "text",
-    options,
-    className = "",
-  }: {
-    id: keyof Product;
-    name: string;
-    required?: boolean;
-    pattern?: ValidationRule<RegExp>;
-    type?: string;
-    options?: { label: string; value: string }[];
-    className?: string;
-  }) => (
-    <div className="mb-1">
-      <label className="label text-sm" htmlFor={id}>
-        {name}
-      </label>
-      <div className="w-full">
-        {options ? (
-          <select
-            {...register(id, {
-              required: required && `${name} is required`,
-            })}
-            className={`select select-bordered w-full ${className}`}
-          >
-            <option value="">Select {name}</option>
-            {options.map((option) => (
-              <option key={option.value} value={option.value}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        ) : (
-          <input
-            type={type}
-            id={id}
-            {...register(id, {
-              required: required && `${name} is required`,
-              pattern,
-            })}
-            className={`input input-bordered w-full ${className}`}
-          />
-        )}
-        {errors[id]?.message && (
-          <div className="text-error">{errors[id]?.message}</div>
-        )}
-      </div>
-    </div>
-  );
+  const showRingSize = formData.productType === "Ring";
+  const showSize = formData.productType === "Bangle";
+  const isGold = formData.materialType === "gold";
+  const isSilver = formData.materialType === "silver";
+
+  // Handle drag and drop
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const files = e.dataTransfer.files;
+    setGalleryFiles((prev) => [
+      ...prev,
+      ...Array.from(files).filter((file) => file.type.startsWith("image")),
+    ]);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+  };
+
+  const removeImage = (index: number) => {
+    const updatedFiles = galleryFiles.filter((_, i) => i !== index);
+    setGalleryFiles(updatedFiles);
+  };
 
   return (
-    <div>
-      <h1 className=" text-2xl text-orange-500">Create Product</h1>
-      <form
-        onSubmit={handleSubmit(formSubmit)}
-        className="grid grid-cols-1 gap-4 sm:grid-cols-4"
-      >
-        <FormInput
-          name="Product Category"
-          id="productCategory"
-          required
-          options={productTypes.map((type) => ({
-            label: type,
-            value: type,
-          }))}
-        />
-        <FormInput name="Name" id="name" required />
-        <FormInput name="ProductCode" id="productCode" required />
-        <FormInput name="Weight (Grms)" id="weight" required />
-        <FormInput name="Price/gram" id="price_per_gram" required />
-        <FormInput
-          name="Price"
-          id="price"
-          required
-          className="w-f input input-bordered  text-red-500"
-        />
-        <FormInput
-          name="Info"
-          id="info"
-          required
-          options={categoryTypes.map((type) => ({
-            label: type,
-            value: type,
-          }))}
-        />
-        {selectedProductCategory === "Rings" && (
-          <FormInput
-            name="Category"
-            id="category"
-            required
-            options={ringCategoryTypes.map((type) => ({
-              label: type,
-              value: type,
-            }))}
-          />
-        )}
+    <form
+      onSubmit={handleSubmit}
+      className="max-w-full mx-auto p-6 bg-white rounded-lg space-y-6"
+    >
+      <h2 className="text-2xl font-semibold">Create New Product</h2>
 
-        <FormInput name="Slug" id="slug" required />
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <select
+          name="materialType"
+          value={formData.materialType}
+          onChange={handleInputChange}
+          className="px-4 py-2 border rounded w-full"
+        >
+          <option value="">Select Material Type</option>
+          <option value="gold">Gold</option>
+          <option value="silver">Silver</option>
+        </select>
 
-        {additionalFields.map((field) => (
-          <FormInput
+        {[
+          "name",
+          "productCode",
+          "productCategory",
+          "productType",
+          "price",
+          "countInStock",
+          "description",
+        ].map((field) => (
+          <input
             key={field}
-            id={field as keyof Product}
-            name={additionalFieldMapping[field].name}
-            type={additionalFieldMapping[field].type}
-            required
+            name={field}
+            value={formData[field] || ""}
+            onChange={handleInputChange}
+            placeholder={field}
+            className="px-4 py-2 border rounded w-full"
           />
         ))}
-        <FormInput name="Description" id="description" required />
-        <FormInput name="Stocks Availbale" id="countInStock" required />
-        <div className="">
-          <label className="label text-sm" htmlFor="image">
-            Upload Image
-          </label>
-          <label
-            htmlFor="image"
-            style={{ padding: "12px" }}
-            className="flex items-center justify-center gap-2 cursor-pointer border border-gray-300 rounded-md p-2 hover:bg-gray-100"
-          >
-            <Upload className="h-5 w-5 text-gray-500" />
-            <span className="text-sm text-gray-500">Upload</span>
-            <input
-              type="file"
-              id="image"
-              onChange={uploadHandler}
-              className="hidden py-4"
-            />
-          </label>
-          {fileName && (
-            <div className="mt-2 text-sm text-gray-700">
-              <span>File: {fileName}</span>
-              <button
-                type="button"
-                onClick={() => setIsPreviewOpen(true)}
-                className="ml-4 text-blue-600"
-              >
-                Preview
-              </button>
-            </div>
-          )}
-        </div>
 
-        {/* Image Preview Modal */}
-        {isPreviewOpen && imageUrl && (
-          <div className="fixed inset-0 flex items-center justify-center bg-gray-900 bg-opacity-50">
-            <div className="bg-white p-6 rounded-md max-w-sm w-full">
-              <h2 className="text-lg font-semibold">Image Preview</h2>
-              <img src={imageUrl} alt="File Preview" className="w-full h-auto mt-4" />
-              <div className="mt-4 flex justify-end gap-4">
-                <button
-                  onClick={() => setIsPreviewOpen(false)}
-                  className="bg-red-500 text-white py-1 px-4 rounded-md"
-                >
-                  Close
-                </button>
-              </div>
-            </div>
-          </div>
+        {showRingSize && (
+          <input
+            name="ring_size"
+            value={formData.ring_size || ""}
+            onChange={handleInputChange}
+            placeholder="Ring Size"
+            className="px-4 py-2 border rounded w-full"
+          />
         )}
 
-        <div className="col-span-3 my-3 flex gap-4 justify-start">
-          <button
-            type="submit"
-            disabled={isCreating}
-            className="btn btn-primary w-[100px]"
-          >
-            {isCreating && <span className="loading loading-spinner"></span>}
-            Create
-          </button>
-          <Link
-            className="btn bg-red-600 text-white w-[100px]"
-            href="/admin/products"
-          >
-            Cancel
-          </Link>
+        {showSize && (
+          <input
+            name="size"
+            value={formData.size || ""}
+            onChange={handleInputChange}
+            placeholder="Size"
+            className="px-4 py-2 border rounded w-full"
+          />
+        )}
+
+        {isSilver && (
+          <>
+            <input
+              name="weight"
+              value={formData.weight || ""}
+              onChange={handleInputChange}
+              placeholder="Weight"
+              className="px-4 py-2 border rounded w-full"
+            />
+            <input
+              name="price_per_gram"
+              value={formData.price_per_gram || ""}
+              onChange={handleInputChange}
+              placeholder="Price per gram"
+              className="px-4 py-2 border rounded w-full"
+            />
+            <input
+              name="info"
+              value={formData.info || ""}
+              onChange={handleInputChange}
+              placeholder="Info"
+              className="px-4 py-2 border rounded w-full"
+            />
+          </>
+        )}
+      </div>
+
+      {/* GOLD PRICING SECTION */}
+      {isGold && (
+        <div className="space-y-4 bg-gray-50 p-4 border rounded-md">
+          <h3 className="text-lg font-semibold">Gold Pricing Details</h3>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              "gemCut",
+              "carats",
+              "clarity",
+              "color",
+              "goldPurity",
+              // "goldPrice",
+              "grossWeight",
+              "pricePerGram",
+              "makingCharge",
+              "diamondPrice",
+              // "diamondTotal",
+              // "goldTotal",
+              // "totalPrice",
+            ].map((field) => (
+              <input
+                key={field}
+                name={field}
+                value={pricingData[field] || ""}
+                onChange={handlePricingChange}
+                placeholder={field}
+                className="px-4 py-2 border rounded w-full"
+              />
+            ))}
+          </div>
         </div>
-      </form>
-    </div>
+      )}
+
+      {/* MAIN IMAGE */}
+      <div className="space-y-2">
+        <label className="block font-medium text-gray-700">Main Image</label>
+        <input
+          type="file"
+          accept="image/*"
+          onChange={(e) => setMainImageFile(e.target.files?.[0] || null)}
+        />
+        {mainImageFile && (
+          <img
+            src={URL.createObjectURL(mainImageFile)}
+            alt="Main preview"
+            className="mt-2 w-28 h-28 object-cover border"
+          />
+        )}
+      </div>
+
+      {/* GALLERY IMAGES */}
+      <div
+        className="space-y-2 border-dashed border-2 p-4 border-gray-400 rounded-md"
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+      >
+        <label className="block font-medium text-gray-700">
+          Gallery Images
+        </label>
+        <div className="flex flex-wrap gap-4 items-center">
+          {galleryFiles.map((file, idx) => (
+            <div
+              key={idx}
+              className="relative w-24 h-24 border rounded overflow-hidden"
+            >
+              <img
+                src={URL.createObjectURL(file)}
+                alt={`preview-${idx}`}
+                className="object-cover w-full h-full"
+              />
+              <button
+                type="button"
+                onClick={() => removeImage(idx)}
+                className="absolute top-0 right-0 bg-red-500 text-white p-1 rounded-full"
+              >
+                X
+              </button>
+            </div>
+          ))}
+          <label
+            htmlFor="gallery-upload"
+            className="flex items-center justify-center w-24 h-24 border border-dashed rounded cursor-pointer text-gray-400 hover:text-blue-600 hover:border-blue-600"
+            title="Add more images"
+          >
+            <span className="text-3xl font-bold">+</span>
+            <input
+              id="gallery-upload"
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={(e) =>
+                setGalleryFiles((prev) => [
+                  ...prev,
+                  ...Array.from(e.target.files || []).filter((file) =>
+                    file.type.startsWith("image")
+                  ),
+                ])
+              }
+              className="hidden"
+            />
+          </label>
+        </div>
+      </div>
+
+      <div className="mt-4">
+        <button
+          type="submit"
+          className="px-6 py-3 bg-blue-500 text-white rounded-md"
+          disabled={uploading}
+        >
+          {uploading ? "Uploading..." : "Submit Product"}
+        </button>
+      </div>
+    </form>
   );
-}
+};
+
+export default ProductCreateForm;

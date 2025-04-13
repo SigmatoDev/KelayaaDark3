@@ -287,15 +287,83 @@ export const GET = auth(async (req: any) => {
     })
   );
 
-  const sortedProducts = updatedProducts.sort((a, b) => {
-    const hasImageA = a.image && a.image.startsWith("http");
-    const hasImageB = b.image && b.image.startsWith("http");
-    return Number(hasImageB) - Number(hasImageA);
-  });
+  // const sortedProducts = updatedProducts.sort((a, b) => {
+  //   const hasImageA = a.image && a.image.startsWith("http");
+  //   const hasImageB = b.image && b.image.startsWith("http");
+  //   return Number(hasImageB) - Number(hasImageA);
+  // });
 
   console.log("✅ Final sorted products list ready to be sent.");
-  return Response.json(sortedProducts);
+  return Response.json(updatedProducts);
 }) as any;
+
+// export const POST = auth(async (req: any) => {
+//   if (!req.auth || !req.auth.user?.isAdmin) {
+//     return Response.json({ message: "Unauthorized" }, { status: 401 });
+//   }
+
+//   await dbConnect();
+
+//   try {
+//     const body = await req.text();
+//     const parsedBody = JSON.parse(body);
+
+//     console.log("parsedBody", parsedBody);
+//     if (
+//       !Array.isArray(parsedBody.products) ||
+//       parsedBody.products.length === 0
+//     ) {
+//       return Response.json(
+//         { message: "Invalid input, expected an array of products." },
+//         { status: 400 }
+//       );
+//     }
+
+//     const productsToSave = parsedBody.products.map((product: any) => {
+//       const processedProduct: any = { ...product };
+
+//       // Automatically create slug if missing
+//       if (!processedProduct.slug && product.name) {
+//         processedProduct.slug = product.name
+//           .replace(/\s+/g, "-") // Replace spaces with hyphens
+//           .toLowerCase(); // Convert to lowercase
+//       }
+
+//       // Ensure `countInStock` and `price` default to 0 if missing
+//       processedProduct.countInStock = Number(product.countInStock) || 0;
+//       processedProduct.price = Number(product.price) || 0;
+
+//       // Ensure `images` is an array
+//       processedProduct.images = Array.isArray(product.images)
+//         ? product.images
+//         : product.image
+//           ? product.image.split(",").map((img: string) => img.trim())
+//           : [];
+
+//       // Set the first image as `image`
+//       processedProduct.image =
+//         processedProduct.images.length > 0 ? processedProduct.images[0] : "";
+
+//       return new ProductModel(processedProduct);
+//     });
+
+//     const savedProducts = await ProductModel.insertMany(productsToSave);
+
+//     return Response.json(
+//       {
+//         message: `${savedProducts.length} products created successfully.`,
+//         products: savedProducts,
+//       },
+//       { status: 201 }
+//     );
+//   } catch (err: any) {
+//     console.error("Error creating products:", err);
+//     return Response.json(
+//       { message: err.message || "Internal Server Error" },
+//       { status: 500 }
+//     );
+//   }
+// }) as any;
 
 export const POST = auth(async (req: any) => {
   if (!req.auth || !req.auth.user?.isAdmin) {
@@ -305,63 +373,85 @@ export const POST = auth(async (req: any) => {
   await dbConnect();
 
   try {
-    const body = await req.text();
-    const parsedBody = JSON.parse(body);
+    const parsedBody = await req.json();
 
-    console.log("parsedBody", parsedBody);
-    if (
-      !Array.isArray(parsedBody.products) ||
-      parsedBody.products.length === 0
-    ) {
+    if (!Array.isArray(parsedBody.products)) {
       return Response.json(
-        { message: "Invalid input, expected an array of products." },
+        { message: "Invalid product format" },
         { status: 400 }
       );
     }
 
-    const productsToSave = parsedBody.products.map((product: any) => {
-      const processedProduct: any = { ...product };
+    const createdProducts = [];
 
-      // Automatically create slug if missing
-      if (!processedProduct.slug && product.name) {
-        processedProduct.slug = product.name
-          .replace(/\s+/g, "-") // Replace spaces with hyphens
-          .toLowerCase(); // Convert to lowercase
+    for (const productData of parsedBody.products) {
+      const { name, productCode, materialType, pricingDetails, ...rest } =
+        productData;
+
+      const isGold = (materialType || "").toLowerCase() === "gold";
+
+      if (isGold && !pricingDetails) {
+        return Response.json(
+          {
+            message: `Pricing details required for gold product ${productCode}`,
+          },
+          { status: 400 }
+        );
       }
 
-      // Ensure `countInStock` and `price` default to 0 if missing
-      processedProduct.countInStock = Number(product.countInStock) || 0;
-      processedProduct.price = Number(product.price) || 0;
+      const product = new ProductModel({
+        name,
+        productCode,
+        materialType,
+        ...rest,
+        slug: name.toLowerCase().replace(/\s+/g, "-"),
+        countInStock: Number(productData.countInStock) || 0,
+        price: Number(productData.price) || 0,
+        images: Array.isArray(productData.images)
+          ? productData.images
+          : productData.image
+            ? productData.image.split(",").map((img: string) => img.trim())
+            : [],
+      });
 
-      // Ensure `images` is an array
-      processedProduct.images = Array.isArray(product.images)
-        ? product.images
-        : product.image
-          ? product.image.split(",").map((img: string) => img.trim())
-          : [];
+      product.image = product.images?.[0] || "";
 
-      // Set the first image as `image`
-      processedProduct.image =
-        processedProduct.images.length > 0 ? processedProduct.images[0] : "";
+      const savedProduct = await product.save();
 
-      return new ProductModel(processedProduct);
-    });
+      if (isGold) {
+        const pricing = pricingDetails;
 
-    const savedProducts = await ProductModel.insertMany(productsToSave);
+        const diamondTotal = Number(pricing.diamondPrice || 0);
+        const goldTotal =
+          Number(pricing.pricePerGram || 0) * Number(pricing.grossWeight || 0);
+        const makingCharges = Number(pricing.makingCharges || 0);
+        const totalPrice = diamondTotal + goldTotal + makingCharges;
+
+        const pricingDoc = new GoldDiamondProductPricingModel({
+          ...pricing,
+          productCode,
+          productName: name,
+          diamondTotal,
+          goldTotal,
+          totalPrice,
+        });
+
+        await pricingDoc.save();
+      }
+
+      createdProducts.push(savedProduct);
+    }
 
     return Response.json(
       {
-        message: `${savedProducts.length} products created successfully.`,
-        products: savedProducts,
+        message: "Products created successfully",
+        products: createdProducts,
       },
       { status: 201 }
     );
   } catch (err: any) {
-    console.error("Error creating products:", err);
-    return Response.json(
-      { message: err.message || "Internal Server Error" },
-      { status: 500 }
-    );
+    console.error(err);
+    return Response.json({ message: err.message }, { status: 500 });
   }
 }) as any;
 
