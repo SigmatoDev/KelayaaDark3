@@ -69,7 +69,7 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm">
-              {["About Us", "Privacy Policy", "Terms", "FAQs"].map((item) => (
+              {["About Us", "Privacy Policy", "Terms", "Return Policy", "FAQs"].map((item) => (
                 <li
                   key={item}
                   onClick={() => router.push(`/${item.toLowerCase().replace(' ', '-')}`)}
@@ -88,7 +88,8 @@ const Footer = () => {
               <li>Write To Us</li>
               <li>
                 <a href="tel:1800-1800-900" className="hover:text-[#EC008C] transition">
-                  1800-1800-900
+                +91 9945000100 <br/>
+                +91 8431358078
                 </a>
               </li>
               <li>

@@ -606,7 +606,11 @@ const Header = () => {
                             />
                           </Link>
                         ) : ''}
+                        
 
+                        <div>
+                          <SearchBox />
+                        </div>
 
                         <Link
                           href="/cart"

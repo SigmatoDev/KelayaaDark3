@@ -19,6 +19,9 @@ import PriceBreakupCard from "./detailsCard";
 import toast from "react-hot-toast";
 import RingDetails from "./ringDetails";
 import AvailabilityChecker from "./checkAvailabilty";
+import 'react-inner-image-zoom/lib/styles.min.css';
+import InnerImageZoom from 'react-inner-image-zoom';
+
 import ProductItems, {
   ProductItemsSkeleton,
 } from "@/components/products/ProductItems";
@@ -189,9 +192,8 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(img)}
-                    className={`p-1 rounded-none ${
-                      selectedImage === img ? "border-2 border-pink-500" : ""
-                    }`}
+                    className={`p-1 rounded-none ${selectedImage === img ? "border-2 border-pink-500" : ""
+                      }`}
                   >
                     <Image
                       src={imageUrl}
@@ -220,7 +222,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
                 onMouseDown={handleMouseDown}
                 style={{ cursor: "grab" }}
               >
-                <Image
+                {/* <Image
                   src={
                     selectedImage.startsWith("http")
                       ? selectedImage
@@ -240,7 +242,20 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
                   onError={(e) =>
                     ((e.target as HTMLImageElement).style.display = "none")
                   }
+                /> */}
+
+
+                <InnerImageZoom
+                  src={selectedImage.startsWith("http") ? selectedImage : `/${selectedImage}`}
+                  zoomSrc={selectedImage.startsWith("http") ? selectedImage : `/${selectedImage}`}
+                  zoomType="hover"
+                  zoomPreload={true}
+                  width={600}
+                  height={600}
                 />
+
+
+
               </div>
             )}
           </>
@@ -259,9 +274,9 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
             ₹
             {product.price
               ? product.price.toLocaleString("en-IN", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })
               : "N/A"}
           </div>
 
@@ -320,9 +335,14 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
 
         <div>
           {/* Price Breakup Section (Visible only for gold products) */}
-          {product?.materialType === "gold" && (
+          {/* {product?.materialType === "gold" && (
             <PriceBreakupCard product={product} />
-          )}
+          )} */}
+
+          {product?.materialType === "gold" &&
+            product?.productType !== "Sets" && (
+              <PriceBreakupCard product={product} />
+            )}
         </div>
 
         {/* Buttons Grid */}

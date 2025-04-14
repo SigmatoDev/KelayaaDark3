@@ -13,9 +13,12 @@ import {
 import image1 from "../../public/images/featured/featured-11.webp";
 // import image2 from "../../public/images/featured/featured-2.webp";
 import image3 from "../../public/images/featured/featured-33.webp";
+import image4 from "../../public/images/featured/featured-36.webp";
+import image5 from "../../public/images/featured/featured-26.webp";
+import image6 from "../../public/images/featured/featured-42.webp";
 import { Link } from "lucide-react";
 
-const images = [image1, image3];
+const images = [image1, image3, image4, image5, image6];
 
 const Carousel = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
