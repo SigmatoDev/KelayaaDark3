@@ -111,7 +111,7 @@ export default async function SearchPage({
   return (
     <div className="grid md:grid-cols-5 gap-6 p-6">
       {/* Filters Section */}
-      <div className="space-y-4">
+      <div className="sticky top-6 max-h-[calc(100vh-3rem)] overflow-y-auto pr-2 space-y-4">
         <div>
           <span className="flex items-center justify-between">
             <div>Filters</div>
