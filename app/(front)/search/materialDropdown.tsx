@@ -75,7 +75,7 @@ const MaterialTypeFilter = ({
   }, [materialType]);
 
   const checkboxStyle =
-    "flex items-center gap-2 cursor-pointer py-2 px-3 rounded hover:bg-pink-50 dark:hover:bg-gray-700 transition-all";
+    "flex items-center gap-2 cursor-pointer py-1 px-3 rounded hover:bg-pink-50 dark:hover:bg-gray-700 transition-all";
 
   return (
     <div

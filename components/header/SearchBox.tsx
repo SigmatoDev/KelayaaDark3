@@ -1,7 +1,7 @@
 "use client";
 
-import { useSearchParams } from "next/navigation";
 import { useRouter } from "next-nprogress-bar";
+import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Search, XIcon } from "lucide-react";
 import clsx from "clsx";
@@ -22,12 +22,12 @@ export const SearchBox = () => {
   const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    let keywordIndex = 0;
-    const keywordInterval = setInterval(() => {
-      keywordIndex = (keywordIndex + 1) % keywords.length;
-      setCurrentKeyword(keywords[keywordIndex]);
+    let index = 0;
+    const interval = setInterval(() => {
+      index = (index + 1) % keywords.length;
+      setCurrentKeyword(keywords[index]);
     }, 2000);
-    return () => clearInterval(keywordInterval);
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -75,93 +75,94 @@ export const SearchBox = () => {
 
   return (
     <>
-      <button
-        onClick={() => setShowSearch(true)}
-        className="p-2 text-white"
-      >
-        <Search className="text-white" />
+      <button onClick={() => setShowSearch(true)} className="p-2 text-white">
+        <Search />
       </button>
 
       {showSearch && (
         <div
           className={clsx(
-            "fixed inset-0 z-50 flex items-center justify-center backdrop-blur-md bg-black/30 transition-opacity duration-300",
+            "fixed left-0 top-0 w-screen h-screen z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300",
             {
               "opacity-100": !fadeOut,
               "opacity-0 pointer-events-none": fadeOut,
             }
           )}
+          style={{ position: "fixed" }}
         >
-          <div
-            ref={searchRef}
-            className="bg-white border border-black w-full max-w-xl rounded-xl p-6 shadow-lg relative animate-fadeIn"
-          >
-            <button
-              onClick={handleCloseModal}
-              className="absolute top-3 right-3 text-gray-400"
+          <div className="w-full max-w-2xl p-4">
+            <div
+              ref={searchRef}
+              className="bg-white border border-black rounded-2xl p-6 shadow-xl relative animate-fadeZoom"
             >
-              <XIcon className="w-5 h-5" />
-            </button>
-
-            <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
-              <input
-                type="text"
-                placeholder={`Search in Kelayaa... ${currentKeyword}`}
-                value={formQuery}
-                onChange={(e) => handleChange(e.target.value)}
-                autoFocus
-                className="w-full border-b border-black text-sm py-2 px-2 placeholder-gray-500 focus:outline-none"
-              />
-
-              {suggestions.length > 0 && (
-                <ul className="rounded-md border border-gray-300">
-                  {suggestions.map((item, idx) => (
-                    <li
-                      key={idx}
-                      onClick={() => handlePillClick(item)}
-                      className="px-4 py-2 text-sm cursor-pointer"
-                    >
-                      {item}
-                    </li>
-                  ))}
-                </ul>
-              )}
-
-              <div className="flex flex-wrap gap-2 mt-1">
-                {keywords.map((word, i) => (
-                  <span
-                    key={i}
-                    onClick={() => handlePillClick(word)}
-                    className="px-3 py-1 rounded-full border border-black text-xs text-black cursor-pointer"
-                  >
-                    {word}
-                  </span>
-                ))}
-              </div>
-
               <button
-                type="submit"
-                className="bg-black text-white px-4 py-2 rounded-md self-start text-sm"
+                onClick={handleCloseModal}
+                className="absolute top-3 right-3 text-gray-400"
               >
-                Search
+                <XIcon className="w-5 h-5" />
               </button>
-            </form>
+
+              <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+                <input
+                  type="text"
+                  placeholder={`Search in Kelayaa... ${currentKeyword}`}
+                  value={formQuery}
+                  onChange={(e) => handleChange(e.target.value)}
+                  autoFocus
+                  className="w-full border-b border-black text-sm py-2 px-2 placeholder-gray-500 focus:outline-none"
+                />
+
+                {suggestions.length > 0 && (
+                  <ul className="rounded-md border border-gray-300 max-h-48 overflow-y-auto">
+                    {suggestions.map((item, idx) => (
+                      <li
+                        key={idx}
+                        onClick={() => handlePillClick(item)}
+                        className="px-4 py-2 text-sm cursor-pointer hover:bg-gray-100"
+                      >
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                <div className="flex flex-wrap gap-2 mt-1">
+                  {keywords.map((word, i) => (
+                    <span
+                      key={i}
+                      onClick={() => handlePillClick(word)}
+                      className="px-3 py-1 rounded-full border border-black text-xs text-black cursor-pointer hover:bg-black hover:text-white transition"
+                    >
+                      {word}
+                    </span>
+                  ))}
+                </div>
+
+                <button
+                  type="submit"
+                  className="bg-black text-white px-4 py-2 rounded-md self-start text-sm"
+                >
+                  Search
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       )}
 
       <style jsx>{`
-        .animate-fadeIn {
-          animation: fadeIn 0.3s ease-out;
+        .animate-fadeZoom {
+          animation: fadeZoomIn 0.3s ease-out;
         }
-        @keyframes fadeIn {
+
+        @keyframes fadeZoomIn {
           from {
-            transform: scale(0.95);
             opacity: 0;
+            transform: scale(0.95) translateY(-20px);
           }
           to {
-            transform: scale(1);
             opacity: 1;
+            transform: scale(1) translateY(0);
           }
         }
       `}</style>
