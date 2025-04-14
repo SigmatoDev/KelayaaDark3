@@ -256,6 +256,21 @@ const menuData: Record<string, MenuItem> = {
       "/images/menu/fire.webp",
     ],
   },
+  // beads: {
+  //   subitems: [
+  //     {
+  //       // href: "/collections/air",
+  //       label: "Air",
+  //       description: "Ethereal and lightweight designs",
+  //     },
+  //   ],
+  //   images: [
+  //     "/images/menu/air.webp",
+  //     "/images/menu/water.webp",
+  //     "/images/menu/earth.webp",
+  //     "/images/menu/fire.webp",
+  //   ],
+  // }
 };
 
 const Header = () => {

@@ -222,7 +222,7 @@ const CartDetails = () => {
 
             <button
               type="button"
-              className="w-full mt-6 py-3 text-[12px] text-white font-semibold bg-gradient-to-r from-pink-500 to-red-500"
+              className="w-full mt-6 py-3 text-[12px] text-white font-semibold bg-gradient-to-r from-[#Dd91a6] to-red-500"
               onClick={() => handleProceedToCheckOut()}
             >
               PROCEED TO CHECKOUT
