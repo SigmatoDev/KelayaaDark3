@@ -156,18 +156,18 @@ const ProductItem = ({ product }: { product: Product }) => {
         disabled={loading}
       >
         <Heart
-          className={`w-6 h-6 transition-all ${isWishlisted ? "text-red-500 fill-red-500" : "text-gray-500"}`}
+          className={`w-4 h-4 transition-all ${isWishlisted ? "text-red-500 fill-red-500" : "text-gray-500"}`}
         />
       </button>
 
       <div className="card-body p-2 text-left">
         <Link href={`/product/${product.slug}`}>
-          <h3 className="line-clamp-1 font-medium text-base text-[#474747]">
+          <h3 className="line-clamp-1 font-regular text-base text-sm text-[#474747]">
             {product.name || "Product Name Unavailable"}
           </h3>
         </Link>
-        <div className="card-actions flex items-center justify-start">
-          <span className="text-base text-[#000000]">
+        <div className="card-actions flex items-center text-sm justify-start">
+          <span className="text-base text-[#000000] text-sm">
             ₹
             {product.price
               ? product.price.toLocaleString("en-IN", {

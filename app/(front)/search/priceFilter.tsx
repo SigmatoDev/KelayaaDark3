@@ -109,7 +109,7 @@ const PriceFilter = ({
                 onChange={() => togglePriceValue(range.value)}
                 className="accent-pink-500 w-4 h-4"
               />
-              <span>{range.name}</span>
+              <span className="text-sm">{range.name}</span>
             </label>
           );
         })}

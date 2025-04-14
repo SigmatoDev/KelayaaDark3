@@ -106,7 +106,7 @@ const StyleFilter = ({
         {selected.length > 0 && (
           <button
             onClick={handleClear}
-            className="text-sm text-pink-600 hover:underline"
+            className="text-xs text-[#333 hover:underline"
           >
             Clear All
           </button>
@@ -128,8 +128,8 @@ const StyleFilter = ({
                 readOnly
                 className="accent-pink-500 w-4 h-4"
               />
-              <span className={textStyle(isActive)}>{item}</span>
-            </label>
+<span className={`text-sm ${textStyle(isActive)}`}>{item}</span>
+</label>
           );
         })}
 

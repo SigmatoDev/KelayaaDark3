@@ -90,7 +90,7 @@ const MaterialTypeFilter = ({
         {selected.length > 0 && (
           <button
             onClick={handleClearAll}
-            className="text-sm text-pink-600 hover:underline"
+            className="text-xs text-[#333] hover:underline"
           >
             Clear All
           </button>
@@ -108,8 +108,8 @@ const MaterialTypeFilter = ({
             <span
               className={`transition-all ${
                 selected.includes(material)
-                  ? "text-black font-font-medium	"
-                  : "text-inherit"
+                  ? "text-black font-font-medium text-sm	"
+                  : "text-inherit text-sm"
               }`}
             >
               {material === "gold"

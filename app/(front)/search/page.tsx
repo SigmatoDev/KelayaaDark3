@@ -205,11 +205,10 @@ export default async function SearchPage({
               <Link
                 key={s}
                 href={getFilterUrl({ s })}
-                className={`px-3 py-1 text-[12px] rounded-md ${
-                  sort === s
+                className={`px-3 py-1 text-[12px] rounded-md ${sort === s
                     ? "bg-pink-100 text-pink-500"
                     : "hover:bg-pink-100 text-pink-500"
-                }`}
+                  }`}
               >
                 {s}
               </Link>
@@ -220,8 +219,13 @@ export default async function SearchPage({
           {validProducts.length > 0 ? (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {validProducts.map((product) => (
+                {/* {validProducts.map((product) => (
                   <ProductItem key={product.slug} product={product} />
+                ))} */}
+
+                {/* changed by nuthan */}
+                {validProducts.map((product, index) => (
+                  <ProductItem key={`${product.slug}-${index}`} product={product} />
                 ))}
               </div>
 
@@ -243,11 +247,10 @@ export default async function SearchPage({
                   <Link
                     key={p}
                     href={getFilterUrl({ pg: String(p) })}
-                    className={`px-4 py-2 rounded-md ${
-                      currentPage === p
+                    className={`px-4 py-2 rounded-md ${currentPage === p
                         ? "bg-pink-500 text-white"
                         : "hover:bg-pink-100 text-pink-500"
-                    }`}
+                      }`}
                   >
                     {p}
                   </Link>
