@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import useLayoutService from "@/lib/hooks/useLayout";
 
 interface CategoryFilterProps {
@@ -35,7 +35,16 @@ const CategoryFilter = ({
   const [selected, setSelected] = useState<string[]>(initialSelection);
   const [showMore, setShowMore] = useState(false);
   const router = useRouter();
+  const searchParams = useSearchParams(); // This is to read URL parameters directly
   const { theme } = useLayoutService();
+
+  useEffect(() => {
+    // Automatically sync the selected categories with the URL parameters
+    const selectedCategoriesFromUrl = searchParams.get("productCategory");
+    if (selectedCategoriesFromUrl) {
+      setSelected(selectedCategoriesFromUrl.split(","));
+    }
+  }, [searchParams]);
 
   const handleSelect = (category: string) => {
     const updated = selected.includes(category)
@@ -47,10 +56,11 @@ const CategoryFilter = ({
   const handleClear = () => setSelected([]);
 
   useEffect(() => {
+    // When selected changes, update the URL and trigger a page refresh
     const params: Record<string, string> = {
       q,
       materialType,
-      productCategory: selected.length > 0 ? selected.join(",") : "all",
+      productCategory: selected.length > 0 ? selected.join(",") : "",
       price,
       rating,
       sort,
@@ -60,7 +70,7 @@ const CategoryFilter = ({
     const query = new URLSearchParams(params).toString();
     router.push(`/search?${query}`);
     router.refresh();
-  }, [selected]);
+  }, [selected, q, materialType, price, rating, sort, page]); // Also update when other dependencies change
 
   const checkboxStyle = (isActive: boolean) =>
     `flex items-center gap-2 cursor-pointer py-2 px-3 rounded transition-all ${
@@ -70,7 +80,22 @@ const CategoryFilter = ({
   const textStyle = (isActive: boolean) =>
     `${isActive ? "font-medium text-black" : ""}`;
 
-  const visibleCategories = showMore ? categories : categories.slice(0, 4);
+  // List of categories you want to display (excluding "all")
+  const allCategories = [
+    "Bangle Pair",
+    "Bangles",
+    "Bracelets",
+    "Earrings",
+    "Pendants",
+    "Rings",
+    "Sets",
+    "Toe Rings",
+  ];
+
+  // If productCategory is "all", we don't want to display it in the checkbox
+  const filteredCategories = productCategory === "all" ? allCategories.filter(category => category !== "All") : allCategories;
+
+  const visibleCategories = showMore ? filteredCategories : filteredCategories.slice(0, 4);
 
   useEffect(() => {
     if (productCategory === "all" && selected.length > 0) {
@@ -99,31 +124,37 @@ const CategoryFilter = ({
       </div>
 
       <div className="flex flex-col gap-0">
-        {visibleCategories.map((category) => {
+        {visibleCategories.map((category, index) => {
           const isActive = selected.includes(category);
+          const checkboxId = `checkbox-${index}`; // Unique ID for each checkbox
+
           return (
             <label
               key={category}
-              onClick={() => handleSelect(category)}
+              htmlFor={checkboxId} // Link the label to the input checkbox by ID
               className={checkboxStyle(isActive)}
             >
               <input
                 type="checkbox"
+                id={checkboxId} // Unique ID for the checkbox
                 checked={isActive}
-                readOnly
+                onChange={() => handleSelect(category)} // Allow for state toggle
                 className="accent-pink-500 w-4 h-4"
               />
-<span className={`text-sm ${textStyle(isActive)}`}>{category}</span>
-</label>
+              <span className={`text-sm ${textStyle(isActive)}`}>
+
+                {category}
+              </span>
+            </label>
           );
         })}
 
-        {categories.length > 4 && (
+        {allCategories.length > 4 && (
           <button
             onClick={() => setShowMore((prev) => !prev)}
             className="text-sm text-pink-600 hover:underline mt-2 ml-1"
           >
-            {showMore ? "Show Less" : `+ ${categories.length - 4} more`}
+            {showMore ? "Show Less" : `+ ${filteredCategories.length - 4} more`}
           </button>
         )}
       </div>

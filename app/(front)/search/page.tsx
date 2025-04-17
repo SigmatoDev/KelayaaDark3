@@ -89,7 +89,12 @@ export default async function SearchPage({
   const combineCategoryAndSubcategory =
     await productServices.getCombinedCategoriesAndSubcategories();
   const productTypeByProductCategory =
-    await productServices.getCombinedByProductCategory(productCategory);
+    await productServices.getCombinedByProductCategory(
+      productCategory,
+      materialType
+    );
+
+  const materialTypeCounts = await productServices.getMaterialTypesWithCounts();
 
   const { countProducts, products, pages } = await productServices.getByQuery({
     productCategory,
@@ -134,6 +139,7 @@ export default async function SearchPage({
           sort={sort}
           page={page}
           productCategory={productCategory}
+          materialTypeCounts={materialTypeCounts}
         />{" "}
         <div className="p-0 m-0">
           <hr />
@@ -152,24 +158,29 @@ export default async function SearchPage({
         <div className="p-0 m-0">
           <hr />
         </div>
-        <StyleFilter
-          category={
-            productCategory === "all"
-              ? combineCategoryAndSubcategory
-              : productTypeByProductCategory
-          }
-          selectedCategory={category}
-          q={q}
-          productCategory={productCategory}
-          price={price}
-          rating={rating}
-          sort={sort}
-          page={page}
-          materialType={materialType}
-        />{" "}
-        <div className="p-0 m-0">
-          <hr />
-        </div>
+        {productCategory !== "all" &&
+          productTypeByProductCategory.length > 0 && (
+            <>
+              <StyleFilter
+                category={
+                  productCategory === "all"
+                    ? combineCategoryAndSubcategory
+                    : productTypeByProductCategory
+                }
+                selectedCategory={category}
+                q={q}
+                productCategory={productCategory}
+                price={price}
+                rating={rating}
+                sort={sort}
+                page={page}
+                materialType={materialType}
+              />
+              <div className="p-0 m-0">
+                <hr />
+              </div>
+            </>
+          )}
         <PriceFilter
           selectedPrice={price}
           q={q}
@@ -206,6 +217,13 @@ export default async function SearchPage({
             materialType={materialType}
           />
           <div className="flex items-center">
+            <div className="px-3 py-1 text-[12px]">
+              Showing{" "}
+              <span className="font-semibold text-[14px] text-pink-500">
+                {validProducts.length}
+              </span>{" "}
+              product{validProducts.length !== 1 && "s"}
+            </div>
             <span className="mr-2 text-[12px]">Sort by:</span>
             {sortOrders.map((s) => (
               <Link

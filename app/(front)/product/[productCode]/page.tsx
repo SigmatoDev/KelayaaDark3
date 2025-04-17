@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import productService from "@/lib/services/productService";
 import ProductPageContent from "./ProductContent";
+import ProductItem from "@/components/products/ProductItem";
 
 // Define Product interface
 interface Pricing {
@@ -25,6 +26,8 @@ interface Item {
 }
 
 interface Product {
+  materialType: string | undefined;
+  subCategories: never[];
   _id: string;
   name: string;
   productCode: string;
@@ -86,8 +89,34 @@ export const generateMetadata = async ({
 // Updated: main page fetch
 const ProductPage = async ({ params }: { params: { productCode: string } }) => {
   const product = await getProduct(params.productCode);
-  console.log("productCode", params.productCode, product);
-  return <ProductPageContent product={product} />;
+
+  console.log("products", product);
+
+  const similarProducts = await productService.getSimilarProducts(
+    product.productCategory,
+    product.category,
+    product.subCategories || [],
+    product.materialType,
+    product.productCode
+  );
+  console.log("similar", similarProducts);
+
+  return (
+    <>
+      <ProductPageContent product={product} similarProducts={similarProducts} />
+
+      {/* {similarProducts?.length > 0 && (
+        <section className="mt-10 px-4">
+          <h2 className="text-2xl font-semibold mb-4">Similar Products</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {similarProducts.map((item) => (
+              <ProductItem product={item} />
+            ))}
+          </div>
+        </section>
+      )} */}
+    </>
+  );
 };
 
 export default ProductPage;

@@ -261,7 +261,7 @@ const groupByCategory = (products: any[]) => {
 
   // Shuffle products within each category
   categoryMap.forEach((products, category) => {
-    categoryMap.set(category, shuffleArray(products));
+    categoryMap.set(category, products);
   });
 
   return categoryMap;
@@ -624,9 +624,9 @@ const getByCategory = cache(async (category: string) => {
   const productsToShuffle = validProducts.length > 0 ? validProducts : products;
 
   // Shuffle the filtered products
-  const shuffledProducts = shuffleArray(productsToShuffle);
+  // const shuffledProducts = shuffleArray(productsToShuffle);
 
-  return shuffledProducts as unknown as Product[];
+  return productsToShuffle as unknown as Product[];
 });
 
 const getCombinedCategoriesAndSubcategories = cache(async () => {
@@ -673,68 +673,238 @@ const getCombinedCategoriesAndSubcategories = cache(async () => {
   return combined;
 });
 
-const getCombinedByProductCategory = cache(async (productCategory: string) => {
-  await dbConnect();
-  const regexCategory = new RegExp(`^${productCategory}$`, "i");
+const getCombinedByProductCategory = cache(
+  async (productCategory: string, materialType?: string) => {
+    await dbConnect();
+    const regexCategory = new RegExp(`^${productCategory}$`, "i");
 
-  console.log(
-    "🔍 Fetching combined categories/subcategories for:",
-    productCategory
-  );
+    console.log(
+      "🔍 Fetching combined categories/subcategories for:",
+      productCategory,
+      materialType
+        ? `with materialType: ${materialType}`
+        : "without materialType"
+    );
 
-  // Fetch from ProductModel
-  const categories = await ProductModel.distinct("category", {
-    productCategory: regexCategory,
-  });
-  console.log("📦 Categories from ProductModel:", categories);
-
-  const subcategoriesFromProducts = await ProductModel.distinct(
-    "subCategories",
-    {
+    // Build query for product category and material type (if provided)
+    const productQuery: Record<string, any> = {
       productCategory: regexCategory,
+    };
+    if (materialType && materialType !== "all") {
+      productQuery.materialType = materialType;
     }
-  );
-  console.log("🧩 Subcategories from ProductModel:", subcategoriesFromProducts);
 
-  // Fetch from SetsProductModel
-  const subcategoriesFromSets = await SetsProductModel.distinct(
-    "subCategories",
-    {
-      productType: regexCategory,
+    // Fetch categories from ProductModel
+    const categories = await ProductModel.distinct("category", productQuery);
+    console.log("📦 Categories from ProductModel:", categories);
+
+    // Fetch subcategories from ProductModel
+    const subcategoriesFromProducts = await ProductModel.distinct(
+      "subCategories",
+      productQuery
+    );
+    console.log(
+      "🧩 Subcategories from ProductModel:",
+      subcategoriesFromProducts
+    );
+
+    // Fetch subcategories from SetsProductModel with materialType consideration
+    const setsQuery: Record<string, any> = { productType: regexCategory };
+    if (materialType && materialType !== "all") {
+      setsQuery.materialType = materialType;
     }
-  );
-  console.log("🎁 Subcategories from SetsProductModel:", subcategoriesFromSets);
 
-  // Combine and flatten
-  const allSubcategories = [
-    ...subcategoriesFromProducts,
-    ...subcategoriesFromSets,
-  ].flat();
-  console.log("🧮 Combined raw subcategories:", allSubcategories);
+    const subcategoriesFromSets = await SetsProductModel.distinct(
+      "subCategories",
+      setsQuery
+    );
+    console.log(
+      "🎁 Subcategories from SetsProductModel:",
+      subcategoriesFromSets
+    );
 
-  // Combine all
-  const rawCombined = [...categories, ...allSubcategories];
+    // Combine and flatten subcategories from both models
+    const allSubcategories = [
+      ...subcategoriesFromProducts,
+      ...subcategoriesFromSets,
+    ].flat();
+    console.log("🧮 Combined raw subcategories:", allSubcategories);
 
-  // Use a Map to preserve first-cased entry but dedupe case-insensitively
-  const normalizedMap = new Map<string, string>();
-  for (const item of rawCombined) {
-    if (
-      item &&
-      typeof item === "string" &&
-      !["na", "n/a", "null"].includes(item.trim().toLowerCase())
-    ) {
-      const key = item.trim().toLowerCase();
-      if (!normalizedMap.has(key)) {
-        normalizedMap.set(key, item.trim());
+    // Combine categories and subcategories
+    const rawCombined = [...categories, ...allSubcategories];
+
+    // Use a Map to deduplicate and normalize case
+    const normalizedMap = new Map<string, string>();
+    for (const item of rawCombined) {
+      if (
+        item &&
+        typeof item === "string" &&
+        !["na", "n/a", "null"].includes(item.trim().toLowerCase())
+      ) {
+        const key = item.trim().toLowerCase();
+        if (!normalizedMap.has(key)) {
+          normalizedMap.set(key, item.trim());
+        }
       }
     }
+
+    const combined = Array.from(normalizedMap.values());
+    console.log("✅ Final deduplicated categories/subcategories:", combined);
+
+    return combined;
   }
+);
 
-  const combined = Array.from(normalizedMap.values());
-  console.log("✅ Final deduplicated categories/subcategories:", combined);
+// similar products
+const getSimilarProducts = cache(
+  async (
+    productCategory: string,
+    category?: string,
+    subCategories?: string[] | string,
+    materialType?: string,
+    currentProductCode?: string
+  ) => {
+    await dbConnect();
 
-  return combined;
-});
+    console.log(
+      `🔍 Querying for products with productCategory: "${productCategory}"`
+    );
+
+    // Normalize subCategories into an array
+    let normalizedSubCategories: string[] = [];
+    if (Array.isArray(subCategories)) {
+      normalizedSubCategories = subCategories;
+    } else if (typeof subCategories === "string") {
+      const lower = subCategories.trim().toLowerCase();
+      if (
+        lower !== "na" &&
+        lower !== "n/a" &&
+        lower !== "null" &&
+        lower !== ""
+      ) {
+        normalizedSubCategories = [subCategories];
+      }
+    }
+
+    const regexCategory = new RegExp(`^${productCategory}$`, "i");
+    const regexMaterialType = materialType
+      ? new RegExp(`^${materialType}$`, "i")
+      : null;
+    const regexMainCategory = category
+      ? new RegExp(`^${category}$`, "i")
+      : null;
+    const regexSubCategories = normalizedSubCategories.map(
+      (sub) => new RegExp(`^${sub}$`, "i")
+    );
+
+    let productIdToExclude: any = null;
+    if (currentProductCode) {
+      const currentProduct = await ProductModel.findOne({
+        productCode: currentProductCode,
+      }).select("_id");
+
+      if (currentProduct?._id) {
+        productIdToExclude = currentProduct._id;
+      }
+    }
+
+    // 🌟 MAIN FILTER (strict matching)
+    const baseFilter: any[] = [
+      { productCategory: regexCategory },
+      productIdToExclude ? { _id: { $ne: productIdToExclude } } : {},
+    ];
+    if (regexMainCategory) baseFilter.push({ category: regexMainCategory });
+    if (regexSubCategories.length > 0)
+      baseFilter.push({ subCategories: { $in: regexSubCategories } });
+    if (regexMaterialType) baseFilter.push({ materialType: regexMaterialType });
+
+    const fullFilter = { $and: baseFilter };
+
+    console.log(
+      "🧠 Initial MongoDB Filter:",
+      JSON.stringify(fullFilter, null, 2)
+    );
+
+    let similarProducts = await ProductModel.find(fullFilter)
+      .sort({ createdAt: -1 })
+      .limit(8)
+      .lean();
+
+    console.log(`✅ Found ${similarProducts.length} similar products.`);
+
+    // 🆘 FALLBACK if not enough similar products
+    if (similarProducts.length < 2 && regexMaterialType) {
+      console.log(
+        "⚠️ Not enough results — fallback to materialType-only, with mixed categories."
+      );
+
+      // Fetch all with materialType
+      const materialTypeProducts = await ProductModel.find({
+        materialType: regexMaterialType,
+        ...(productIdToExclude && { _id: { $ne: productIdToExclude } }),
+      })
+        .sort({ createdAt: -1 })
+        .lean();
+
+      // Group by productCategory
+      const groupedByCategory: Record<string, any> = {};
+      for (const product of materialTypeProducts) {
+        const cat = product.productCategory || "Unknown";
+        if (!groupedByCategory[cat]) {
+          groupedByCategory[cat] = product;
+        }
+      }
+
+      similarProducts = Object.values(groupedByCategory).slice(0, 8);
+      console.log(
+        `🔁 Fallback (Mixed Categories) returned ${similarProducts.length} products.`
+      );
+    }
+
+    return similarProducts;
+  }
+);
+
+async function getMaterialTypesWithCounts() {
+  // Step 1: Aggregate materialType counts from ProductModel
+  const productCounts = await ProductModel.aggregate([
+    {
+      $group: {
+        _id: "$materialType",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  // Step 2: Aggregate materialType counts from SetProductModel
+  const setProductCounts = await SetsProductModel.aggregate([
+    {
+      $group: {
+        _id: "$materialType",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  // Step 3: Combine counts into one object
+  const counts: Record<string, number> = {};
+
+  // Add ProductModel counts
+  productCounts.forEach((item) => {
+    if (item._id) {
+      counts[item._id] = (counts[item._id] || 0) + item.count;
+    }
+  });
+
+  // Add SetProductModel counts
+  setProductCounts.forEach((item) => {
+    if (item._id) {
+      counts[item._id] = (counts[item._id] || 0) + item.count;
+    }
+  });
+
+  return counts;
+}
 
 const productService = {
   getLatest,
@@ -748,6 +918,8 @@ const productService = {
   getByProductCode,
   getCombinedCategoriesAndSubcategories,
   getCombinedByProductCategory,
+  getSimilarProducts,
+  getMaterialTypesWithCounts,
 };
 
 export default productService;
