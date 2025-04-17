@@ -88,6 +88,8 @@ export default async function SearchPage({
   const materials = await productServices.getMaterialTypes();
   const combineCategoryAndSubcategory =
     await productServices.getCombinedCategoriesAndSubcategories();
+  const productTypeByProductCategory =
+    await productServices.getCombinedByProductCategory(productCategory);
 
   const { countProducts, products, pages } = await productServices.getByQuery({
     productCategory,
@@ -151,7 +153,11 @@ export default async function SearchPage({
           <hr />
         </div>
         <StyleFilter
-          category={combineCategoryAndSubcategory}
+          category={
+            productCategory === "all"
+              ? combineCategoryAndSubcategory
+              : productTypeByProductCategory
+          }
           selectedCategory={category}
           q={q}
           productCategory={productCategory}
@@ -205,10 +211,11 @@ export default async function SearchPage({
               <Link
                 key={s}
                 href={getFilterUrl({ s })}
-                className={`px-3 py-1 text-[12px] rounded-md ${sort === s
+                className={`px-3 py-1 text-[12px] rounded-md ${
+                  sort === s
                     ? "bg-pink-100 text-pink-500"
                     : "hover:bg-pink-100 text-pink-500"
-                  }`}
+                }`}
               >
                 {s}
               </Link>
@@ -225,7 +232,10 @@ export default async function SearchPage({
 
                 {/* changed by nuthan */}
                 {validProducts.map((product, index) => (
-                  <ProductItem key={`${product.slug}-${index}`} product={product} />
+                  <ProductItem
+                    key={`${product.slug}-${index}`}
+                    product={product}
+                  />
                 ))}
               </div>
 
@@ -247,10 +257,11 @@ export default async function SearchPage({
                   <Link
                     key={p}
                     href={getFilterUrl({ pg: String(p) })}
-                    className={`px-4 py-2 rounded-md ${currentPage === p
+                    className={`px-4 py-2 rounded-md ${
+                      currentPage === p
                         ? "bg-pink-500 text-white"
                         : "hover:bg-pink-100 text-pink-500"
-                      }`}
+                    }`}
                   >
                     {p}
                   </Link>

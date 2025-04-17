@@ -673,6 +673,69 @@ const getCombinedCategoriesAndSubcategories = cache(async () => {
   return combined;
 });
 
+const getCombinedByProductCategory = cache(async (productCategory: string) => {
+  await dbConnect();
+  const regexCategory = new RegExp(`^${productCategory}$`, "i");
+
+  console.log(
+    "🔍 Fetching combined categories/subcategories for:",
+    productCategory
+  );
+
+  // Fetch from ProductModel
+  const categories = await ProductModel.distinct("category", {
+    productCategory: regexCategory,
+  });
+  console.log("📦 Categories from ProductModel:", categories);
+
+  const subcategoriesFromProducts = await ProductModel.distinct(
+    "subCategories",
+    {
+      productCategory: regexCategory,
+    }
+  );
+  console.log("🧩 Subcategories from ProductModel:", subcategoriesFromProducts);
+
+  // Fetch from SetsProductModel
+  const subcategoriesFromSets = await SetsProductModel.distinct(
+    "subCategories",
+    {
+      productType: regexCategory,
+    }
+  );
+  console.log("🎁 Subcategories from SetsProductModel:", subcategoriesFromSets);
+
+  // Combine and flatten
+  const allSubcategories = [
+    ...subcategoriesFromProducts,
+    ...subcategoriesFromSets,
+  ].flat();
+  console.log("🧮 Combined raw subcategories:", allSubcategories);
+
+  // Combine all
+  const rawCombined = [...categories, ...allSubcategories];
+
+  // Use a Map to preserve first-cased entry but dedupe case-insensitively
+  const normalizedMap = new Map<string, string>();
+  for (const item of rawCombined) {
+    if (
+      item &&
+      typeof item === "string" &&
+      !["na", "n/a", "null"].includes(item.trim().toLowerCase())
+    ) {
+      const key = item.trim().toLowerCase();
+      if (!normalizedMap.has(key)) {
+        normalizedMap.set(key, item.trim());
+      }
+    }
+  }
+
+  const combined = Array.from(normalizedMap.values());
+  console.log("✅ Final deduplicated categories/subcategories:", combined);
+
+  return combined;
+});
+
 const productService = {
   getLatest,
   getFeatured,
@@ -684,6 +747,7 @@ const productService = {
   getMaterialTypes,
   getByProductCode,
   getCombinedCategoriesAndSubcategories,
+  getCombinedByProductCategory,
 };
 
 export default productService;
