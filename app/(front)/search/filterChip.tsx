@@ -12,6 +12,7 @@ type FilterChipsProps = {
   sort: string;
   page: string;
   materialType: string;
+  collectionType: string;
 };
 
 const FilterChip = ({
@@ -43,6 +44,7 @@ const FilterChips: React.FC<FilterChipsProps> = ({
   sort,
   page,
   materialType,
+  collectionType,
 }) => {
   const buildUrl = (omit: string, valueToRemove?: string) => {
     const params = new URLSearchParams({
@@ -54,6 +56,7 @@ const FilterChips: React.FC<FilterChipsProps> = ({
       sort,
       page,
       materialType,
+      collectionType,
     });
 
     const multiFields = [
@@ -107,6 +110,7 @@ const FilterChips: React.FC<FilterChipsProps> = ({
     price,
     rating,
     materialType,
+    collectionType,
   ].some((v) => v && v !== "all");
 
   return (
@@ -147,4 +151,4 @@ const FilterChips: React.FC<FilterChipsProps> = ({
 };
 
 export default FilterChips;
-("500000-10000000");
+

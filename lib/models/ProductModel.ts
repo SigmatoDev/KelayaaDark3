@@ -28,6 +28,7 @@ export type Product = {
   size?: string;
   isFeatured: boolean;
   goldPrice: number;
+  collectionType: string;
 };
 
 const productSchema = new mongoose.Schema<Product>(
@@ -59,6 +60,7 @@ const productSchema = new mongoose.Schema<Product>(
     goldPurity: { type: String },
     subCategories: { type: String },
     productType: { type: String },
+    collectionType: { type: String },
     ring_size: {
       type: String,
       validate: {

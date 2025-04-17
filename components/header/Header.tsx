@@ -341,7 +341,7 @@ const Header = () => {
     }
 
     if (label === "collections") {
-      router.push(`/collections`);
+      router.push(`/search?productCategory=collections`);
       setIsOpen(false);
       return; // ⛔ prevent the next line from executing
     }
@@ -786,7 +786,7 @@ const Header = () => {
                         {activeMenu === "collections" && (
                           <div className="col-span-5 grid grid-cols-4 gap-6">
                             {menuData[activeMenu].subitems.map((item, idx) => {
-                              const path = `/collections/${item.label.toLowerCase()}`;
+                              const path = `/search?collectionType=${encodeURIComponent(item.label)}`;
                               return (
                                 <div key={idx} className="flex flex-col">
                                   <Link

@@ -382,6 +382,7 @@ export const POST = auth(async (req: any) => {
       );
     }
 
+    console.log("products", parsedBody.products);
     const createdProducts = [];
 
     for (const productData of parsedBody.products) {
@@ -404,7 +405,7 @@ export const POST = auth(async (req: any) => {
         productCode,
         materialType,
         ...rest,
-        slug: name.toLowerCase().replace(/\s+/g, "-"),
+        slug: name?.toLowerCase().replace(/\s+/g, "-"),
         countInStock: Number(productData.countInStock) || 0,
         price: Number(productData.price) || 0,
         images: Array.isArray(productData.images)

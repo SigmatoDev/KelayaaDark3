@@ -14,6 +14,7 @@ interface CategoryFilterProps {
   sort: string;
   page: string;
   materialType: string;
+  collectionType: string;
 }
 
 const CategoryFilter = ({
@@ -26,6 +27,7 @@ const CategoryFilter = ({
   sort,
   page,
   materialType,
+  collectionType,
 }: CategoryFilterProps) => {
   const initialSelection =
     selectedCategory && selectedCategory !== "all"
@@ -55,6 +57,7 @@ const CategoryFilter = ({
       rating,
       sort,
       page,
+      collectionType,
     };
 
     const query = new URLSearchParams(params).toString();

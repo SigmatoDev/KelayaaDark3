@@ -15,6 +15,7 @@ type Props = {
   page: string;
   productCategory: string;
   materialTypeCounts: Record<string, number>;
+  collectionType: string;
 };
 
 const MaterialTypeFilter = ({
@@ -27,6 +28,7 @@ const MaterialTypeFilter = ({
   sort,
   page,
   productCategory,
+  collectionType,
   materialTypeCounts,
 }: Props) => {
   const initialSelection = selectedMaterialType

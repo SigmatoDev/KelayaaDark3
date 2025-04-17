@@ -41,6 +41,7 @@ const SetsProductSchema = new mongoose.Schema(
     price: { type: Number, default: 0 },
     productType: { type: String, default: "Sets" },
     materialType: { type: String, default: "gold" },
+    collectionType: String,
   },
   { timestamps: true }
 );

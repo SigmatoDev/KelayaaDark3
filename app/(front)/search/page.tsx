@@ -31,6 +31,7 @@ export default async function SearchPage({
     rating = "all",
     sort = "newest",
     page = "1",
+    collectionType = "all",
   },
 }: {
   searchParams: {
@@ -42,6 +43,7 @@ export default async function SearchPage({
     rating: string;
     sort: string;
     page: string;
+    collectionType: string;
   };
 }) {
   const currentPage = Number(page);
@@ -55,6 +57,7 @@ export default async function SearchPage({
     r,
     s,
     pg,
+    ct,
   }: {
     q?: string;
     m?: string;
@@ -64,6 +67,7 @@ export default async function SearchPage({
     r?: string;
     s?: string;
     pg?: string;
+    ct?: string;
   }) => {
     const finalParams: Record<string, string> = {};
 
@@ -76,6 +80,7 @@ export default async function SearchPage({
     if (r ?? rating) finalParams.rating = r ?? rating;
     if (s ?? sort) finalParams.sort = s ?? sort;
     if (pg ?? page) finalParams.page = pg ?? page;
+    if (ct ?? collectionType) finalParams.collectionType = ct ?? collectionType;
 
     const params = new URLSearchParams(finalParams);
     const finalUrl = `/search?${params.toString()}`;
@@ -105,11 +110,10 @@ export default async function SearchPage({
     page: currentPage.toString(),
     sort,
     materialType,
+    collectionType,
   });
 
-  const validProducts = products?.filter((product) =>
-    isValidImageUrl(product?.image ?? "")
-  );
+  const validProducts = products;
 
   // Pagination Logic
   const startPage = Math.max(1, currentPage - 1);
@@ -140,6 +144,7 @@ export default async function SearchPage({
           page={page}
           productCategory={productCategory}
           materialTypeCounts={materialTypeCounts}
+          collectionType={""}
         />{" "}
         <div className="p-0 m-0">
           <hr />
@@ -154,6 +159,7 @@ export default async function SearchPage({
           sort={sort}
           page={page}
           materialType={materialType}
+          collectionType={""}
         />{" "}
         <div className="p-0 m-0">
           <hr />
@@ -175,6 +181,7 @@ export default async function SearchPage({
                 sort={sort}
                 page={page}
                 materialType={materialType}
+                collectionType={""}
               />
               <div className="p-0 m-0">
                 <hr />
@@ -189,6 +196,7 @@ export default async function SearchPage({
           sort={sort}
           page={page}
           materialType={materialType}
+          collectionType={""}
         />{" "}
         <div className="p-0 m-0">
           <hr />
@@ -215,6 +223,7 @@ export default async function SearchPage({
             sort={sort}
             page={page}
             materialType={materialType}
+            collectionType={""}
           />
           <div className="flex items-center">
             <div className="px-3 py-1 text-[12px]">

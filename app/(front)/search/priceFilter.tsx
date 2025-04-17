@@ -24,6 +24,7 @@ const PriceFilter = ({
   rating,
   sort,
   page,
+  collectionType,
 }: {
   selectedPrice: string;
   materialType: string;
@@ -32,6 +33,7 @@ const PriceFilter = ({
   rating: string;
   sort: string;
   page: string;
+  collectionType: string;
 }) => {
   const router = useRouter();
   const { theme } = useLayoutService();
@@ -51,6 +53,7 @@ const PriceFilter = ({
       sort,
       page,
       price: updated.length ? updated.join(",") : "all",
+      collectionType,
     });
     router.push(`/search?${params.toString()}`);
   };
@@ -64,6 +67,7 @@ const PriceFilter = ({
       sort,
       page,
       price: "all",
+      collectionType,
     });
     router.push(`/search?${params.toString()}`);
   };
@@ -99,8 +103,8 @@ const PriceFilter = ({
                 isSelected
                   ? "font-medium text-[#EC4999]"
                   : theme === "dark"
-                  ? "hover:bg-gray-700"
-                  : "hover:bg-pink-50"
+                    ? "hover:bg-gray-700"
+                    : "hover:bg-pink-50"
               }`}
             >
               <input
