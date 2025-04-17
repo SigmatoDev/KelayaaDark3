@@ -19,8 +19,8 @@ import PriceBreakupCard from "./detailsCard";
 import toast from "react-hot-toast";
 import RingDetails from "./ringDetails";
 import AvailabilityChecker from "./checkAvailabilty";
-import 'react-inner-image-zoom/lib/styles.min.css';
-import InnerImageZoom from 'react-inner-image-zoom';
+import "react-inner-image-zoom/lib/styles.min.css";
+import InnerImageZoom from "react-inner-image-zoom";
 
 import ProductItems, {
   ProductItemsSkeleton,
@@ -192,8 +192,9 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
                   <button
                     key={index}
                     onClick={() => setSelectedImage(img)}
-                    className={`p-1 rounded-none ${selectedImage === img ? "border-2 border-pink-500" : ""
-                      }`}
+                    className={`p-1 rounded-none ${
+                      selectedImage === img ? "border-2 border-pink-500" : ""
+                    }`}
                   >
                     <Image
                       src={imageUrl}
@@ -244,18 +245,22 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
                   }
                 /> */}
 
-
                 <InnerImageZoom
-                  src={selectedImage.startsWith("http") ? selectedImage : `/${selectedImage}`}
-                  zoomSrc={selectedImage.startsWith("http") ? selectedImage : `/${selectedImage}`}
+                  src={
+                    selectedImage.startsWith("http")
+                      ? selectedImage
+                      : `/${selectedImage}`
+                  }
+                  zoomSrc={
+                    selectedImage.startsWith("http")
+                      ? selectedImage
+                      : `/${selectedImage}`
+                  }
                   zoomType="hover"
                   zoomPreload={true}
                   width={600}
                   height={600}
                 />
-
-
-
               </div>
             )}
           </>
@@ -274,9 +279,9 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
             ₹
             {product.price
               ? product.price.toLocaleString("en-IN", {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-              })
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                })
               : "N/A"}
           </div>
 
@@ -403,10 +408,42 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
           </div>
         </div>
 
-        <p className="text-gray-600 font-medium ">Share :</p>
+        <div>
+          <div className="flex justify-start gap-8 items-center my-4">
+            <div className="text-center">
+              <img
+                src="/images/certificates/bis-logo.webp"
+                alt="BIS Logo"
+                className="h-12 mx-auto"
+              />
+              <p className="text-[10px] mt-2">Hallmarked Jewellery</p>
+            </div>
+
+            <div className="text-center">
+              <img
+                src="/images/certificates/igi-logo.webp"
+                alt="IGI Logo"
+                className="h-12 mx-auto"
+              />
+              <p className="text-[10px] mt-2">IGI Certified</p>
+            </div>
+
+            <div className="text-center">
+              <img
+                src="/images/certificates/100certified.webp"
+                alt="Verified"
+                className="h-12 mx-auto"
+              />
+              <p className="text-[10px] mt-2">100% Certified by Kelayaa</p>
+            </div>
+          </div>
+        </div>
+
         <div className="flex flex-wrap gap-2 items-center text-gray-500">
           {/* Facebook */}
           {/* Facebook */}
+          <p className="text-gray-600 font-small ">Share :</p>
+
           <a
             href={`https://www.facebook.com/sharer/sharer.php?u=${shareUrl}`}
             target="_blank"
