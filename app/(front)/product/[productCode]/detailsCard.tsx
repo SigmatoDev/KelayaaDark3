@@ -96,7 +96,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
               Color:{" "}
               <span className="font-medium">{product.color || "E-F"}</span>
             </p>
-            <p>
+            {/* <p>
               Rate: ₹
               {diamondPrice
                 ? diamondPrice.toLocaleString("en-IN", {
@@ -105,7 +105,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
                   })
                 : "N/A"}{" "}
               /ct
-            </p>
+            </p> */}
           </div>
         </div>
       </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { ArrowRight } from "lucide-react";
 
 type Category = {
@@ -39,42 +39,64 @@ const categories: Category[] = [
 ];
 
 const CategoryCard = ({ category }: { category: Category }) => {
+  const router = useRouter();
+
+  const handleClick = () => {
+    const params = new URLSearchParams({
+      q: "",
+      materialType: "",
+      productCategory: category.name, // Use slug for filtering
+      category: "all",
+      price: "",
+      rating: "",
+      sort: "",
+      page: "1",
+    });
+
+    const url = `/search?${params.toString()}`;
+    console.log("Navigating to:", url);
+    router.push(url);
+    router.refresh();
+  };
+
   return (
-    <Link
-      href={`/category/${category.slug}`}
-      className="group relative w-[calc(100vw-4.5rem)] h-[260px] sm:w-[320px] sm:h-[340px] lg:w-[320px] lg:h-[300px] xl:w-[300px] xl:h-[320px] 2xl:w-[400px] 2xl:h-[420px] overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-300"
+    <div
+      onClick={handleClick}
+      className="group relative w-[calc(100vw-4.5rem)] h-[260px] sm:w-[320px] sm:h-[340px] lg:w-[320px] lg:h-[300px] xl:w-[300px] xl:h-[320px] 2xl:w-[400px] 2xl:h-[420px] overflow-hidden rounded-xl shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer"
     >
       <div className="relative w-full h-full">
-        {/* Hover Image - Place it first so it scales underneath the default */}
+        {/* Hover Image */}
         <Image
           src={category.hoverImage}
           alt={`${category.name} hover`}
           fill
           sizes="(max-width: 640px) 90vw, (max-width: 768px) 45vw, (max-width: 1024px) 33vw, 25vw"
-          priority={category.slug === 'pendants'}
+          priority={category.slug === "pendants"}
           className="object-cover transition duration-700 ease-in-out opacity-0 group-hover:opacity-100 group-hover:scale-105 z-0"
         />
 
-        {/* Default Image - Will fade out on hover */}
+        {/* Default Image */}
         <Image
           src={category.image}
           alt={category.name}
           fill
           sizes="(max-width: 640px) 90vw, (max-width: 768px) 45vw, (max-width: 1024px) 33vw, 25vw"
-          priority={category.slug === 'pendants'}
+          priority={category.slug === "pendants"}
           className="object-cover transition duration-700 ease-in-out opacity-100 group-hover:opacity-0 z-10"
         />
 
-        {/* Mobile Touch Feedback Overlay */}
+        {/* Touch Overlay */}
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-black/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none"></div>
       </div>
 
-      {/* Category Name Box */}
+      {/* Label */}
       <div className="absolute bottom-0 w-full bg-white/95 backdrop-blur-[1px] px-4 py-2.5 sm:py-3.5 flex items-center justify-between text-[#474747] font-medium text-base sm:text-lg z-20 group-hover:bg-pink-50 transition-colors duration-300">
-        <span className="relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 group-hover:after:w-full after:h-[2px] after:bg-[#EC4999] after:transition-all after:duration-300">{category.name}</span>
+        <span className="relative after:absolute after:bottom-[-2px] after:left-0 after:w-0 group-hover:after:w-full after:h-[2px] after:bg-[#EC4999] after:transition-all after:duration-300">
+          {category.name}
+        </span>
         <ArrowRight className="w-5 h-5 text-[#474747] group-hover:text-[#EC4999] transition-all duration-300 group-hover:translate-x-1.5" />
       </div>
-    </Link>
+    </div>
   );
 };
 
