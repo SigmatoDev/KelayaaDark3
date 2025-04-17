@@ -23,6 +23,7 @@ export default function UploadProductExcelFile() {
         body: JSON.stringify(arg),
       });
       const data = await res.json();
+      console.log("data", data);
       if (!res.ok) throw new Error(data.message);
       return data;
     }

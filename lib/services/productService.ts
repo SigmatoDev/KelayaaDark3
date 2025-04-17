@@ -295,6 +295,284 @@ const interleaveCategoriesStrict = (categoryMap: Map<string, any[]>) => {
   return result;
 };
 
+// const getByQuery = cache(
+//   async ({
+//     q,
+//     productCategory,
+//     category,
+//     sort,
+//     price,
+//     rating,
+//     page = "1",
+//     materialType,
+//     collectionType,
+//   }: {
+//     q: string;
+//     productCategory: string;
+//     category: string;
+//     price: string;
+//     rating: string;
+//     sort: string;
+//     page: string;
+//     materialType: string;
+//     collectionType: string;
+//   }) => {
+//     console.log("🟡 [Input Price]:", price);
+
+//     await dbConnect();
+
+//     const categories = await ProductModel.find()
+//       .distinct("productCategory")
+//       .lean();
+
+//     const queryFilter =
+//       q && q !== "all" ? { name: { $regex: q, $options: "i" } } : {};
+
+//     const categoryFilter =
+//       productCategory && productCategory !== "all"
+//         ? { productCategory: { $in: productCategory.split(",") } }
+//         : { productCategory: { $in: categories } };
+
+//     let categoryOnlyFilter = {};
+
+//     if (category && category !== "all") {
+//       const isGold =
+//         materialType && materialType.toLowerCase().includes("gold");
+
+//       const isSilver =
+//         materialType && materialType.toLowerCase().includes("silver");
+
+//       if (isGold) {
+//         const isSubCategory = await ProductModel.exists({
+//           subCategories: { $regex: new RegExp(`^${category}$`, "i") },
+//         });
+
+//         categoryOnlyFilter = isSubCategory
+//           ? { subCategories: { $regex: new RegExp(`^${category}$`, "i") } }
+//           : { category: { $regex: new RegExp(`^${category}$`, "i") } };
+//       } else if (isSilver) {
+//         categoryOnlyFilter = {
+//           category: { $regex: new RegExp(`^${category}$`, "i") },
+//         };
+//       } else {
+//         const isSubCategory = await ProductModel.exists({
+//           subCategories: { $regex: new RegExp(`^${category}$`, "i") },
+//         });
+
+//         categoryOnlyFilter = isSubCategory
+//           ? { subCategories: { $regex: new RegExp(`^${category}$`, "i") } }
+//           : { category: { $regex: new RegExp(`^${category}$`, "i") } };
+//       }
+//     }
+
+//     const ratingFilter =
+//       rating && rating !== "all" ? { rating: { $gte: Number(rating) } } : {};
+
+//     const decodedPrice = price;
+//     const priceFilter =
+//       decodedPrice && decodedPrice !== "all"
+//         ? decodedPrice.includes("-")
+//           ? {
+//               price: {
+//                 $gte: parseFloat(decodedPrice.split("-")[0]),
+//                 $lte: parseFloat(decodedPrice.split("-")[1]),
+//               },
+//             }
+//           : decodedPrice.includes("+")
+//             ? {
+//                 price: {
+//                   $gte: parseFloat(decodedPrice.replace("+", "")),
+//                 },
+//               }
+//             : {
+//                 price: parseFloat(decodedPrice),
+//               }
+//         : {};
+
+//     const materialTypeFilter =
+//       materialType && materialType !== "all"
+//         ? {
+//             materialType: {
+//               $in: materialType
+//                 .split(",")
+//                 .map((m) => new RegExp(`^${m}$`, "i")),
+//             },
+//           }
+//         : {};
+
+//     const collectionTypeFilter =
+//       collectionType && collectionType !== "all"
+//         ? {
+//             collectionType: {
+//               $regex: new RegExp(`^${collectionType}$`, "i"),
+//             },
+//           }
+//         : {};
+
+//     const order: Record<string, 1 | -1> =
+//       sort === "lowest"
+//         ? { price: 1 }
+//         : sort === "highest"
+//           ? { price: -1 }
+//           : sort === "toprated"
+//             ? { rating: -1 }
+//             : { _id: -1 };
+
+//     // ✅ Special case for "collections"
+//     if (productCategory?.toLowerCase() === "collections") {
+//       const collectionQuery: any = {
+//         collectionType: { $exists: true, $ne: null },
+//       };
+
+//       if (collectionType && collectionType !== "all") {
+//         collectionQuery.collectionType = {
+//           $regex: new RegExp(`^${collectionType}$`, "i"),
+//         };
+//       }
+
+//       if (q && q !== "all") {
+//         collectionQuery.name = { $regex: q, $options: "i" };
+//       }
+
+//       if (rating && rating !== "all") {
+//         collectionQuery.rating = { $gte: Number(rating) };
+//       }
+
+//       if (decodedPrice && decodedPrice !== "all") {
+//         if (decodedPrice.includes("-")) {
+//           collectionQuery.price = {
+//             $gte: parseFloat(decodedPrice.split("-")[0]),
+//             $lte: parseFloat(decodedPrice.split("-")[1]),
+//           };
+//         } else if (decodedPrice.includes("+")) {
+//           collectionQuery.price = {
+//             $gte: parseFloat(decodedPrice.replace("+", "")),
+//           };
+//         } else {
+//           collectionQuery.price = parseFloat(decodedPrice);
+//         }
+//       }
+
+//       const products = await ProductModel.find(collectionQuery)
+//         .sort(order)
+//         .lean();
+
+//       const countProducts = products.length;
+
+//       const paginatedProducts = products.slice(
+//         PAGE_SIZE * (Number(page) - 1),
+//         PAGE_SIZE * Number(page)
+//       );
+
+//       return {
+//         products: paginatedProducts as unknown as Product[],
+//         countProducts,
+//         page,
+//         pages: Math.ceil(countProducts / PAGE_SIZE),
+//         categories,
+//       };
+//     }
+
+//     // ✅ Default product fetch (no image filtering)
+//     let products = await ProductModel.aggregate([
+//       {
+//         $match: {
+//           ...queryFilter,
+//           ...categoryFilter,
+//           ...categoryOnlyFilter,
+//           ...priceFilter,
+//           ...ratingFilter,
+//           ...materialTypeFilter,
+//           ...collectionTypeFilter,
+//         },
+//       },
+//     ]);
+
+//     // ✅ Optionally add gold sets
+//     const shouldAddGoldSets =
+//       productCategory?.toLowerCase() === "sets" &&
+//       materialType?.toLowerCase().includes("gold");
+
+//     const isDefaultSearch =
+//       (!productCategory || productCategory === "all") &&
+//       (!category || category === "all") &&
+//       (!materialType || materialType === "all") &&
+//       (!price || price === "all") &&
+//       (!rating || rating === "all") &&
+//       (!q || q === "all");
+
+//     if (shouldAddGoldSets || isDefaultSearch) {
+//       const setQuery: any = {
+//         materialType: /gold/i,
+//         productType: /sets/i,
+//       };
+
+//       if (collectionType && collectionType !== "all") {
+//         setQuery.collectionType = new RegExp(`^${collectionType}$`, "i");
+//       }
+
+//       if (category && category !== "all") {
+//         setQuery.subCategories = category;
+//       }
+
+//       if (q && q !== "all") {
+//         setQuery.name = { $regex: q, $options: "i" };
+//       }
+
+//       if (rating && rating !== "all") {
+//         setQuery.rating = { $gte: Number(rating) };
+//       }
+
+//       if (decodedPrice && decodedPrice !== "all") {
+//         if (decodedPrice.includes("-")) {
+//           setQuery["price"] = {
+//             $gte: parseFloat(decodedPrice.split("-")[0]),
+//             $lte: parseFloat(decodedPrice.split("-")[1]),
+//           };
+//         } else if (decodedPrice.includes("+")) {
+//           setQuery["price"] = {
+//             $gte: parseFloat(decodedPrice.replace("+", "")),
+//           };
+//         } else {
+//           setQuery["price"] = parseFloat(decodedPrice);
+//         }
+//       }
+
+//       const setProducts = await SetsProductModel.find(setQuery)
+//         .sort(order)
+//         .lean();
+//       products = [...products, ...setProducts];
+//     }
+
+//     const countProducts = products.length;
+
+//     const uniqueCategories = new Set(products.map((p) => p.productCategory));
+//     if (uniqueCategories.size > 1) {
+//       const categoryMap = groupByCategory(products);
+//       products = interleaveCategoriesStrict(categoryMap);
+//     }
+
+//     const paginatedProducts = products.slice(
+//       PAGE_SIZE * (Number(page) - 1),
+//       PAGE_SIZE * Number(page)
+//     );
+
+//     return {
+//       products: paginatedProducts as Product[],
+//       countProducts,
+//       page,
+//       pages: Math.ceil(countProducts / PAGE_SIZE),
+//       categories,
+//     };
+//   }
+// );
+
+// const getCategories = cache(async () => {
+//   await dbConnect();
+//   const categories = await ProductModel.find().distinct("productCategory");
+//   return categories;
+// });
+
 const getByQuery = cache(
   async ({
     q,
@@ -305,6 +583,7 @@ const getByQuery = cache(
     rating,
     page = "1",
     materialType,
+    collectionType,
   }: {
     q: string;
     productCategory: string;
@@ -314,6 +593,7 @@ const getByQuery = cache(
     sort: string;
     page: string;
     materialType: string;
+    collectionType: string;
   }) => {
     console.log("🟡 [Input Price]:", price);
 
@@ -340,9 +620,7 @@ const getByQuery = cache(
       const isSilver =
         materialType && materialType.toLowerCase().includes("silver");
 
-      // Dynamically determine where to search: subCategories or category
       if (isGold) {
-        // For gold, category might be inside subCategories
         const isSubCategory = await ProductModel.exists({
           subCategories: { $regex: new RegExp(`^${category}$`, "i") },
         });
@@ -351,12 +629,10 @@ const getByQuery = cache(
           ? { subCategories: { $regex: new RegExp(`^${category}$`, "i") } }
           : { category: { $regex: new RegExp(`^${category}$`, "i") } };
       } else if (isSilver) {
-        // For silver, search only in the category field
         categoryOnlyFilter = {
           category: { $regex: new RegExp(`^${category}$`, "i") },
         };
       } else {
-        // Default fallback if materialType not provided
         const isSubCategory = await ProductModel.exists({
           subCategories: { $regex: new RegExp(`^${category}$`, "i") },
         });
@@ -365,11 +641,6 @@ const getByQuery = cache(
           ? { subCategories: { $regex: new RegExp(`^${category}$`, "i") } }
           : { category: { $regex: new RegExp(`^${category}$`, "i") } };
       }
-
-      console.log("🔍 [Category Debug]");
-      console.log("➡️ Input category:", category);
-      console.log("🔩 Material Type:", materialType);
-      console.log("📦 categoryOnlyFilter:", categoryOnlyFilter);
     }
 
     const ratingFilter =
@@ -395,7 +666,6 @@ const getByQuery = cache(
                 price: parseFloat(decodedPrice),
               }
         : {};
-    console.log("🧮 [Price Filter]:", decodedPrice, priceFilter);
 
     const materialTypeFilter =
       materialType && materialType !== "all"
@@ -404,6 +674,15 @@ const getByQuery = cache(
               $in: materialType
                 .split(",")
                 .map((m) => new RegExp(`^${m}$`, "i")),
+            },
+          }
+        : {};
+
+    const collectionTypeFilter =
+      collectionType && collectionType !== "all"
+        ? {
+            collectionType: {
+              $regex: new RegExp(`^${collectionType}$`, "i"),
             },
           }
         : {};
@@ -417,6 +696,71 @@ const getByQuery = cache(
             ? { rating: -1 }
             : { _id: -1 };
 
+    if (productCategory?.toLowerCase() === "collections") {
+      const collectionQuery: any = {
+        collectionType: { $exists: true, $ne: null },
+      };
+
+      if (collectionType && collectionType !== "all") {
+        collectionQuery.collectionType = {
+          $regex: new RegExp(`^${collectionType}$`, "i"),
+        };
+      }
+
+      if (q && q !== "all") {
+        collectionQuery.name = { $regex: q, $options: "i" };
+      }
+
+      if (rating && rating !== "all") {
+        collectionQuery.rating = { $gte: Number(rating) };
+      }
+
+      if (decodedPrice && decodedPrice !== "all") {
+        if (decodedPrice.includes("-")) {
+          collectionQuery.price = {
+            $gte: parseFloat(decodedPrice.split("-")[0]),
+            $lte: parseFloat(decodedPrice.split("-")[1]),
+          };
+        } else if (decodedPrice.includes("+")) {
+          collectionQuery.price = {
+            $gte: parseFloat(decodedPrice.replace("+", "")),
+          };
+        } else {
+          collectionQuery.price = parseFloat(decodedPrice);
+        }
+      }
+
+      let products = await ProductModel.find(collectionQuery)
+        .sort(order)
+        .lean();
+
+      // ✅ Filter out invalid products
+      products = products.filter(
+        (p) =>
+          typeof p.price === "number" &&
+          p.price > 0 &&
+          typeof p.name === "string" &&
+          p.name.trim() !== "" &&
+          typeof p.productCode === "string" &&
+          p.productCode.trim() !== ""
+      );
+
+      const countProducts = products.length;
+
+      const paginatedProducts = products.slice(
+        PAGE_SIZE * (Number(page) - 1),
+        PAGE_SIZE * Number(page)
+      );
+
+      return {
+        products: paginatedProducts as unknown as Product[],
+        countProducts,
+        page,
+        pages: Math.ceil(countProducts / PAGE_SIZE),
+        categories,
+      };
+    }
+
     let products = await ProductModel.aggregate([
       {
         $match: {
@@ -426,30 +770,11 @@ const getByQuery = cache(
           ...priceFilter,
           ...ratingFilter,
           ...materialTypeFilter,
+          ...collectionTypeFilter,
         },
       },
-      {
-        $addFields: {
-          hasValidImage: {
-            $cond: {
-              if: {
-                $regexMatch: {
-                  input: "$image",
-                  regex: "^(http://|https://)",
-                  options: "i",
-                },
-              },
-              then: 1,
-              else: 0,
-            },
-          },
-        },
-      },
-      { $sort: { hasValidImage: -1, ...order } },
-      { $project: { reviews: 0, hasValidImage: 0 } },
     ]);
 
-    // ✅ Add Gold Set Products
     const shouldAddGoldSets =
       productCategory?.toLowerCase() === "sets" &&
       materialType?.toLowerCase().includes("gold");
@@ -467,6 +792,10 @@ const getByQuery = cache(
         materialType: /gold/i,
         productType: /sets/i,
       };
+
+      if (collectionType && collectionType !== "all") {
+        setQuery.collectionType = new RegExp(`^${collectionType}$`, "i");
+      }
 
       if (category && category !== "all") {
         setQuery.subCategories = category;
@@ -498,8 +827,20 @@ const getByQuery = cache(
       const setProducts = await SetsProductModel.find(setQuery)
         .sort(order)
         .lean();
+
       products = [...products, ...setProducts];
     }
+
+    // ✅ Filter out invalid products
+    products = products.filter(
+      (p) =>
+        typeof p.price === "number" &&
+        p.price > 0 &&
+        typeof p.name === "string" &&
+        p.name.trim() !== "" &&
+        typeof p.productCode === "string" &&
+        p.productCode.trim() !== ""
+    );
 
     const countProducts = products.length;
 
@@ -508,9 +849,6 @@ const getByQuery = cache(
       const categoryMap = groupByCategory(products);
       products = interleaveCategoriesStrict(categoryMap);
     }
-    // else {
-    //   products = shuffleArray(products);
-    // }
 
     const paginatedProducts = products.slice(
       PAGE_SIZE * (Number(page) - 1),
@@ -526,12 +864,6 @@ const getByQuery = cache(
     };
   }
 );
-
-// const getCategories = cache(async () => {
-//   await dbConnect();
-//   const categories = await ProductModel.find().distinct("productCategory");
-//   return categories;
-// });
 
 const getCategories = cache(async () => {
   await dbConnect();

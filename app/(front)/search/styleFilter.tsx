@@ -14,6 +14,7 @@ interface StyleFilterProps {
   sort: string;
   page: string;
   materialType: string;
+  collectionType: string;
 }
 
 const StyleFilter = ({
@@ -26,6 +27,7 @@ const StyleFilter = ({
   sort,
   page,
   materialType,
+  collectionType,
 }: StyleFilterProps) => {
   const [selected, setSelected] = useState<string[]>([]);
   const [showMore, setShowMore] = useState(false);

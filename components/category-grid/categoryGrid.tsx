@@ -19,8 +19,8 @@ const categories: Category[] = [
     hoverImage: "/images/collections/pendantshover.webp",
   },
   {
-    name: "Necklaces",
-    slug: "necklaces",
+    name: "Sets",
+    slug: "sets",
     image: "/images/collections/necklace-1.webp",
     hoverImage: "/images/collections/necklacehover.webp",
   },

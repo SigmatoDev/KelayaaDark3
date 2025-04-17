@@ -167,15 +167,15 @@ const ProductItem = ({ product }: { product: Product }) => {
           </h3>
         </Link>
         <div className="card-actions flex items-center text-sm justify-start">
-          <span className="text-base text-[#000000] text-sm">
-            ₹
-            {product.price
-              ? product.price.toLocaleString("en-IN", {
-                  minimumFractionDigits: 2,
-                  maximumFractionDigits: 2,
-                })
-              : "N/A"}
-          </span>
+          {typeof product.price === "number" && (
+            <span className="text-base text-[#000000] text-sm">
+              ₹
+              {product.price.toLocaleString("en-IN", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+              })}
+            </span>
+          )}
         </div>
       </div>
 
