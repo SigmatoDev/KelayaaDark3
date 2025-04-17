@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import useLayoutService from "@/lib/hooks/useLayout";
 
 interface StyleFilterProps {
@@ -31,19 +31,10 @@ const StyleFilter = ({
   const [showMore, setShowMore] = useState(false);
   const router = useRouter();
   const { theme } = useLayoutService();
-  const searchParams = useSearchParams(); // To access the URL parameters
 
   // 🧪 Debug logs
   console.log("Initial selectedCategory prop:", selectedCategory);
   console.log("Received categories:", category);
-
-  // Sync selected categories with URL when it changes
-  useEffect(() => {
-    const selectedCategoriesFromUrl = searchParams.get("category");
-    if (selectedCategoriesFromUrl) {
-      setSelected(selectedCategoriesFromUrl.split(","));
-    }
-  }, [searchParams]);
 
   // ✅ Only update selected state if selectedCategory prop changes
   useEffect(() => {
