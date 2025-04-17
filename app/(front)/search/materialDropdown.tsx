@@ -86,7 +86,7 @@ const MaterialTypeFilter = ({
       }`}
     >
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Material Type</h2>
+        <h2 className="text-sm font-semibold">Material Type</h2>
         {selected.length > 0 && (
           <button
             onClick={handleClearAll}

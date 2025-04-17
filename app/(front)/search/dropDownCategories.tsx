@@ -87,7 +87,7 @@ const CategoryFilter = ({
       }`}
     >
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Categories</h2>
+        <h2 className="text-sm font-semibold">Categories</h2>
         {selected.length > 0 && (
           <button
             onClick={handleClear}
@@ -98,7 +98,7 @@ const CategoryFilter = ({
         )}
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-0">
         {visibleCategories.map((category) => {
           const isActive = selected.includes(category);
           return (

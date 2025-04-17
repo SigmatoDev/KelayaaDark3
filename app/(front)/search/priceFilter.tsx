@@ -79,7 +79,7 @@ const PriceFilter = ({
       }`}
     >
       <div className="flex justify-between items-center mb-3">
-        <h2 className="text-lg font-semibold">Price Range</h2>
+        <h2 className="text-sm font-semibold">Price Range</h2>
         {selectedValues.length > 0 && (
           <button
             onClick={clearAll}
@@ -95,7 +95,7 @@ const PriceFilter = ({
           return (
             <label
               key={range.value}
-              className={`flex items-center gap-2 cursor-pointer py-2 px-3 rounded transition-all ${
+              className={`flex items-center gap-1 cursor-pointer py-1 px-3 rounded transition-all ${
                 isSelected
                   ? "font-medium text-[#EC4999]"
                   : theme === "dark"

@@ -102,7 +102,7 @@ const StyleFilter = ({
       }`}
     >
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-lg font-semibold">Browse by Type</h2>
+        <h2 className="text-sm font-semibold">Browse by Type</h2>
         {selected.length > 0 && (
           <button
             onClick={handleClear}
@@ -113,7 +113,7 @@ const StyleFilter = ({
         )}
       </div>
 
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-0">
         {visibleItems.map((item) => {
           const isActive = selected.includes(item);
           return (
