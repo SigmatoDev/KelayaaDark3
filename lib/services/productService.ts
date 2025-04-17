@@ -173,7 +173,7 @@ const getByProductCode = cache(
     if (product && !(product.image && product.image.startsWith("http"))) {
       const alt = (await ProductModel.findOne({
         productCode,
-        image: { $regex: /^http/ },
+        // image: { $regex: /^http/ },
       }).lean()) as Product | null;
       if (alt) product = alt;
     }
@@ -189,7 +189,7 @@ const getByProductCode = cache(
       if (product && !(product.image && /^http/.test(product.image))) {
         const altSet = (await SetsProductModel.findOne({
           productCode,
-          image: { $regex: /^http/ },
+          // image: { $regex: /^http/ },
         }).lean()) as Product | null;
 
         return altSet || product;
@@ -634,13 +634,13 @@ const getCombinedCategoriesAndSubcategories = cache(async () => {
 
   // From ProductModel
   const categories = await ProductModel.distinct("category", {
-    image: { $regex: /^http/ },
+    // image: { $regex: /^http/ },
   });
 
   const subcategoriesFromProducts = await ProductModel.distinct(
     "subCategories"
     // {
-    //   image: { $regex: /^http/ },
+    // image: { $regex: /^http/ },
     // }
   );
 
