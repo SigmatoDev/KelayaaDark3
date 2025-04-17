@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import useLayoutService from "@/lib/hooks/useLayout";
 
 interface StyleFilterProps {
@@ -31,10 +31,19 @@ const StyleFilter = ({
   const [showMore, setShowMore] = useState(false);
   const router = useRouter();
   const { theme } = useLayoutService();
+  const searchParams = useSearchParams(); // To access the URL parameters
 
   // 🧪 Debug logs
   console.log("Initial selectedCategory prop:", selectedCategory);
   console.log("Received categories:", category);
+
+  // Sync selected categories with URL when it changes
+  useEffect(() => {
+    const selectedCategoriesFromUrl = searchParams.get("category");
+    if (selectedCategoriesFromUrl) {
+      setSelected(selectedCategoriesFromUrl.split(","));
+    }
+  }, [searchParams]);
 
   // ✅ Only update selected state if selectedCategory prop changes
   useEffect(() => {
@@ -114,7 +123,7 @@ const StyleFilter = ({
       </div>
 
       <div className="flex flex-col gap-0">
-        {visibleItems.map((item) => {
+        {visibleItems.map((item, index) => {
           const isActive = selected.includes(item);
           return (
             <label
@@ -128,8 +137,8 @@ const StyleFilter = ({
                 readOnly
                 className="accent-pink-500 w-4 h-4"
               />
-<span className={`text-sm ${textStyle(isActive)}`}>{item}</span>
-</label>
+              <span className={`text-sm ${textStyle(isActive)}`}>{item}</span>
+            </label>
           );
         })}
 

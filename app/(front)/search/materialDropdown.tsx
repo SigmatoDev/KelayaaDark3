@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import useLayoutService from "@/lib/hooks/useLayout";
 
@@ -14,6 +14,7 @@ type Props = {
   sort: string;
   page: string;
   productCategory: string;
+  materialTypeCounts: Record<string, number>;
 };
 
 const MaterialTypeFilter = ({
@@ -26,13 +27,21 @@ const MaterialTypeFilter = ({
   sort,
   page,
   productCategory,
+  materialTypeCounts,
 }: Props) => {
   const initialSelection = selectedMaterialType
     ? selectedMaterialType.split(",").filter((m) => m !== "all")
     : [];
   const [selected, setSelected] = useState<string[]>(initialSelection);
+  const searchParams = useSearchParams();
   const { theme } = useLayoutService();
   const router = useRouter();
+
+  useEffect(() => {
+    // Ensure selected is an array, even if it's a single material type
+    const materialTypeFromUrl = searchParams.get("materialType");
+    setSelected(materialTypeFromUrl ? materialTypeFromUrl.split(",") : []);
+  }, [searchParams]);
 
   const updateURL = (newSelection: string[]) => {
     const params: any = {
@@ -106,15 +115,22 @@ const MaterialTypeFilter = ({
               className="accent-pink-500 w-4 h-4"
             />
             <span
-              className={`transition-all ${
+              className={`flex items-center gap-2 transition-all ${
                 selected.includes(material)
-                  ? "text-black font-font-medium text-sm	"
+                  ? "text-black font-medium text-sm"
                   : "text-inherit text-sm"
               }`}
             >
               {material === "gold"
                 ? "Gold & Diamonds"
                 : material.charAt(0).toUpperCase() + material.slice(1)}
+
+              {/* ✅ Count shown in styled span */}
+              {materialTypeCounts?.[material] !== undefined && (
+                <span className="text-pink-500 text-xs font-semibold">
+                  ({materialTypeCounts[material]})
+                </span>
+              )}
             </span>
           </label>
         ))}
