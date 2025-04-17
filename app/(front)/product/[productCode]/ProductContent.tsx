@@ -407,37 +407,38 @@ const ProductPageContent: FC<ProductPageContentProps> = ({ product }) => {
             </p>
           </div>
         </div>
+        {product?.materialType === "gold" && (
+          <div>
+            <div className="flex justify-start gap-8 items-center my-4">
+              <div className="text-center">
+                <img
+                  src="/images/certificates/bis-logo.webp"
+                  alt="BIS Logo"
+                  className="h-12 mx-auto"
+                />
+                <p className="text-[10px] mt-2">Hallmarked Jewellery</p>
+              </div>
 
-        <div>
-          <div className="flex justify-start gap-8 items-center my-4">
-            <div className="text-center">
-              <img
-                src="/images/certificates/bis-logo.webp"
-                alt="BIS Logo"
-                className="h-12 mx-auto"
-              />
-              <p className="text-[10px] mt-2">Hallmarked Jewellery</p>
-            </div>
+              <div className="text-center">
+                <img
+                  src="/images/certificates/igi-logo.webp"
+                  alt="IGI Logo"
+                  className="h-12 mx-auto"
+                />
+                <p className="text-[10px] mt-2">IGI Certified</p>
+              </div>
 
-            <div className="text-center">
-              <img
-                src="/images/certificates/igi-logo.webp"
-                alt="IGI Logo"
-                className="h-12 mx-auto"
-              />
-              <p className="text-[10px] mt-2">IGI Certified</p>
-            </div>
-
-            <div className="text-center">
-              <img
-                src="/images/certificates/100certified.webp"
-                alt="Verified"
-                className="h-12 mx-auto"
-              />
-              <p className="text-[10px] mt-2">100% Certified by Kelayaa</p>
+              <div className="text-center">
+                <img
+                  src="/images/certificates/100certified.webp"
+                  alt="Verified"
+                  className="h-12 mx-auto"
+                />
+                <p className="text-[10px] mt-2">100% Certified by Kelayaa</p>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         <div className="flex flex-wrap gap-2 items-center text-gray-500">
           {/* Facebook */}
