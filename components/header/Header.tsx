@@ -341,7 +341,7 @@ const Header = () => {
     }
 
     if (label === "collections") {
-      router.push("/search");
+      router.push(`/collections`);
       setIsOpen(false);
       return; // ⛔ prevent the next line from executing
     }
@@ -362,9 +362,7 @@ const Header = () => {
   const handleSubClick = (productCategory: string, categor: string) => {
     const lowerProductCategory = productCategory.toLowerCase();
     const lowerCategor = categor.toLowerCase();
-
     const isPriceCategory = lowerProductCategory === "shop by price";
-
     const convertToNumber = (value: string) => {
       value = value.replace(/[₹,\s]/g, "").toUpperCase();
       if (value.endsWith("L")) {
@@ -427,10 +425,11 @@ const Header = () => {
   return (
     <>
       <div
-        className={`xl:fixed top-0 z-30 w-screen ${isScrolled
+        className={`xl:fixed top-0 z-30 w-screen ${
+          isScrolled
             ? "bg-[#000] backdrop-blur-sm"
             : "xl:bg-[#000] xl:backdrop-blur-md bg-black"
-          } transition-all duration-1000 group`}
+        } transition-all duration-1000 group`}
       >
         <header
           className={`text-gray-800 w-full xl:h-[80px] my-0 transition-[margin] xl:flex xl:justify-center items-center duration-1000 ease-in-out ${isScrolled ? " mt-1" : " my-1"}`}
@@ -495,10 +494,11 @@ const Header = () => {
                                 e.preventDefault();
                                 handleMainMenuClick(key);
                               }}
-                              className={`w-[140px] text-center text-white ${pathname === "/" && !isScrolled
+                              className={`w-[140px] text-center text-white ${
+                                pathname === "/" && !isScrolled
                                   ? "group-hover:text-white"
                                   : ""
-                                } transition-all duration-300 ease-in-out hover:text-pink-300 text-xs`}
+                              } transition-all duration-300 ease-in-out hover:text-pink-300 text-xs`}
                               onMouseEnter={() => {
                                 setActiveMenu(key);
                                 setIsOpen(true);
@@ -605,8 +605,9 @@ const Header = () => {
                               className={`w-5 h-5 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-white" : ""} hover:text-pink-500 transition`}
                             />
                           </Link>
-                        ) : ''}
-                        
+                        ) : (
+                          ""
+                        )}
 
                         <div>
                           <SearchBox />
@@ -660,7 +661,6 @@ const Header = () => {
                                           className="text-gray-800 uppercase hover:text-[#af5772] text-sm font-[500] block mb-2"
                                         >
                                           {item.label}
-
                                         </Link>
 
                                         {item.subcategories && (
@@ -786,7 +786,7 @@ const Header = () => {
                         {activeMenu === "collections" && (
                           <div className="col-span-5 grid grid-cols-4 gap-6">
                             {menuData[activeMenu].subitems.map((item, idx) => {
-                              const path = `/search/${item.label.toLowerCase()}`;
+                              const path = `/collections/${item.label.toLowerCase()}`;
                               return (
                                 <div key={idx} className="flex flex-col">
                                   <Link
