@@ -129,7 +129,7 @@ const MaterialTypeFilter = ({
 
               {/* ✅ Count shown in styled span */}
               {materialTypeCounts?.[material] !== undefined && (
-                <span className="text-pink-500 text-xs font-semibold">
+                <span className="text-[#e688a2] text-xs font-semibold">
                   ({materialTypeCounts[material]})
                 </span>
               )}

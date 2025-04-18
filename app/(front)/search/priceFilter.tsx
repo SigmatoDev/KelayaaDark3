@@ -87,7 +87,7 @@ const PriceFilter = ({
         {selectedValues.length > 0 && (
           <button
             onClick={clearAll}
-            className="text-sm text-pink-600 hover:underline"
+            className="text-sm text-[#e688a2] hover:underline"
           >
             Clear All
           </button>
@@ -101,7 +101,7 @@ const PriceFilter = ({
               key={range.value}
               className={`flex items-center gap-1 cursor-pointer py-1 px-3 rounded transition-all ${
                 isSelected
-                  ? "font-medium text-[#EC4999]"
+                  ? "font-medium"
                   : theme === "dark"
                     ? "hover:bg-gray-700"
                     : "hover:bg-pink-50"
@@ -111,7 +111,7 @@ const PriceFilter = ({
                 type="checkbox"
                 checked={isSelected}
                 onChange={() => togglePriceValue(range.value)}
-                className="accent-pink-500 w-4 h-4"
+                className="accent-pink-500  w-4 h-4"
               />
               <span className="text-sm">{range.name}</span>
             </label>
@@ -123,7 +123,7 @@ const PriceFilter = ({
           <div className="flex justify-center">
             <button
               onClick={() => setShowMore((prev) => !prev)}
-              className="text-sm text-pink-600 hover:underline mt-2"
+              className="text-sm text-[#e688a2] hover:underline mt-2"
             >
               {showMore ? "Show Less" : `+ ${priceRanges.length - 4} more`}
             </button>

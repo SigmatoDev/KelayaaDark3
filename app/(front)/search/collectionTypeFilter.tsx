@@ -3,10 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import useLayoutService from "@/lib/hooks/useLayout";
+import React from "react";
 
-interface StyleFilterProps {
-  category: string[];
-  selectedCategory: string;
+interface CollectionTypeFilterProps {
+  collectionTypes: string[];
+  selectedCollectionType: string;
   q: string;
   productCategory: string;
   price: string;
@@ -14,12 +15,11 @@ interface StyleFilterProps {
   sort: string;
   page: string;
   materialType: string;
-  collectionType: string;
 }
 
-const StyleFilter = ({
-  category,
-  selectedCategory,
+const CollectionTypeFilter = ({
+  collectionTypes,
+  selectedCollectionType,
   q,
   productCategory,
   price,
@@ -27,35 +27,22 @@ const StyleFilter = ({
   sort,
   page,
   materialType,
-  collectionType,
-}: StyleFilterProps) => {
-  const [selected, setSelected] = useState<string[]>([]);
+}: CollectionTypeFilterProps) => {
+  const initialSelection =
+    selectedCollectionType && selectedCollectionType !== "all"
+      ? selectedCollectionType.split(",")
+      : [];
+
+  const [selected, setSelected] = useState<string[]>(initialSelection);
   const [showMore, setShowMore] = useState(false);
   const router = useRouter();
   const { theme } = useLayoutService();
 
-  // 🧪 Debug logs
-  console.log("Initial selectedCategory prop:", selectedCategory);
-  console.log("Received categories:", category);
-
-  // ✅ Only update selected state if selectedCategory prop changes
-  useEffect(() => {
-    if (selectedCategory && selectedCategory !== "all") {
-      const split = selectedCategory.split(",");
-      setSelected(split);
-      console.log("Initial selection state:", split);
-    } else {
-      setSelected([]);
-      console.log("Initial selection state: []");
-    }
-  }, [selectedCategory]);
-
-  const handleSelect = (item: string) => {
-    const updated = selected.includes(item)
-      ? selected.filter((c) => c !== item)
-      : [...selected, item];
+  const handleSelect = (type: string) => {
+    const updated = selected.includes(type)
+      ? selected.filter((t) => t !== type)
+      : [...selected, type];
     setSelected(updated);
-    console.log("Updated selected filters:", updated);
   };
 
   const handleClear = () => setSelected([]);
@@ -65,17 +52,15 @@ const StyleFilter = ({
       q,
       materialType,
       productCategory,
-      category: selected.length > 0 ? selected.join(",") : "all",
       price,
       rating,
       sort,
       page,
+      collectionType: selected.length > 0 ? selected.join(",") : "all",
     };
 
     const query = new URLSearchParams(params).toString();
-    const url = `/search?${query}`;
-    console.log("Navigating to:", url);
-    router.push(url);
+    router.push(`/search?${query}`);
     router.refresh();
   }, [selected]);
 
@@ -87,13 +72,15 @@ const StyleFilter = ({
   const textStyle = (isActive: boolean) =>
     `${isActive ? "font-medium text-black" : ""}`;
 
-  const visibleItems = showMore ? category : category.slice(0, 6);
+  const visibleTypes = showMore ? collectionTypes : collectionTypes.slice(0, 4);
 
   useEffect(() => {
-    if (selectedCategory === "all" && selected.length > 0) {
-      setSelected([]);
-    }
-  }, [selectedCategory]);
+    const updatedSelection =
+      selectedCollectionType && selectedCollectionType !== "all"
+        ? selectedCollectionType.split(",")
+        : [];
+    setSelected(updatedSelection);
+  }, [selectedCollectionType]);
 
   return (
     <div
@@ -104,11 +91,11 @@ const StyleFilter = ({
       }`}
     >
       <div className="flex justify-between items-center mb-4">
-        <h2 className="text-sm font-semibold">Browse by Type</h2>
+        <h2 className="text-sm font-semibold">Collection Type</h2>
         {selected.length > 0 && (
           <button
             onClick={handleClear}
-            className="text-xs text-[#333 hover:underline"
+            className="text-xs text-[#333] hover:underline"
           >
             Clear All
           </button>
@@ -116,31 +103,34 @@ const StyleFilter = ({
       </div>
 
       <div className="flex flex-col gap-0">
-        {visibleItems.map((item, index) => {
-          const isActive = selected.includes(item);
+        {visibleTypes.map((type, index) => {
+          const isActive = selected.includes(type);
+          const checkboxId = `checkbox-collection-${index}`;
+
           return (
             <label
-              key={item}
-              onClick={() => handleSelect(item)}
+              key={type}
+              htmlFor={checkboxId}
               className={checkboxStyle(isActive)}
             >
               <input
                 type="checkbox"
+                id={checkboxId}
                 checked={isActive}
-                readOnly
+                onChange={() => handleSelect(type)}
                 className="accent-pink-500  w-4 h-4"
               />
-              <span className={`text-sm ${textStyle(isActive)}`}>{item}</span>
+              <span className={`text-sm ${textStyle(isActive)}`}>{type}</span>
             </label>
           );
         })}
 
-        {category.length > 6 && (
+        {collectionTypes.length > 4 && (
           <button
             onClick={() => setShowMore((prev) => !prev)}
             className="text-sm text-[#e688a2] hover:underline mt-2 ml-1"
           >
-            {showMore ? "Show Less" : `+ ${category.length - 6} more`}
+            {showMore ? "Show Less" : `+ ${collectionTypes.length - 4} more`}
           </button>
         )}
       </div>
@@ -148,4 +138,4 @@ const StyleFilter = ({
   );
 };
 
-export default StyleFilter;
+export default CollectionTypeFilter;

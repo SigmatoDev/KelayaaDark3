@@ -106,7 +106,7 @@ export type Order = {
 
 export type OrderItem = {
   countInStock: number;
-  prodcutCategory: string;
+  productCategory: string;
   category: string;
   name: string;
   slug: string;
@@ -116,6 +116,8 @@ export type OrderItem = {
   color?: string;
   size?: string;
   productCode: string;
+  productType: string;
+  ring_size?: string;
 };
 
 export type ShippingAddress = {

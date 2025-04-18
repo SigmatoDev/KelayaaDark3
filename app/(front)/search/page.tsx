@@ -10,6 +10,7 @@ import FilterChips from "./filterChip";
 import StyleFilter from "./styleFilter";
 import ClearAllFilters from "./clearAllFilters";
 import ClientSearchWrapper from "./clientSearchWrapper";
+import CollectionTypeFilter from "./collectionTypeFilter";
 // import ClientSearchWrapper from "./clientSearchWrapper";
 // import ClearAllFilters from "./clearAllFilters";
 
@@ -100,7 +101,17 @@ export default async function SearchPage({
     );
 
   const materialTypeCounts = await productServices.getMaterialTypesWithCounts();
+  const collectionTypes = await productServices.getDistinctCollectionTypes();
+  const productCategoriesByCollectionType =
+    await productServices.getCategoriesByCollectionAndMaterialType(
+      collectionType,
+      materialType
+    );
 
+  console.log(
+    "productCategoriesByCollectionType",
+    productCategoriesByCollectionType
+  );
   const { countProducts, products, pages } = await productServices.getByQuery({
     productCategory,
     category,
@@ -114,6 +125,8 @@ export default async function SearchPage({
   });
 
   const validProducts = products;
+  console.log("Products from Backend:", products);
+  console.log("Count of Products:", countProducts);
 
   // Pagination Logic
   const startPage = Math.max(1, currentPage - 1);
@@ -144,13 +157,32 @@ export default async function SearchPage({
           page={page}
           productCategory={productCategory}
           materialTypeCounts={materialTypeCounts}
-          collectionType={""}
+          collectionType={collectionType}
         />{" "}
         <div className="p-0 m-0">
           <hr />
         </div>
+        <CollectionTypeFilter
+          collectionTypes={collectionTypes}
+          selectedCollectionType={collectionType}
+          q={q}
+          productCategory={productCategory}
+          price={price}
+          rating={rating}
+          sort={sort}
+          page={page}
+          materialType={materialType}
+        />
+        <div className="p-0 m-0">
+          <hr />
+        </div>
         <CategoryDropdown
-          categories={categories}
+          categories={
+            (collectionType !== "all" || materialType !== "all") &&
+            productCategoriesByCollectionType.length > 0
+              ? productCategoriesByCollectionType
+              : categories
+          }
           selectedCategory={productCategory}
           q={q}
           productCategory={productCategory}
@@ -159,8 +191,8 @@ export default async function SearchPage({
           sort={sort}
           page={page}
           materialType={materialType}
-          collectionType={""}
-        />{" "}
+          collectionType={collectionType}
+        />
         <div className="p-0 m-0">
           <hr />
         </div>
@@ -181,7 +213,7 @@ export default async function SearchPage({
                 sort={sort}
                 page={page}
                 materialType={materialType}
-                collectionType={""}
+                collectionType={collectionType}
               />
               <div className="p-0 m-0">
                 <hr />
@@ -196,7 +228,7 @@ export default async function SearchPage({
           sort={sort}
           page={page}
           materialType={materialType}
-          collectionType={""}
+          collectionType={collectionType}
         />{" "}
         <div className="p-0 m-0">
           <hr />
@@ -223,12 +255,12 @@ export default async function SearchPage({
             sort={sort}
             page={page}
             materialType={materialType}
-            collectionType={""}
+            collectionType={collectionType}
           />
           <div className="flex items-center">
             <div className="px-3 py-1 text-[12px]">
               Showing{" "}
-              <span className="font-semibold text-[14px] text-pink-500">
+              <span className="font-semibold text-[14px] text-[#e688a2]">
                 {validProducts.length}
               </span>{" "}
               product{validProducts.length !== 1 && "s"}
@@ -286,7 +318,7 @@ export default async function SearchPage({
                     href={getFilterUrl({ pg: String(p) })}
                     className={`px-4 py-2 rounded-md ${
                       currentPage === p
-                        ? "bg-pink-500 text-white"
+                        ? "bg-[#e688a2] text-white"
                         : "hover:bg-pink-100 text-pink-500"
                     }`}
                   >

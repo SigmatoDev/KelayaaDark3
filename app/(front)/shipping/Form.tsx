@@ -133,118 +133,114 @@ const Form = () => {
   return (
     <div>
       <CheckoutSteps current={1} />
-      <div className="grid grid-cols-12 gap-6 my-4">
-        <div className="col-span-7 bg-white p-6 shadow-md rounded-lg">
-          <h1 className="text-xl font-bold">Checkout Information</h1>
-          <form onSubmit={handleSubmit(formSubmit)}>
-            {/* Personal Information */}
-            <h2 className="text-lg font-semibold mt-4">Personal Information</h2>
-            <div className="grid grid-cols-2 gap-4">
+      <div className="max-w-6xl mx-auto my-8 p-6 bg-white shadow-md rounded-lg">
+        <h1 className="text-xl font-bold">Checkout Information</h1>
+        <form onSubmit={handleSubmit(formSubmit)}>
+          {/* Personal Information */}
+          <h2 className="text-lg font-semibold mt-4">Personal Information</h2>
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              type="text"
+              placeholder="Email"
+              {...register("personalInfo.email", { required: true })}
+              className="input input-bordered w-full"
+            />
+            <input
+              type="text"
+              placeholder="Mobile Number"
+              {...register("personalInfo.mobileNumber", { required: true })}
+              className="input input-bordered w-full"
+            />
+          </div>
+
+          {/* Shipping Address */}
+          <h2 className="text-lg font-semibold mt-4">Shipping Address</h2>
+          <div className="grid grid-cols-2 gap-4">
+            {Object.keys(watch("shippingAddress")).map((key) => (
+              <input
+                key={key}
+                type="text"
+                placeholder={key}
+                {...register(`shippingAddress.${key}` as any, {
+                  required: true,
+                })}
+                className="input input-bordered w-full"
+              />
+            ))}
+          </div>
+
+          {/* GST Details */}
+          <h2 className="text-lg font-semibold mt-4 text-black">GST Details</h2>
+          <label className="flex items-center cursor-pointer">
+            <span className="mr-2">Do you have GST?</span>
+            <div
+              className={`relative w-12 h-6 flex items-center rounded-full p-1 transition-all duration-300 ${
+                hasGST ? "bg-pink-500" : "bg-gray-300"
+              }`}
+              onClick={() => setHasGST(!hasGST)}
+            >
+              <div
+                className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-all duration-300 ${
+                  hasGST ? "translate-x-6" : "translate-x-0"
+                }`}
+              ></div>
+            </div>
+          </label>
+
+          {hasGST && (
+            <div className="grid grid-cols-2 gap-4 mt-3">
               <input
                 type="text"
-                placeholder="Email"
-                {...register("personalInfo.email", { required: true })}
+                placeholder="Company Name"
+                {...register("gstDetails.companyName", { required: hasGST })}
                 className="input input-bordered w-full"
               />
               <input
                 type="text"
-                placeholder="Mobile Number"
-                {...register("personalInfo.mobileNumber", { required: true })}
+                placeholder="GST Number"
+                {...register("gstDetails.gstNumber", { required: hasGST })}
                 className="input input-bordered w-full"
               />
             </div>
+          )}
 
-            {/* Shipping Address */}
-            <h2 className="text-lg font-semibold mt-4">Shipping Address</h2>
-            <div className="grid grid-cols-2 gap-4">
-              {Object.keys(watch("shippingAddress")).map((key) => (
+          {/* Billing Address */}
+          <h2 className="text-lg font-semibold mt-4 text-black">
+            Billing Address
+          </h2>
+          <label className="flex items-center">
+            <input
+              type="checkbox"
+              checked={sameAsShipping}
+              onChange={() => setSameAsShipping(!sameAsShipping)}
+              className="w-5 h-5 bg-white border border-gray-500 appearance-none checked:bg-pink-500 checked:border-pink-700 checked:after:content-['✔'] checked:after:text-white checked:after:block checked:after:text-center checked:after:font-bold checked:after:leading-5"
+            />
+            <span className="ml-2">Same as shipping details</span>
+          </label>
+
+          {!sameAsShipping && (
+            <div className="grid grid-cols-2 gap-4 mt-3">
+              {Object.keys(watch("billingDetails")).map((key) => (
                 <input
                   key={key}
                   type="text"
                   placeholder={key}
-                  {...register(`shippingAddress.${key}` as any, {
+                  {...register(`billingDetails.${key}` as any, {
                     required: true,
                   })}
                   className="input input-bordered w-full"
                 />
               ))}
             </div>
+          )}
 
-            {/* GST Details */}
-            <h2 className="text-lg font-semibold mt-4 text-black">
-              GST Details
-            </h2>
-            <label className="flex items-center cursor-pointer">
-              <span className="mr-2">Do you have GST?</span>
-              <div
-                className={`relative w-12 h-6 flex items-center rounded-full p-1 transition-all duration-300 ${
-                  hasGST ? "bg-pink-500" : "bg-gray-300"
-                }`}
-                onClick={() => setHasGST(!hasGST)}
-              >
-                <div
-                  className={`w-5 h-5 bg-white rounded-full shadow-md transform transition-all duration-300 ${
-                    hasGST ? "translate-x-6" : "translate-x-0"
-                  }`}
-                ></div>
-              </div>
-            </label>
-
-            {hasGST && (
-              <div className="grid grid-cols-2 gap-4 mt-3">
-                <input
-                  type="text"
-                  placeholder="Company Name"
-                  {...register("gstDetails.companyName", { required: hasGST })}
-                  className="input input-bordered w-full"
-                />
-                <input
-                  type="text"
-                  placeholder="GST Number"
-                  {...register("gstDetails.gstNumber", { required: hasGST })}
-                  className="input input-bordered w-full"
-                />
-              </div>
-            )}
-
-            {/* Billing Address */}
-            <h2 className="text-lg font-semibold mt-4 text-black">
-              Billing Address
-            </h2>
-            <label className="flex items-center">
-              <input
-                type="checkbox"
-                checked={sameAsShipping}
-                onChange={() => setSameAsShipping(!sameAsShipping)}
-                className="w-5 h-5 bg-white border border-gray-500 appearance-none checked:bg-pink-500 checked:border-pink-700 checked:after:content-['✔'] checked:after:text-white checked:after:block checked:after:text-center checked:after:font-bold checked:after:leading-5"
-              />
-              <span className="ml-2">Same as shipping details</span>
-            </label>
-
-            {!sameAsShipping && (
-              <div className="grid grid-cols-2 gap-4 mt-3">
-                {Object.keys(watch("billingDetails")).map((key) => (
-                  <input
-                    key={key}
-                    type="text"
-                    placeholder={key}
-                    {...register(`billingDetails.${key}` as any, {
-                      required: true,
-                    })}
-                    className="input input-bordered w-full"
-                  />
-                ))}
-              </div>
-            )}
-
-            <button
-              type="submit"
-              className="btn bg-gradient-to-r from-pink-500 to-red-500 text-white w-full mt-4"
-            >
-              Next
-            </button>
-          </form>
-        </div>
+          <button
+            type="submit"
+            className="btn bg-gradient-to-r from-pink-500 to-red-500 text-white w-full mt-4"
+          >
+            Next
+          </button>
+        </form>
       </div>
     </div>
   );

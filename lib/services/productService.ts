@@ -4,6 +4,7 @@ import dbConnect from "@/lib/dbConnect";
 import ProductModel, { Product } from "@/lib/models/ProductModel";
 import SetsProductModel from "../models/SetsProductsModel";
 import GoldDiamondProductPricingModel from "../models/GoldDiamondProductsPricingDetails";
+import BanglesProductModel from "../models/BanglesProductSchema";
 
 export const revalidate = 3600;
 
@@ -49,7 +50,7 @@ const getLatest = cache(async () => {
     .sort({ _id: -1 }) // Latest first
     .lean();
 
-  // ✅ 3. Fetch Gold Sets from SetProductModel
+  // ✅ 3. Fetch Gold Sets from SetsProductModel
   const goldSetProducts = await SetsProductModel.find({
     productType: { $regex: /^sets$/i },
     materialType: { $regex: /^gold$/i },
@@ -57,17 +58,25 @@ const getLatest = cache(async () => {
     .sort({ _id: -1 }) // Latest first
     .lean();
 
-  // ✅ 4. Combine Both Product Types
-  const combinedProducts = [...regularProducts, ...goldSetProducts];
+  // ✅ 4. Fetch Gold Bangles from BanglesProductModel
+  const goldBanglesProducts = await BanglesProductModel.find({
+    productType: { $regex: /^bangles$/i },
+    materialType: { $regex: /^gold$/i },
+  })
+    .sort({ _id: -1 }) // Latest first
+    .lean();
+
+  // ✅ 5. Combine All Product Types (Regular, Gold Sets, Gold Bangles)
+  const combinedProducts = [
+    ...regularProducts,
+    ...goldSetProducts,
+    ...goldBanglesProducts,
+  ];
 
   console.log("combinedProducts", combinedProducts.length);
-  // ✅ 5. Filter Out Invalid Image URLs
-  const validProducts = combinedProducts.filter(
-    (product) => product.image && /^https?:\/\//.test(product.image)
-  );
 
   // ✅ 6. Shuffle the Products
-  const shuffledProducts = shuffleArray(validProducts);
+  const shuffledProducts = shuffleArray(combinedProducts);
 
   // ✅ 7. Return Top 8 Latest Products
   return shuffledProducts.slice(0, 8) as unknown as Product[];
@@ -595,8 +604,6 @@ const getByQuery = cache(
     materialType: string;
     collectionType: string;
   }) => {
-    console.log("🟡 [Input Price]:", price);
-
     await dbConnect();
 
     const categories = await ProductModel.find()
@@ -620,19 +627,7 @@ const getByQuery = cache(
       const isSilver =
         materialType && materialType.toLowerCase().includes("silver");
 
-      if (isGold) {
-        const isSubCategory = await ProductModel.exists({
-          subCategories: { $regex: new RegExp(`^${category}$`, "i") },
-        });
-
-        categoryOnlyFilter = isSubCategory
-          ? { subCategories: { $regex: new RegExp(`^${category}$`, "i") } }
-          : { category: { $regex: new RegExp(`^${category}$`, "i") } };
-      } else if (isSilver) {
-        categoryOnlyFilter = {
-          category: { $regex: new RegExp(`^${category}$`, "i") },
-        };
-      } else {
+      if (isGold || isSilver) {
         const isSubCategory = await ProductModel.exists({
           subCategories: { $regex: new RegExp(`^${category}$`, "i") },
         });
@@ -682,7 +677,9 @@ const getByQuery = cache(
       collectionType && collectionType !== "all"
         ? {
             collectionType: {
-              $regex: new RegExp(`^${collectionType}$`, "i"),
+              $in: collectionType
+                .split(",")
+                .map((ct) => new RegExp(`^${ct}$`, "i")),
             },
           }
         : {};
@@ -696,6 +693,7 @@ const getByQuery = cache(
             ? { rating: -1 }
             : { _id: -1 };
 
+    // Handle collection-specific search
     if (productCategory?.toLowerCase() === "collections") {
       const collectionQuery: any = {
         collectionType: { $exists: true, $ne: null },
@@ -703,7 +701,9 @@ const getByQuery = cache(
 
       if (collectionType && collectionType !== "all") {
         collectionQuery.collectionType = {
-          $regex: new RegExp(`^${collectionType}$`, "i"),
+          $in: collectionType
+            .split(",")
+            .map((ct) => new RegExp(`^${ct}$`, "i")),
         };
       }
 
@@ -734,7 +734,6 @@ const getByQuery = cache(
         .sort(order)
         .lean();
 
-      // ✅ Filter out invalid products
       products = products.filter(
         (p) =>
           typeof p.price === "number" &&
@@ -761,6 +760,7 @@ const getByQuery = cache(
       };
     }
 
+    // Main query from ProductModel
     let products = await ProductModel.aggregate([
       {
         $match: {
@@ -779,6 +779,14 @@ const getByQuery = cache(
       productCategory?.toLowerCase() === "sets" &&
       materialType?.toLowerCase().includes("gold");
 
+    const shouldAddGoldBangles =
+      productCategory?.toLowerCase() === "bangles" &&
+      materialType?.toLowerCase().includes("gold");
+
+    const shouldAddGoldBanglePairs =
+      productCategory?.toLowerCase() === "bangle pair" &&
+      materialType?.toLowerCase().includes("gold");
+
     const isDefaultSearch =
       (!productCategory || productCategory === "all") &&
       (!category || category === "all") &&
@@ -787,6 +795,10 @@ const getByQuery = cache(
       (!rating || rating === "all") &&
       (!q || q === "all");
 
+    // Debugging the shouldAddGoldBanglePairs condition
+    console.log("Should Add Gold Bangle Pairs:", shouldAddGoldBanglePairs);
+    console.log("Is Default Search:", isDefaultSearch);
+
     if (shouldAddGoldSets || isDefaultSearch) {
       const setQuery: any = {
         materialType: /gold/i,
@@ -794,7 +806,11 @@ const getByQuery = cache(
       };
 
       if (collectionType && collectionType !== "all") {
-        setQuery.collectionType = new RegExp(`^${collectionType}$`, "i");
+        setQuery.collectionType = {
+          $in: collectionType
+            .split(",")
+            .map((ct) => new RegExp(`^${ct}$`, "i")),
+        };
       }
 
       if (category && category !== "all") {
@@ -811,16 +827,16 @@ const getByQuery = cache(
 
       if (decodedPrice && decodedPrice !== "all") {
         if (decodedPrice.includes("-")) {
-          setQuery["price"] = {
+          setQuery.price = {
             $gte: parseFloat(decodedPrice.split("-")[0]),
             $lte: parseFloat(decodedPrice.split("-")[1]),
           };
         } else if (decodedPrice.includes("+")) {
-          setQuery["price"] = {
+          setQuery.price = {
             $gte: parseFloat(decodedPrice.replace("+", "")),
           };
         } else {
-          setQuery["price"] = parseFloat(decodedPrice);
+          setQuery.price = parseFloat(decodedPrice);
         }
       }
 
@@ -831,24 +847,110 @@ const getByQuery = cache(
       products = [...products, ...setProducts];
     }
 
-    // ✅ Filter out invalid products
-    products = products.filter(
-      (p) =>
-        typeof p.price === "number" &&
-        p.price > 0 &&
-        typeof p.name === "string" &&
-        p.name.trim() !== "" &&
-        typeof p.productCode === "string" &&
-        p.productCode.trim() !== ""
-    );
+    if (shouldAddGoldBangles || isDefaultSearch) {
+      const banglesQuery: any = {
+        materialType: /gold/i,
+        productType: /bangles/i, // Ensure it only targets regular bangles
+      };
+
+      if (collectionType && collectionType !== "all") {
+        banglesQuery.collectionType = {
+          $in: collectionType
+            .split(",")
+            .map((ct) => new RegExp(`^${ct}$`, "i")),
+        };
+      }
+
+      if (category && category !== "all") {
+        banglesQuery.subCategories = {
+          $regex: new RegExp(`^${category}$`, "i"),
+        };
+      }
+
+      if (q && q !== "all") {
+        banglesQuery.name = { $regex: q, $options: "i" };
+      }
+
+      if (rating && rating !== "all") {
+        banglesQuery.rating = { $gte: Number(rating) };
+      }
+
+      if (decodedPrice && decodedPrice !== "all") {
+        if (decodedPrice.includes("-")) {
+          banglesQuery.price = {
+            $gte: parseFloat(decodedPrice.split("-")[0]),
+            $lte: parseFloat(decodedPrice.split("-")[1]),
+          };
+        } else if (decodedPrice.includes("+")) {
+          banglesQuery.price = {
+            $gte: parseFloat(decodedPrice.replace("+", "")),
+          };
+        } else {
+          banglesQuery.price = parseFloat(decodedPrice);
+        }
+      }
+
+      const banglesProducts = await BanglesProductModel.find(banglesQuery)
+        .sort(order)
+        .lean();
+
+      console.log("Bangles Products:", banglesProducts); // Debugging
+
+      products = [...products, ...banglesProducts];
+    }
+
+    // Adding the "Bangle Pair" filtering logic
+    if (shouldAddGoldBanglePairs || isDefaultSearch) {
+      const banglePairQuery: any = {
+        materialType: /gold/i,
+        productType: /bangle pair/i, // Ensure it only targets bangle pair products
+      };
+
+      if (collectionType && collectionType !== "all") {
+        banglePairQuery.collectionType = {
+          $in: collectionType
+            .split(",")
+            .map((ct) => new RegExp(`^${ct}$`, "i")),
+        };
+      }
+
+      if (category && category !== "all") {
+        banglePairQuery.subCategories = {
+          $regex: new RegExp(`^${category}$`, "i"),
+        };
+      }
+
+      if (q && q !== "all") {
+        banglePairQuery.name = { $regex: q, $options: "i" };
+      }
+
+      if (rating && rating !== "all") {
+        banglePairQuery.rating = { $gte: Number(rating) };
+      }
+
+      if (decodedPrice && decodedPrice !== "all") {
+        if (decodedPrice.includes("-")) {
+          banglePairQuery.price = {
+            $gte: parseFloat(decodedPrice.split("-")[0]),
+            $lte: parseFloat(decodedPrice.split("-")[1]),
+          };
+        } else if (decodedPrice.includes("+")) {
+          banglePairQuery.price = {
+            $gte: parseFloat(decodedPrice.replace("+", "")),
+          };
+        } else {
+          banglePairQuery.price = parseFloat(decodedPrice);
+        }
+      }
+
+      const banglePairProducts = await BanglesProductModel.find(banglePairQuery)
+        .sort(order)
+        .lean();
+
+      products = [...products, ...banglePairProducts];
+    }
 
     const countProducts = products.length;
-
-    const uniqueCategories = new Set(products.map((p) => p.productCategory));
-    if (uniqueCategories.size > 1) {
-      const categoryMap = groupByCategory(products);
-      products = interleaveCategoriesStrict(categoryMap);
-    }
 
     const paginatedProducts = products.slice(
       PAGE_SIZE * (Number(page) - 1),
@@ -856,7 +958,7 @@ const getByQuery = cache(
     );
 
     return {
-      products: paginatedProducts as Product[],
+      products: paginatedProducts as unknown as Product[],
       countProducts,
       page,
       pages: Math.ceil(countProducts / PAGE_SIZE),
@@ -868,63 +970,48 @@ const getByQuery = cache(
 const getCategories = cache(async () => {
   await dbConnect();
 
-  // Fetch distinct categories
-  const categories = await ProductModel.find().distinct("productCategory");
+  // Fetch distinct categories from all models
+  const productCategories =
+    await ProductModel.find().distinct("productCategory");
+  const setsCategories = await SetsProductModel.find().distinct("productType");
+  const banglesCategories =
+    await BanglesProductModel.find().distinct("productType");
 
-  // Fetch categories that have at least one product with an image URL
-  const categoriesWithImages = await ProductModel.aggregate([
-    {
-      $match: { image: { $regex: /^http/ } }, // Find products with valid image URLs
-    },
-    {
-      $group: { _id: "$productCategory" }, // Group by category
-    },
-  ]);
-
-  // Create a Set for quick lookup
-  const categoriesWithImagesSet = new Set(
-    categoriesWithImages.map((c) => c._id)
+  // Combine and deduplicate
+  const allCategories = Array.from(
+    new Set([...productCategories, ...setsCategories, ...banglesCategories])
   );
 
-  // Sort: Categories with images come first
-  const sortedCategories = categories.sort((a, b) => {
-    const hasImageA = categoriesWithImagesSet.has(a);
-    const hasImageB = categoriesWithImagesSet.has(b);
-
-    return Number(hasImageB) - Number(hasImageA); // Convert boolean to number (true → 1, false → 0)
-  });
-
+  // Sort alphabetically
+  const sortedCategories = allCategories.sort((a, b) => a.localeCompare(b));
+  console.log("sortedCategories", sortedCategories);
   return sortedCategories;
 });
 
 const getMaterialTypes = cache(async () => {
   await dbConnect();
 
-  // Fetch distinct categories
-  const categories = await ProductModel.find().distinct("materialType");
+  // Fetch distinct material types from all models
+  const productMaterialTypes =
+    await ProductModel.find().distinct("materialType");
+  const setsMaterialTypes =
+    await SetsProductModel.find().distinct("materialType");
+  const banglesMaterialTypes =
+    await BanglesProductModel.find().distinct("materialType");
 
-  // Fetch categories that have at least one product with an image URL
-  const categoriesWithImages = await ProductModel.aggregate([
-    {
-      $match: { image: { $regex: /^http/ } }, // Find products with valid image URLs
-    },
-    {
-      $group: { _id: "$materialType" }, // Group by category
-    },
-  ]);
-
-  // Create a Set for quick lookup
-  const categoriesWithImagesSet = new Set(
-    categoriesWithImages.map((c) => c._id)
+  // Combine and deduplicate
+  const allMaterialTypes = Array.from(
+    new Set([
+      ...productMaterialTypes,
+      ...setsMaterialTypes,
+      ...banglesMaterialTypes,
+    ])
   );
 
-  // Sort: Categories with images come first
-  const sortedMaterialTypes = categories.sort((a, b) => {
-    const hasImageA = categoriesWithImagesSet.has(a);
-    const hasImageB = categoriesWithImagesSet.has(b);
-
-    return Number(hasImageB) - Number(hasImageA); // Convert boolean to number (true → 1, false → 0)
-  });
+  // Sort alphabetically
+  const sortedMaterialTypes = allMaterialTypes.sort((a, b) =>
+    a.localeCompare(b)
+  );
 
   return sortedMaterialTypes;
 });
@@ -934,63 +1021,58 @@ const getByCategory = cache(async (category: string) => {
 
   console.log(`🔹 Fetching products for category: ${category}`);
 
-  const products = await ProductModel.find({
-    productCategory: category,
-  }).lean();
+  const productQuery: Record<string, any> = { productCategory: category };
+  const setsQuery: Record<string, any> = { productType: category };
+  const banglesQuery: Record<string, any> = { productType: category };
+
+  // Fetch products from ProductModel, SetsProductModel, and BanglesProductModel
+  const products = await Promise.all([
+    ProductModel.find(productQuery).lean(),
+    SetsProductModel.find(setsQuery).lean(),
+    BanglesProductModel.find(banglesQuery).lean(),
+  ]);
+
+  // Combine all products
+  const allProducts = [...products[0], ...products[1], ...products[2]];
 
   console.log(
-    `✅ Fetched ${products.length} products for category: ${category}`
+    `✅ Fetched ${allProducts.length} products for category: ${category}`
   );
 
-  if (!products || products.length === 0) {
+  if (!allProducts || allProducts.length === 0) {
     console.warn(`⚠️ No products found for category: ${category}`);
     return [];
   }
 
-  // Filter: Keep only products with a valid image URL
-  const validProducts = products.filter(
-    (product) => product.image && /^https?:\/\//.test(product.image)
-  );
-
-  // If no products have valid images, return all products
-  const productsToShuffle = validProducts.length > 0 ? validProducts : products;
-
-  // Shuffle the filtered products
-  // const shuffledProducts = shuffleArray(productsToShuffle);
-
-  return productsToShuffle as unknown as Product[];
+  // Return all products without filtering based on image validation
+  return allProducts as unknown as Product[];
 });
 
 const getCombinedCategoriesAndSubcategories = cache(async () => {
   await dbConnect();
 
-  // From ProductModel
-  const categories = await ProductModel.distinct("category", {
-    // image: { $regex: /^http/ },
-  });
+  // ✅ From ProductModel
+  const categories = await ProductModel.distinct("category");
 
-  const subcategoriesFromProducts = await ProductModel.distinct(
-    "subCategories"
-    // {
-    // image: { $regex: /^http/ },
-    // }
-  );
+  const subcategoriesFromProducts =
+    await ProductModel.distinct("subCategories");
 
-  // From SetProductModel
-  const subcategoriesFromSets = await SetsProductModel.distinct(
-    "subCategories"
-    // {
-    //   image: { $regex: /^http/ },
-    // }
-  );
-  // console.log("subcategoriesFromSets", subcategoriesFromSets);
-  // Flatten in case subCategories are stored as arrays
+  // ✅ From SetsProductModel
+  const subcategoriesFromSets =
+    await SetsProductModel.distinct("subCategories");
+
+  // ✅ From BanglesProductModel
+  const subcategoriesFromBangles =
+    await BanglesProductModel.distinct("subCategories");
+
+  // ✅ Combine and flatten all subcategories
   const allSubcategories = [
     ...subcategoriesFromProducts,
     ...subcategoriesFromSets,
+    ...subcategoriesFromBangles,
   ].flat();
 
-  // Combine all and filter
+  // ✅ Combine all and filter out invalid values
   const combined = Array.from(
     new Set([...categories, ...allSubcategories])
   ).filter(
@@ -1040,7 +1122,7 @@ const getCombinedByProductCategory = cache(
       subcategoriesFromProducts
     );
 
-    // Fetch subcategories from SetsProductModel with materialType consideration
+    // Fetch subcategories from SetsProductModel
     const setsQuery: Record<string, any> = { productType: regexCategory };
     if (materialType && materialType !== "all") {
       setsQuery.materialType = materialType;
@@ -1055,10 +1137,26 @@ const getCombinedByProductCategory = cache(
       subcategoriesFromSets
     );
 
-    // Combine and flatten subcategories from both models
+    // Fetch subcategories from BanglesProductModel
+    const banglesQuery: Record<string, any> = { productType: regexCategory };
+    if (materialType && materialType !== "all") {
+      banglesQuery.materialType = materialType;
+    }
+
+    const subcategoriesFromBangles = await BanglesProductModel.distinct(
+      "subCategories",
+      banglesQuery
+    );
+    console.log(
+      "🪙 Subcategories from BanglesProductModel:",
+      subcategoriesFromBangles
+    );
+
+    // Combine and flatten subcategories from all models
     const allSubcategories = [
       ...subcategoriesFromProducts,
       ...subcategoriesFromSets,
+      ...subcategoriesFromBangles,
     ].flat();
     console.log("🧮 Combined raw subcategories:", allSubcategories);
 
@@ -1151,26 +1249,52 @@ const getSimilarProducts = cache(
     if (regexMaterialType) baseFilter.push({ materialType: regexMaterialType });
 
     const fullFilter = { $and: baseFilter };
-
     console.log(
       "🧠 Initial MongoDB Filter:",
       JSON.stringify(fullFilter, null, 2)
     );
 
-    let similarProducts = await ProductModel.find(fullFilter)
-      .sort({ createdAt: -1 })
-      .limit(8)
-      .lean();
+    // Fetch from all 3 models
+    const [regularProducts, setsProducts, banglesProducts] = await Promise.all([
+      ProductModel.find(fullFilter).sort({ createdAt: -1 }).lean(),
+      SetsProductModel.find({
+        productType: regexCategory,
+        ...(regexMainCategory && { category: regexMainCategory }),
+        ...(regexSubCategories.length > 0 && {
+          subCategories: { $in: regexSubCategories },
+        }),
+        ...(regexMaterialType && { materialType: regexMaterialType }),
+        ...(productIdToExclude && { _id: { $ne: productIdToExclude } }),
+      })
+        .sort({ createdAt: -1 })
+        .lean(),
+      BanglesProductModel.find({
+        productType: regexCategory,
+        ...(regexMainCategory && { category: regexMainCategory }),
+        ...(regexSubCategories.length > 0 && {
+          subCategories: { $in: regexSubCategories },
+        }),
+        ...(regexMaterialType && { materialType: regexMaterialType }),
+        ...(productIdToExclude && { _id: { $ne: productIdToExclude } }),
+      })
+        .sort({ createdAt: -1 })
+        .lean(),
+    ]);
 
-    console.log(`✅ Found ${similarProducts.length} similar products.`);
+    const combined = [
+      ...regularProducts,
+      ...setsProducts,
+      ...banglesProducts,
+    ].slice(0, 8);
+
+    console.log(`✅ Found ${combined.length} similar products.`);
 
     // 🆘 FALLBACK if not enough similar products
-    if (similarProducts.length < 2 && regexMaterialType) {
+    if (combined.length < 2 && regexMaterialType) {
       console.log(
         "⚠️ Not enough results — fallback to materialType-only, with mixed categories."
       );
 
-      // Fetch all with materialType
       const materialTypeProducts = await ProductModel.find({
         materialType: regexMaterialType,
         ...(productIdToExclude && { _id: { $ne: productIdToExclude } }),
@@ -1187,13 +1311,10 @@ const getSimilarProducts = cache(
         }
       }
 
-      similarProducts = Object.values(groupedByCategory).slice(0, 8);
-      console.log(
-        `🔁 Fallback (Mixed Categories) returned ${similarProducts.length} products.`
-      );
+      return Object.values(groupedByCategory).slice(0, 8);
     }
 
-    return similarProducts;
+    return combined;
   }
 );
 
@@ -1218,7 +1339,17 @@ async function getMaterialTypesWithCounts() {
     },
   ]);
 
-  // Step 3: Combine counts into one object
+  // Step 3: Aggregate materialType counts from BanglesProductModel
+  const banglesProductCounts = await BanglesProductModel.aggregate([
+    {
+      $group: {
+        _id: "$materialType",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
+  // Step 4: Combine counts into one object
   const counts: Record<string, number> = {};
 
   // Add ProductModel counts
@@ -1235,8 +1366,127 @@ async function getMaterialTypesWithCounts() {
     }
   });
 
+  // Add BanglesProductModel counts
+  banglesProductCounts.forEach((item) => {
+    if (item._id) {
+      counts[item._id] = (counts[item._id] || 0) + item.count;
+    }
+  });
+
   return counts;
 }
+
+async function getDistinctCollectionTypes() {
+  const productCollectionTypes = await ProductModel.distinct("collectionType");
+
+  const setProductCollectionTypes =
+    await SetsProductModel.distinct("collectionType");
+
+  const banglesProductCollectionTypes =
+    await BanglesProductModel.distinct("collectionType");
+
+  const combined = [
+    ...productCollectionTypes,
+    ...setProductCollectionTypes,
+    ...banglesProductCollectionTypes,
+  ];
+
+  const unique = Array.from(new Set(combined.filter(Boolean))); // removes null/undefined and duplicates
+
+  return unique;
+}
+
+const getCategoriesByCollectionAndMaterialType = cache(
+  async (collectionType: string, materialType?: string) => {
+    await dbConnect();
+
+    console.log(
+      "🔍 Fetching productCategory with collectionType:",
+      collectionType,
+      "and materialType:",
+      materialType
+    );
+
+    // 👉 Handle multiple collection types (preserve case)
+    const collectionTypes = collectionType
+      .split(",")
+      .map((ct) => ct.trim())
+      .filter((ct) => ct.toLowerCase() !== "all");
+
+    // 👉 Handle multiple material types (preserve case)
+    const materialTypes = materialType
+      ? materialType
+          .split(",")
+          .map((mt) => mt.trim())
+          .filter((mt) => mt.toLowerCase() !== "all")
+      : [];
+
+    const productQuery: Record<string, any> = {};
+    const setsQuery: Record<string, any> = {};
+    const banglesQuery: Record<string, any> = {};
+
+    if (collectionTypes.length > 0) {
+      productQuery.collectionType = { $in: collectionTypes };
+      setsQuery.collectionType = { $in: collectionTypes };
+      banglesQuery.collectionType = { $in: collectionTypes };
+    }
+
+    if (materialTypes.length > 0) {
+      productQuery.materialType = { $in: materialTypes };
+      setsQuery.materialType = { $in: materialTypes };
+      banglesQuery.materialType = { $in: materialTypes };
+    }
+
+    // Fetch categories
+    const categories = await ProductModel.distinct(
+      "productCategory",
+      productQuery
+    );
+    console.log("📦 productCategory from ProductModel:", categories);
+
+    const setsCategories = await SetsProductModel.distinct(
+      "productType",
+      setsQuery
+    );
+    console.log("🎁 productCategory from SetsProductModel:", setsCategories);
+
+    const banglesCategories = await BanglesProductModel.distinct(
+      "productType",
+      banglesQuery
+    );
+    console.log(
+      "🪙 productCategory from BanglesProductModel:",
+      banglesCategories
+    );
+
+    const allCategories = [
+      ...categories,
+      ...setsCategories,
+      ...banglesCategories,
+    ];
+    console.log("🧮 Combined raw productCategories:", allCategories);
+
+    // Deduplicate and clean
+    const normalizedMap = new Map<string, string>();
+    for (const item of allCategories) {
+      if (
+        item &&
+        typeof item === "string" &&
+        !["na", "n/a", "null"].includes(item.trim().toLowerCase())
+      ) {
+        const key = item.trim().toLowerCase();
+        if (!normalizedMap.has(key)) {
+          normalizedMap.set(key, item.trim());
+        }
+      }
+    }
+
+    const combined = Array.from(normalizedMap.values());
+    console.log("✅ Final deduplicated productCategories:", combined);
+
+    return combined;
+  }
+);
 
 const productService = {
   getLatest,
@@ -1252,6 +1502,8 @@ const productService = {
   getCombinedByProductCategory,
   getSimilarProducts,
   getMaterialTypesWithCounts,
+  getDistinctCollectionTypes,
+  getCategoriesByCollectionAndMaterialType,
 };
 
 export default productService;
