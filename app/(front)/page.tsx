@@ -29,7 +29,7 @@ export const metadata: Metadata = {
 const HomePage = () => {
   return (
     <>
-      <div className="w-full mt-10">
+      <div className="w-full mt-0">
         <KelayaFavourites />
       </div>
 

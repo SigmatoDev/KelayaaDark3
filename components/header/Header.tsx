@@ -224,7 +224,7 @@ const menuData: Record<string, MenuItem> = {
       "Design visualization & approval",
       "Crafting & delivery of your piece",
     ],
-    images: ["/images/menu/cust1.webp", "/images/menu/cust2.webp"],
+    images: ["/images/menu/cd-sec1.webp", "/images/menu/cd-sec2.webp"],
   },
   collections: {
     subitems: [

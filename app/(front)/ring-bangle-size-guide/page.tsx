@@ -1,72 +1,93 @@
 "use client";
-
-import { Download } from "lucide-react";
-import Link from "next/link";
-
-export default function RingBangleSizeGuide() {
+import Image from "next/image";
+export default function SizeGuide() {
   return (
-    <div className="bg-white text-[#333] py-16 px-4 md:px-20">
-      <div className="max-w-4xl mx-auto text-center">
-        <h1 className="text-3xl md:text-5xl font-bold mb-4 tracking-tight">
-          Find Your <span className="text-pink-600">Ring</span> or <span className="text-pink-600">Bangle Size</span>
+    <div className="max-w-6xl mx-auto px-4 md:px-10 py-16 space-y-16 text-[#333]">
+      {/* Hero Section */}
+      <section className="text-center">
+        <h1 className="text-4xl md:text-5xl font-bold mb-6 tracking-tight text-gray-900">
+          Find Your Perfect <span className="text-pink-600">Fit</span>
         </h1>
-        <p className="text-gray-600 text-base md:text-lg mb-10 leading-relaxed">
-          A helpful and beautifully crafted guide to accurately measure your ring or bangle size at home.  
-          Includes printable Indian size charts and a step-by-step measuring method to ensure the perfect fit.
+        <p className="text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          Kelayaa helps you find your ideal ring and bangle size with ease. Discover your perfect match today.
         </p>
-      </div>
-
-      {/* Section Cards */}
-      <div className="grid md:grid-cols-2 gap-10 max-w-5xl mx-auto">
-        {/* Ring Size Guide */}
-        <div className="bg-gray-50 rounded-2xl shadow-lg p-6 hover:shadow-xl transition">
-          <h2 className="text-2xl font-semibold text-[#111] mb-3">Ring Size Guide</h2>
-          <p className="text-gray-600 text-sm mb-5">
-            Download our printable Indian Ring Size Chart with sizes in both Indian and US standards.  
-            Includes inner diameter and circumference in millimeters.
-          </p>
-          <ul className="text-sm text-gray-500 list-disc pl-5 mb-5">
-            <li>Measure using a string or existing ring</li>
-            <li>Match with diameter on chart</li>
-            <li>Printable circles included</li>
-          </ul>
-          <Link
-            href="/pdfs/Indian_Ring_Size_Chart.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-medium transition"
-          >
-            <Download className="w-5 h-5" /> Download Ring Size Chart
-          </Link>
+      </section>
+      {/* Ring Size Guide */}
+      <section className="text-center">
+        <h2 className="text-4xl font-bold mb-10">Ring Size Guide</h2>
+        <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+          Your fingers deserve precision and comfort. Use our guide to discover the best fit for every occasion.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm text-left border">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="p-4 border">Diameter (mm)</th>
+                <th className="p-4 border">US Size</th>
+                <th className="p-4 border">Indian Size</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border"><td className="p-4 border">14.8</td><td className="p-4 border">4</td><td className="p-4 border">7</td></tr>
+              <tr className="border"><td className="p-4 border">15.2</td><td className="p-4 border">4.5</td><td className="p-4 border">8</td></tr>
+              <tr className="border"><td className="p-4 border">15.6</td><td className="p-4 border">5</td><td className="p-4 border">9</td></tr>
+              <tr className="border"><td className="p-4 border">16.0</td><td className="p-4 border">5.5</td><td className="p-4 border">10</td></tr>
+              <tr className="border"><td className="p-4 border">16.5</td><td className="p-4 border">6</td><td className="p-4 border">11</td></tr>
+              <tr className="border"><td className="p-4 border">16.9</td><td className="p-4 border">6.5</td><td className="p-4 border">12</td></tr>
+              <tr className="border"><td className="p-4 border">17.3</td><td className="p-4 border">7</td><td className="p-4 border">13</td></tr>
+              <tr className="border"><td className="p-4 border">17.7</td><td className="p-4 border">7.5</td><td className="p-4 border">14</td></tr>
+              <tr className="border"><td className="p-4 border">18.2</td><td className="p-4 border">8</td><td className="p-4 border">15</td></tr>
+              <tr className="border"><td className="p-4 border">18.6</td><td className="p-4 border">8.5</td><td className="p-4 border">16</td></tr>
+              <tr className="border"><td className="p-4 border">19.0</td><td className="p-4 border">9</td><td className="p-4 border">17</td></tr>
+            </tbody>
+          </table>
         </div>
-
-        {/* Bangle Size Guide */}
-        <div className="bg-gray-50 rounded-2xl shadow-lg p-6 hover:shadow-xl transition">
-          <h2 className="text-2xl font-semibold text-[#111] mb-3">Bangle Size Guide</h2>
-          <p className="text-gray-600 text-sm mb-5">
-            Our Bangle Size Chart follows Indian sizing with detailed mm dimensions.  
-            Includes a wrist measurement guide and printable size circle for your convenience.
-          </p>
-          <ul className="text-sm text-gray-500 list-disc pl-5 mb-5">
-            <li>Measure using a scale or wrist string</li>
-            <li>Match with bangle diameter</li>
-            <li>Includes full Indian bangle size range</li>
-          </ul>
-          <Link
-            href="/pdfs/Indian_Bangle_Size_Chart.pdf"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-pink-600 hover:text-pink-700 font-medium transition"
-          >
-            <Download className="w-5 h-5" /> Download Bangle Size Chart
-          </Link>
+      </section>
+      {/* Ring Size Tips */}
+      <section className="bg-pink-50 p-8 md:p-12 rounded-3xl shadow-xl">
+        <h3 className="text-3xl font-semibold text-gray-800 mb-6 text-center">Quick Tips</h3>
+        <ul className="max-w-3xl mx-auto list-disc list-inside text-gray-700 space-y-3">
+          <li>Measure your finger at the end of the day when it is largest.</li>
+          <li>Avoid measuring when your fingers are cold.</li>
+          <li>If between sizes, always size up for comfort.</li>
+          <li>Ensure the ring fits snugly but slides over the knuckle easily.</li>
+        </ul>
+      </section>
+      {/* Bangle Size Guide */}
+      <section className="text-center">
+        <h2 className="text-4xl font-bold mb-10">Bangle Size Guide</h2>
+        <p className="text-gray-600 mb-8 max-w-2xl mx-auto">
+          Bangles should slide comfortably over your hand and fit gracefully on your wrist. Find your best match below.
+        </p>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm text-left border">
+            <thead className="bg-gray-100">
+              <tr>
+                <th className="p-4 border">Diameter (mm)</th>
+                <th className="p-4 border">Bangle Size (Indian)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr className="border"><td className="p-4 border">57.2</td><td className="p-4 border">2-2</td></tr>
+              <tr className="border"><td className="p-4 border">58.7</td><td className="p-4 border">2-4</td></tr>
+              <tr className="border"><td className="p-4 border">60.3</td><td className="p-4 border">2-6</td></tr>
+              <tr className="border"><td className="p-4 border">61.9</td><td className="p-4 border">2-8</td></tr>
+              <tr className="border"><td className="p-4 border">63.5</td><td className="p-4 border">2-10</td></tr>
+              <tr className="border"><td className="p-4 border">65.1</td><td className="p-4 border">2-12</td></tr>
+              <tr className="border"><td className="p-4 border">66.7</td><td className="p-4 border">2-14</td></tr>
+            </tbody>
+          </table>
         </div>
-      </div>
-
-      {/* Bottom Tip */}
-      <div className="mt-16 text-center text-gray-500 text-sm">
-        Need help? <span className="text-pink-600 underline hover:text-pink-700 cursor-pointer">Chat with our support team</span> to find your perfect fit.
-      </div>
+      </section>
+      {/* Bangle Size Tips */}
+      <section className="bg-pink-50 p-8 md:p-12 rounded-3xl shadow-xl">
+        <h3 className="text-3xl font-semibold text-gray-800 mb-6 text-center">Pro Tips for Bangles</h3>
+        <ul className="max-w-3xl mx-auto list-disc list-inside text-gray-700 space-y-3">
+          <li>Use a flexible measuring tape around your knuckles at the widest part.</li>
+          <li>Compare with a bangle you already own and love.</li>
+          <li>Ensure there is enough movement for comfort without slipping off easily.</li>
+        </ul>
+      </section>
     </div>
   );
 }

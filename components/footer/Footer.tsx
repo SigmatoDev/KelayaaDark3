@@ -37,7 +37,7 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h3 className="font-semibold text-lg mb-4">Categories</h3>
             <ul className="space-y-2 text-sm">
-              {["Gold & Diamonds", "Silver", "Gem Stone", "Custom Design"].map(
+              {["Gold & Diamonds", "Silver", "Beads", "Custom Design"].map(
                 (item) => {
                   const getRoute = (label: string) => {
                     switch (label) {
@@ -45,8 +45,8 @@ const Footer = () => {
                         return "/search?materialType=gold";
                       case "Silver":
                         return "/search?materialType=silver";
-                      case "Gem Stone":
-                        return "/search?materialType=gem-stone";
+                      case "Beads":
+                        return "/search";
                       case "Custom Design":
                         return "/custom-design"; // corrected spelling
                       default:

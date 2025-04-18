@@ -30,8 +30,8 @@ const favourites: FavouriteItem[] = [
 
 export default function KelayaFavourites() {
   return (
-    <section className="max-w-7xl mx-auto px-4 py-16">
-     <h2 className="text-[22px] md:text-[36px] text-center font-normal mb-2 uppercase text-[#474747]">
+    <section className="max-w-7xl mx-auto px-4 mt-6">
+     <h2 className="text-[22px] md:text-[36px] text-center font-normal  uppercase text-[#474747]">
         Kelayaa
         <span className="bg-gradient-to-r from-[#f76999] to-[#fb8d92] bg-clip-text text-transparent ml-2">
         Favourites

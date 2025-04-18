@@ -102,7 +102,7 @@ const CategoryCard = ({ category }: { category: Category }) => {
 
 const CategoryGrid = () => {
   return (
-    <div className="px-4 mt-6 sm:mt-16 mx-auto md:w-[94%] flex items-center justify-center flex-col">
+    <div className="px-4 mt-6 sm:mt-10 mx-auto md:w-[94%] flex items-center justify-center flex-col">
       <h2 className="text-[22px] md:text-[36px] text-center font-normal mb-2 uppercase text-[#474747]">
         Explore Our
         <span className="bg-gradient-to-r from-[#EC4999] to-[#fb8d92] bg-clip-text text-transparent ml-2">

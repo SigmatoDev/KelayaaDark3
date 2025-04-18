@@ -14,8 +14,8 @@ import image1 from "../../public/images/featured/featured-11.webp";
 // import image2 from "../../public/images/featured/featured-2.webp";
 import image3 from "../../public/images/featured/featured-33.webp";
 import image4 from "../../public/images/featured/featured-36.webp";
-import image5 from "../../public/images/featured/featured-26.webp";
-import image6 from "../../public/images/featured/featured-42.webp";
+import image5 from "../../public/images/featured/featurad-31.webp";
+import image6 from "../../public/images/featured/featured3b.webp";
 import { Link } from "lucide-react";
 
 const images = [image1, image3, image4, image5, image6];
@@ -64,15 +64,15 @@ const Carousel = () => {
           <div className="absolute z-50 top-[40%] md:top-[60%] left-[10%] flex gap-2 flex-col">
             <div>
               <h2 className="text-white text-2xl md:text-5xl font-normal md:leading-[1.3]">
-              Celebrate Every Moment with  <br />
-               Pure, Elegant Gold
+                Celebrate Every Moment with <br />
+                Pure, Elegant Gold
               </h2>
               <p className="text-white text-[15px] py-2 md:text-xl">
-              Crafted with Love, Worn with Pride, Timelessly Beautiful.
+                Crafted with Love, Worn with Pride, Timelessly Beautiful.
               </p>
             </div>
 
-            <div className="flex md:gap-2 flex-col md:flex-row gap-4" >
+            <div className="flex md:gap-2 flex-col md:flex-row gap-4">
               <div className="w-[230px] h-[40px] bg-white hover:bg-transparent border border-transparent hover:border-white transition-all duration-500 group">
                 <a
                   href="/search"
