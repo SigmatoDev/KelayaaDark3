@@ -13,7 +13,7 @@ const ProductItems = async () => {
       {/* <h2 className="text-2xl text-center  font-semibold">
         EXPLORE OUR PRODUCTS
       </h2> */}
-      <h2 className="text-[20px] md:text-[38px] font-normal mb-2 mt-14 uppercase text-center text-[#474747]">
+      <h2 className="text-[20px] md:text-[38px] font-normal mb-2 mt-10 uppercase text-center text-[#474747]">
         NEW
         <span className="bg-gradient-to-r from-[#f76999] to-[#fb8d92] bg-clip-text text-transparent ml-2">
           ARRIVALS

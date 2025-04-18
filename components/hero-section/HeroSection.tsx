@@ -134,7 +134,7 @@ const HeroSection = () => {
   };
 
   return (
-    <div className=" xl:w-[95%] 2xl:w-[80%] mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mt-24">
+    <div className=" xl:w-[95%] 2xl:w-[80%] mx-auto grid grid-cols-1 md:grid-cols-2 gap-6 mt-10">
       {cards.map((card, index) => (
         <div
           key={index}

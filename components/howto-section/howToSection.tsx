@@ -5,28 +5,39 @@ const HowToSection = () => {
   const guides = [
     {
       title: "How to Select Birthstones",
-      description: "Discover how to choose birthstones by month and color — a beautiful guide inspired by nature.",
+      description:
+        "Discover how to choose birthstones by month and color — a beautiful guide inspired by nature.",
       image: "/images/howto/birthstone.webp",
       link: "/how-to-select-birth-stones",
     },
     {
       title: "Find Your Ring or Bangle Size",
-      description: "A helpful guide to accurately measure your ring or bracelet size. Includes printable charts & video guide.",
+      description:
+        "A helpful guide to accurately measure your ring or bracelet size. Includes printable charts & video guide.",
       image: "/images/howto/ringsize.webp",
       link: "/ring-bangle-size-guide",
     },
     {
       title: "Lab-Grown vs Natural Diamonds",
-      description: "Understand the difference between lab-grown and natural diamonds with CAD videos and expert tips.",
+      description:
+        "Understand the difference between lab-grown and natural diamonds with CAD videos and expert tips.",
       image: "/images/howto/lab-nature-grown.webp",
       link: "/labvsnatural",
     },
   ];
 
   return (
-    <div className="py-12 bg-white">
+    <div className="py-8 bg-white">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <h2 className="text-3xl font-semibold mb-8 text-gray-800 text-center ">How To Guides</h2>
+        {/* <h2 className="text-3xl font-semibold mb-8 text-gray-800 text-center ">
+          How To Guides
+        </h2> */}
+        <h2 className="text-[22px] md:text-[36px] text-center font-normal mb-8  uppercase text-[#474747]">
+          How TO
+          <span className="bg-gradient-to-r from-[#f76999] to-[#fb8d92] bg-clip-text text-transparent ml-2">
+            Guides
+          </span>
+        </h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {guides.map((guide, index) => (
             <Link
@@ -45,9 +56,15 @@ const HowToSection = () => {
                 <h3 className="text-xl font-semibold text-gray-800 mb-2 group-hover:text-pink-500 transition-colors duration-300">
                   {guide.title}
                 </h3>
-                <p className="text-sm text-gray-400 mb-4">{guide.description}</p>
+                <p className="text-sm text-gray-400 mb-4">
+                  {guide.description}
+                </p>
                 <span className="inline-flex items-center text-sm font-medium text-pink-500 group-hover:underline transition-all">
-                  Learn More <ArrowRight className="ml-1 transition-transform duration-300 group-hover:translate-x-1" size={16} />
+                  Learn More{" "}
+                  <ArrowRight
+                    className="ml-1 transition-transform duration-300 group-hover:translate-x-1"
+                    size={16}
+                  />
                 </span>
               </div>
             </Link>

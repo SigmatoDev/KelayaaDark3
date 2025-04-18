@@ -102,9 +102,9 @@ const HeroSectionCustomDesign = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 mt-12 sm:mt-16 lg:mt-24 w-[95%] xl:w-[90%] 2xl:w-[80%] mx-auto px-4 sm:px-6">
+    <div className="flex flex-col lg:flex-row gap-6 mt-16 sm:mt-16 lg:mt-16 w-[95%] xl:w-[90%] 2xl:w-[80%] mx-auto px-4 sm:px-6">
       {/* Column 1 — 50% width on desktop, full on mobile */}
-      <div className="w-full lg:w-1/2 mb-6 lg:mb-0">
+      <div className="w-full lg:w-1/2 lg:mb-0">
         {cards.map((card, index) => (
           <div
             key={index}
@@ -155,7 +155,7 @@ const HeroSectionCustomDesign = () => {
             className="relative w-full h-full overflow-hidden rounded-lg bg-[#EFEFEF] hover:bg-pink-50 cursor-pointer group-hover:scale-105 transition-all duration-300"
           >
             <Image
-              src="/images/categories/custom2.webp"
+              src="/images/menu/cd-sec1.webp"
               alt="Search Design"
               fill
               className="object-cover"
@@ -182,7 +182,7 @@ const HeroSectionCustomDesign = () => {
             className="relative w-full h-full overflow-hidden rounded-lg bg-[#EFEFEF] hover:bg-[#Dd91a6] cursor-pointer group-hover:scale-105 transition-all duration-300"
           >
             <Image
-              src="/images/categories/custom4.webp"
+              src="/images/menu/cd-sec2.webp"
               alt="Collections Design"
               fill
               className="object-cover"
