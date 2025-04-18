@@ -16,7 +16,7 @@ const Form = () => {
   const { data: session } = useSession();
 
   // params.get('callbackUrl') ||
-  
+
   let callbackUrl = "/";
   const router = useRouter();
 
@@ -37,7 +37,7 @@ const Form = () => {
       if (session?.user?.isAdmin) {
         router.push("/admin/dashboard"); // Redirect to admin dashboard if user is an admin
       } else {
-        router.push(callbackUrl); // Otherwise, redirect to the callback URL or home
+        router.push("/"); // Otherwise, redirect to the callback URL or home
       }
     }
   }, [callbackUrl, router, session, params]);

@@ -415,7 +415,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                 Delivery Information
               </h3>
               <p className="text-sm text-gray-600">
-                Products are usually delivered in{" "}
+                Products are delivered with in{" "}
                 <span className="font-medium text-gray-800">3 to 5 days</span>.
                 If currently unavailable, delivery may take{" "}
                 <span className="font-medium text-gray-800">14 to 21 days</span>
