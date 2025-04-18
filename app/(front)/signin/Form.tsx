@@ -14,43 +14,65 @@ type Inputs = {
 const Form = () => {
   const params = useSearchParams();
   const { data: session } = useSession();
-
-  // params.get('callbackUrl') ||
-
-  let callbackUrl = "/";
   const router = useRouter();
+
+  // Get the callback URL from the search params or set a default
+  let callbackUrl = params.get("callbackUrl") || "/";
+  console.log("Callback URL:", callbackUrl); // Log the callback URL
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitting },
-  } = useForm<Inputs>({
+  } = useForm({
     defaultValues: {
       email: "",
       password: "",
     },
   });
 
+  // Log session data for debugging
   useEffect(() => {
-    if (session && session.user) {
-      // Check if the user is an admin
-      if (session?.user?.isAdmin) {
-        router.push("/admin/dashboard"); // Redirect to admin dashboard if user is an admin
-      } else {
-        router.push("/"); // Otherwise, redirect to the callback URL or home
-      }
-    }
-  }, [callbackUrl, router, session, params]);
+    if (session) {
+      console.log("Session data:", session); // Log session data
+      if (session.user) {
+        // Log user details
+        console.log("User is logged in:", session.user);
 
-  const formSubmit: SubmitHandler<Inputs> = async (form) => {
+        // Check if the user is an admin
+        if (session.user.isAdmin) {
+          console.log("User is an admin, redirecting to /admin/dashboard");
+          router.push("/admin/dashboard"); // Redirect to admin dashboard if user is an admin
+        } else {
+          console.log(`User is not an admin, redirecting to ${callbackUrl}`);
+          router.push(callbackUrl); // Otherwise, redirect to the callback URL or home
+        }
+      }
+    } else {
+      console.log("No session found");
+    }
+  }, [session, callbackUrl, router]);
+
+  const formSubmit: SubmitHandler<any> = async (form) => {
     const { email, password } = form;
-    console.log("email", email, password);
-    signIn("credentials", {
+    console.log("Form submitted with email:", email, "and password:", password);
+
+    const result = await signIn("credentials", {
       email,
       password,
+      callbackUrl, // Pass the callback URL to the signIn function
     });
-  };
 
+    // Log the result of the signIn call
+    console.log("SignIn result:", result);
+
+    // Check if there was an error during sign-in
+    if (result?.error) {
+      console.log("SignIn failed:", result.error);
+    } else {
+      console.log("SignIn successful, redirecting...");
+    }
+  };
   return (
     <div className="card mx-auto my-4 max-w-sm bg-base-300">
       <div className="card-body">
