@@ -27,7 +27,7 @@ const FilterChip = ({
   <Link
     href={href}
     className={`inline-flex items-center ${
-      isClearAll ? "bg-gray-200 text-gray-700" : "bg-pink-100 text-pink-600"
+      isClearAll ? "bg-gray-200 text-gray-700" : "bg-pink-100 text-[#e688a2]"
     } rounded-full px-3 py-1 text-sm font-medium mr-2 mb-2`}
   >
     <span>{label}</span>
@@ -65,6 +65,7 @@ const FilterChips: React.FC<FilterChipsProps> = ({
       "price",
       "rating",
       "materialType",
+      "collectionType", // ✅ included collectionType
     ];
 
     if (multiFields.includes(omit) && valueToRemove) {
@@ -124,8 +125,10 @@ const FilterChips: React.FC<FilterChipsProps> = ({
           ? "Gold & Diamonds"
           : v.charAt(0).toUpperCase() + v.slice(1)
       )}
+
       {renderMultiFilterChips("productCategory", productCategory)}
       {renderMultiFilterChips("category", category)}
+
       {renderMultiFilterChips("price", price, (v) => {
         if (v.includes("+")) {
           const min = parseInt(v.replace("+", ""));
@@ -139,10 +142,16 @@ const FilterChips: React.FC<FilterChipsProps> = ({
 
       {renderMultiFilterChips("rating", rating, (v) => `${v} & up`)}
 
+      {renderMultiFilterChips(
+        "collectionType",
+        collectionType,
+        (v) => v.charAt(0).toUpperCase() + v.slice(1).replace(/-/g, " ")
+      )}
+
       {isAnyFilterApplied && (
         <FilterChip
           label="Clear All"
-          href="/search?q=all&productCategory=all&category=all&price=all&rating=all&sort=all&page=1&materialType=all"
+          href="/search?q=all&productCategory=all&category=all&price=all&rating=all&sort=all&page=1&materialType=all&collectionType=all"
           isClearAll
         />
       )}
@@ -151,4 +160,3 @@ const FilterChips: React.FC<FilterChipsProps> = ({
 };
 
 export default FilterChips;
-

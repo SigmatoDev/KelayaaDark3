@@ -27,7 +27,7 @@ const ClearAllFilters = () => {
     <div className="">
       <button
         onClick={handleClearAll}
-        className="text-sm text-pink-600 hover:underline"
+        className="text-sm text-[#e688a2] hover:underline"
       >
         Clear All Filters
       </button>

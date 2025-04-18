@@ -1,5 +1,6 @@
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/dbConnect";
+import BanglesProductModel from "@/lib/models/BanglesProductSchema";
 import GoldDiamondProductPricingModel from "@/lib/models/GoldDiamondProductsPricingDetails";
 import GoldPrice from "@/lib/models/GoldPriceSchema";
 import ProductModel from "@/lib/models/ProductModel";
@@ -22,16 +23,20 @@ export const GET = auth(async (req: any) => {
 
 // export const GET = auth(async (req: any) => {
 //   await dbConnect();
-//   console.log("🔄 Fetching products and sets from DB...");
+//   console.log(
+//     "🔄 Fetching products, sets, bangles, and gold prices from DB..."
+//   );
 
-//   const [products, sets, goldPricesList] = await Promise.all([
+//   const [products, sets, bangles, goldPricesList] = await Promise.all([
 //     ProductModel.find().sort({ createdAt: -1 }),
 //     SetsProductModel.find().sort({ createdAt: -1 }),
+//     BanglesProductModel.find().sort({ createdAt: -1 }), // Fetch Bangles products
 //     GoldPrice.find({}),
 //   ]);
 
 //   console.log(`✅ Retrieved ${products.length} products.`);
 //   console.log(`✅ Retrieved ${sets.length} sets.`);
+//   console.log(`✅ Retrieved ${bangles.length} bangles.`); // Log bangles count
 //   console.log(`✅ Retrieved ${goldPricesList.length} gold prices.`);
 
 //   const goldPriceMap = goldPricesList.reduce(
@@ -170,8 +175,64 @@ export const GET = auth(async (req: any) => {
 //     })
 //   );
 
+//   // 🔁 Update Bangles Products (Only Gold + KD prefixed codes)
+//   const updatedBangles = await Promise.all(
+//     bangles.map(async (bangle) => {
+//       const isGoldKD =
+//         bangle.materialType?.toLowerCase() === "gold" &&
+//         bangle.productCode?.toUpperCase().startsWith("KD");
+
+//       if (!isGoldKD) {
+//         return bangle.toObject(); // Skip non-gold or non-KD bangles
+//       }
+
+//       console.log(
+//         `🔍 Processing Bangle: ${bangle.name} (${bangle.productCode})`
+//       );
+
+//       const pricingDetails = await GoldDiamondProductPricingModel.findOne({
+//         productCode: bangle.productCode,
+//       });
+
+//       if (!pricingDetails) {
+//         console.log(`⚠️ No pricing details found for ${bangle.productCode}`);
+//         return bangle.toObject();
+//       }
+
+//       const goldPrice =
+//         goldPriceMap[bangle.goldPurity] ?? pricingDetails.goldPrice;
+//       const goldTotal = pricingDetails.grossWeight * goldPrice;
+//       const totalPrice =
+//         goldTotal + pricingDetails.makingCharge + pricingDetails.diamondTotal;
+
+//       await GoldDiamondProductPricingModel.findByIdAndUpdate(
+//         pricingDetails._id,
+//         {
+//           goldPrice,
+//           goldTotal,
+//           totalPrice,
+//         }
+//       );
+
+//       await BanglesProductModel.findByIdAndUpdate(bangle._id, {
+//         price: totalPrice,
+//       });
+
+//       console.log(
+//         `✅ Updated Bangle ${bangle.productCode} | Final Price: ₹${totalPrice}`
+//       );
+
+//       return {
+//         ...bangle.toObject(),
+//         goldPrice,
+//         goldTotal,
+//         price: totalPrice,
+//       };
+//     })
+//   );
+
 //   // ✅ Merge and sort all products by image presence
-//   const allProducts = [...updatedProducts, ...updatedSets];
+//   const allProducts = [...updatedProducts, ...updatedSets, ...updatedBangles];
 
 //   const sortedProducts = allProducts.sort((a, b) => {
 //     const hasImageA = a.image && a.image.startsWith("http");

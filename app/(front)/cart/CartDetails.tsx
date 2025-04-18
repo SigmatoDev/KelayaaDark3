@@ -9,6 +9,8 @@ import useCartService from "@/lib/hooks/useCartStore";
 import { Tag } from "lucide-react";
 import toast from "react-hot-toast";
 import EmptyCart from "./EmptyCart";
+import { useSession } from "next-auth/react";
+import SignInPopup from "@/components/signin/SignIn";
 
 const CartDetails = () => {
   const {
@@ -27,6 +29,9 @@ const CartDetails = () => {
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const { theme } = useLayoutService();
+  const { data: session } = useSession();
+  const userId = session?.user?.id;
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
 
   // const discount = itemsPrice >= 2500 ? itemsPrice * 0.1 : 0; // 10% discount on orders above ₹25,000
   const [couponInput, setCouponInput] = useState("");
@@ -51,13 +56,18 @@ const CartDetails = () => {
   };
 
   const handleProceedToCheckOut = () => {
+    if (!userId) {
+      setIsSignInOpen(true);
+      // toast.error("Please log in to manage wishlist");
+      return;
+    }
     router.push("/shipping");
     setTotalPriceAfterCheckout(totalPrice);
   };
 
   return (
-    <div className="mt-4 p-6 bg-white">
-      <h1 className="py-4 text-2xl font-semibold text-gray-900">
+    <div className="mt-4 p-6 bg-white w-[80%] mx-auto">
+      <h1 className="mt-4 mb-8 text-2xl text-center font-semibold text-gray-900">
         Shopping Cart
       </h1>
       {items.length === 0 ? (
@@ -71,15 +81,15 @@ const CartDetails = () => {
             {items.map((item) => (
               <div
                 key={item.slug}
-                className="grid grid-cols-3 gap-6 items-start border-b pb-4 mb-4"
+                className="grid grid-cols-3 gap-6 items-satrt justify-between border-b p-4 mb-4 bg-gray-100"
               >
-                <div className="flex justify-center">
+                <div className="flex">
                   <Image
                     src={item.image}
                     alt={item.name}
-                    width={120}
-                    height={120}
-                    className=""
+                    width={140}
+                    height={140}
+                    className="rounded-md"
                   />
                 </div>
 
@@ -88,14 +98,25 @@ const CartDetails = () => {
                     {item.name}
                   </h2>
                   <div className="flex space-x-2 text-sm">
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded">
-                      Size: {item?.size || 18}
-                    </span>
-                    <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded">
-                      Category: {item?.prodcutCategory || "Ring"}
+                    {
+                      item?.productCategory === "Rings" ? (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded">
+                          Size: {item?.ring_size || 18}{" "}
+                          {/* Assuming "ring_size" is the property */}
+                        </span>
+                      ) : item?.productCategory === "Bangles" ? (
+                        <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded">
+                          Size: {item?.size || 18}{" "}
+                          {/* Assuming "size" is the property for bangles */}
+                        </span>
+                      ) : null // Don't render anything for other categories
+                    }
+
+                    <span className="px-4 py-1 bg-[#f6e4e9] text-pink-500 rounded">
+                      {item?.productCategory || item?.productType}
                     </span>
                   </div>
-                  <div className="flex items-center border border-[#17183B] w-max">
+                  <div className="flex items-center border border-[#17183B] w-max mt-1">
                     <button
                       className="w-12 h-10 text-black text-2xl font-semibold flex items-center justify-center hover:bg-black hover:text-white transition-colors duration-200"
                       type="button"
@@ -119,39 +140,15 @@ const CartDetails = () => {
                 </div>
 
                 <div className="flex justify-end items-start">
-                  <span className="text-xl font-semibold text-gray-900">
-                    ₹ {item?.price?.toFixed(2)}
+                  <span className="text-md font-semibold text-gray-900">
+                    ₹{" "}
+                    {new Intl.NumberFormat("en-IN").format(
+                      Number(item?.price?.toFixed(2))
+                    )}
                   </span>
                 </div>
               </div>
             ))}
-
-            {/* Discounts & Offers Section */}
-            {itemsPrice >= 2500 && (
-              <>
-                <div className="text-pink-600 mb-2 flex items-center gap-2">
-                  <Tag className="w-5 h-5 text-pink-500" />
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    Discounts & Offers
-                  </h2>
-                </div>
-
-                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-400 mb-2">
-                  <span className="font-semibold">10% Instant Discount</span> on
-                  orders above ₹25,000.
-                </div>
-                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-400 mb-2">
-                  <span className="font-semibold">₹500 Off</span> on first order
-                  above ₹10,000. Use code:{" "}
-                  <span className="font-semibold">FIRST500</span>.
-                </div>
-                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-400 mb-2">
-                  <span className="font-semibold">₹200 Off</span> on orders
-                  above ₹5,000. Use code:{" "}
-                  <span className="font-semibold">WELCOME200</span>.
-                </div>
-              </>
-            )}
           </div>
 
           {/* Order Summary Section */}
@@ -180,9 +177,14 @@ const CartDetails = () => {
                 <span>Shipping:</span>
                 <span className="text-green-600">Free</span>
               </li>
-              <li className="flex justify-between text-sm font-semibold border-t pt-4">
+              <li className="flex justify-between text-xl font-semibold border-t pt-4">
                 <span>Total:</span>
-                <span>₹ {totalPrice.toFixed(2)}</span>
+                <span>
+                  ₹{" "}
+                  {new Intl.NumberFormat("en-IN").format(
+                    Number(totalPrice?.toFixed(2))
+                  )}
+                </span>
               </li>
             </ul>
 
@@ -230,8 +232,42 @@ const CartDetails = () => {
           </div>
         </div>
       )}
+
+      {/* Render SignInPopup and control its visibility */}
+      {isSignInOpen && (
+        <SignInPopup isOpen={isSignInOpen} setIsOpen={setIsSignInOpen} />
+      )}
     </div>
   );
 };
 
 export default CartDetails;
+
+{
+  /* Discounts & Offers Section
+            {itemsPrice >= 2500 && (
+              <>
+                <div className="text-pink-600 mb-2 flex items-center gap-2">
+                  <Tag className="w-5 h-5 text-pink-500" />
+                  <h2 className="text-lg font-semibold text-gray-900">
+                    Discounts & Offers
+                  </h2>
+                </div>
+
+                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-400 mb-2">
+                  <span className="font-semibold">10% Instant Discount</span> on
+                  orders above ₹25,000.
+                </div>
+                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-400 mb-2">
+                  <span className="font-semibold">₹500 Off</span> on first order
+                  above ₹10,000. Use code:{" "}
+                  <span className="font-semibold">FIRST500</span>.
+                </div>
+                <div className="bg-[#FFF6F8] p-3  border border-pink-300 text-pink-400 mb-2">
+                  <span className="font-semibold">₹200 Off</span> on orders
+                  above ₹5,000. Use code:{" "}
+                  <span className="font-semibold">WELCOME200</span>.
+                </div>
+              </>
+            )} */
+}

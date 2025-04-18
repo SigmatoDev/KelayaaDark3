@@ -117,7 +117,7 @@ const CategoryFilter = ({
                 id={checkboxId} // Unique ID for the checkbox
                 checked={isActive}
                 onChange={() => handleSelect(category)} // Allow for state toggle
-                className="accent-pink-500 w-4 h-4"
+                className="accent-pink-500  w-4 h-4"
               />
               <span className={`text-sm ${textStyle(isActive)}`}>
                 {category}
@@ -129,7 +129,7 @@ const CategoryFilter = ({
         {categories.length > 4 && (
           <button
             onClick={() => setShowMore((prev) => !prev)}
-            className="text-sm text-pink-600 hover:underline mt-2 ml-1"
+            className="text-sm text-[#e688a2] hover:underline mt-2 ml-1"
           >
             {showMore ? "Show Less" : `+ ${categories.length - 4} more`}
           </button>

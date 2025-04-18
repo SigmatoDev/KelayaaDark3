@@ -269,9 +269,9 @@ export const GET = auth(async (req: any) => {
         pricingDetails.diamondTotal;
 
       await ProductModel.findByIdAndUpdate(product._id, {
-        pricePerGram: pricingDetails.pricePerGram,
+        price_per_gram: pricingDetails.pricePerGram,
         goldPrice,
-        grossWeight: pricingDetails.grossWeight,
+        weight: pricingDetails.grossWeight,
         totalPrice: finalPrice,
         ring_size: pricingDetails?.ringSize,
         size: pricingDetails?.size,

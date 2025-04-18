@@ -26,6 +26,7 @@ import ProductItems, {
   ProductItemsSkeleton,
 } from "@/components/products/ProductItems";
 import ProductItem from "@/components/products/ProductItem";
+import SignInPopup from "@/components/signin/SignIn";
 
 interface Product {
   productType: string;
@@ -89,6 +90,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [isSignInOpen, setIsSignInOpen] = useState(false);
 
   // Zoom state for the image
   const [scale, setScale] = useState(1); // Initial scale of 1
@@ -131,7 +133,11 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
   }, [session, userId, product._id]);
 
   const toggleWishlist = async () => {
-    if (!userId) return alert("Please log in to add items to wishlist");
+    if (!userId) {
+      setIsSignInOpen(true);
+      // toast.error("Please log in to manage wishlist");
+      return;
+    }
 
     const response = await fetch("/api/wishlist", {
       method: "POST",
@@ -485,12 +491,12 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
               <FaWhatsapp size={14} />
             </a>
             {/* Native Share (Mobile) */}
-            {/* <button
+            <button
               onClick={handleNativeShare}
               className="text-sm underline text-pink-600 hover:text-pink-700"
             >
               More options
-            </button> */}
+            </button>
           </div>
         </div>
       </div>
@@ -508,6 +514,10 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             </div>
           </section>
         </div>
+      )}
+      {/* Render SignInPopup and control its visibility */}
+      {isSignInOpen && (
+        <SignInPopup isOpen={isSignInOpen} setIsOpen={setIsSignInOpen} />
       )}
     </>
   );

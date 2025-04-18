@@ -37,15 +37,34 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h3 className="font-semibold text-lg mb-4">Categories</h3>
             <ul className="space-y-2 text-sm">
-              {["Gold & Diamonds", "Silver", "Gem Stone", "Custom Design"].map((item) => (
-                <li
-                  key={item}
-                  onClick={() => router.push(`/${item.toLowerCase().replace(' & ', '-').replace(' ', '-')}`)}
-                  className="cursor-pointer hover:text-[#EC008C] transition"
-                >
-                  {item}
-                </li>
-              ))}
+              {["Gold & Diamonds", "Silver", "Gem Stone", "Custom Design"].map(
+                (item) => {
+                  const getRoute = (label: string) => {
+                    switch (label) {
+                      case "Gold & Diamonds":
+                        return "/search?materialType=gold";
+                      case "Silver":
+                        return "/search?materialType=silver";
+                      case "Gem Stone":
+                        return "/search?materialType=gem-stone";
+                      case "Custom Design":
+                        return "/custom-design"; // corrected spelling
+                      default:
+                        return "/";
+                    }
+                  };
+
+                  return (
+                    <li
+                      key={item}
+                      onClick={() => router.push(getRoute(item))}
+                      className="cursor-pointer hover:text-[#EC008C] transition"
+                    >
+                      {item}
+                    </li>
+                  );
+                }
+              )}
             </ul>
           </div>
 
@@ -53,10 +72,15 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h3 className="font-semibold text-lg mb-4">Advantage</h3>
             <ul className="space-y-2 text-sm">
-              {["Gold Saving scheme", "Gold Exchange", "Gold rates", "Refer a friend"].map((item) => (
+              {[
+                "Gold Saving scheme",
+                "Gold Exchange",
+                "Gold rates",
+                "Refer a friend",
+              ].map((item) => (
                 <li
                   key={item}
-                  onClick={() => router.push('/')}
+                  onClick={() => router.push("/")}
                   className="cursor-pointer hover:text-[#EC008C] transition"
                 >
                   {item}
@@ -69,10 +93,18 @@ const Footer = () => {
           <div className="text-center md:text-left">
             <h3 className="font-semibold text-lg mb-4">Quick Links</h3>
             <ul className="space-y-2 text-sm">
-              {["About Us", "Privacy Policy", "Terms", "Return Policy", "FAQs"].map((item) => (
+              {[
+                "About Us",
+                "Privacy Policy",
+                "Terms",
+                "Return Policy",
+                "FAQs",
+              ].map((item) => (
                 <li
                   key={item}
-                  onClick={() => router.push(`/${item.toLowerCase().replace(' ', '-')}`)}
+                  onClick={() =>
+                    router.push(`/${item.toLowerCase().replace(" ", "-")}`)
+                  }
                   className="cursor-pointer hover:text-[#EC008C] transition"
                 >
                   {item}
@@ -87,14 +119,20 @@ const Footer = () => {
             <ul className="space-y-2 text-sm">
               <li>Write To Us</li>
               <li>
-                <a href="tel:1800-1800-900" className="hover:text-[#EC008C] transition">
-                +91 9945000100 <br/>
-                +91 8431358078
+                <a
+                  href="tel:1800-1800-900"
+                  className="hover:text-[#EC008C] transition"
+                >
+                  +91 9945000100 <br />
+                  +91 8431358078
                 </a>
               </li>
               <li>
-                <a href="mailto:support@kelayaa.com" className="hover:text-[#EC008C] transition">
-                  support@kelayaa.com
+                <a
+                  href="mailto:info@kelayaa.com"
+                  className="hover:text-[#EC008C] transition"
+                >
+                  info@kelayaa.com
                 </a>
               </li>
             </ul>
@@ -106,15 +144,25 @@ const Footer = () => {
       <div className="w-full p-6 bg-[#282828] text-white">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex space-x-4">
-            <a href="#" aria-label="Facebook" className="hover:text-gray-300 transition">
+            <a
+              href="#"
+              aria-label="Facebook"
+              className="hover:text-gray-300 transition"
+            >
               <FaFacebook className="text-xl" />
             </a>
-            <a href="#" aria-label="Instagram" className="hover:text-gray-300 transition">
+            <a
+              href="#"
+              aria-label="Instagram"
+              className="hover:text-gray-300 transition"
+            >
               <FaInstagram className="text-xl" />
             </a>
-           ¸
+            ¸
           </div>
-          <p className="text-sm md:text-base">© {new Date().getFullYear()} Kelayaa</p>
+          <p className="text-sm md:text-base">
+            © {new Date().getFullYear()} Kelayaa
+          </p>
         </div>
       </div>
     </footer>

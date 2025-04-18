@@ -26,6 +26,7 @@ interface DesignFormData {
   appointmentDate: Date | null;
   personalConsultation: boolean;
   termsAccepted: boolean;
+  goldKarat: string;
 }
 
 const initialFormData: DesignFormData = {
@@ -43,6 +44,7 @@ const initialFormData: DesignFormData = {
   appointmentDate: null,
   personalConsultation: false,
   termsAccepted: false,
+  goldKarat: "",
 };
 
 // Jewelry type images (replace with your actual paths)
@@ -109,6 +111,33 @@ export default function CustomDesignForm() {
     Array<{ name: string; image: string }>
   >([]);
 
+  const [image, setImage] = useState<string | null>(null);
+
+  // Handle file change from the input
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string); // TypeScript requires casting here since FileReader returns 'string | ArrayBuffer'
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Handle drag and drop event
+  const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    const file = event.dataTransfer.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result as string); // Again casting the result as string
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   useEffect(() => {
     switch (formData.jewelryType) {
       case "Earrings":
@@ -137,6 +166,7 @@ export default function CustomDesignForm() {
       });
 
       const data = await response.json();
+      console.log("data", data);
 
       if (!response.ok)
         throw new Error(data.message || "Failed to submit design");
@@ -284,14 +314,19 @@ export default function CustomDesignForm() {
                       className="w-20 p-3 border border-gray-300 rounded-l focus:ring-2 focus:ring-[#EC4999]"
                     >
                       <option value="+91">+91</option>
-                      <option value="+1">+1</option>
+                      {/* <option value="+1">+1</option> */}
                     </select>
                     <input
                       type="tel"
                       value={formData.contactNumber}
-                      onChange={(e) =>
-                        handleChange("contactNumber", e.target.value)
-                      }
+                      onChange={(e) => {
+                        // Allow only numbers and limit the length to 10 digits
+                        const value = e.target.value;
+                        if (/^[0-9]{0,10}$/.test(value)) {
+                          // Matches numbers up to 10 digits
+                          handleChange("contactNumber", value);
+                        }
+                      }}
                       className="flex-1 p-3 border border-gray-300 rounded-r focus:ring-2 focus:ring-[#EC4999] focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-[#EC4999]"
                       placeholder="Phone Number"
                     />
@@ -314,6 +349,28 @@ export default function CustomDesignForm() {
                     <option value="Silver">Silver</option>
                   </select>
                 </div>
+
+                {/* Conditionally render the carat options for Gold */}
+                {formData.metalType === "Gold" && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      Gold Carat
+                    </label>
+                    <select
+                      value={formData.goldKarat}
+                      onChange={(e) =>
+                        handleChange("goldKarat", e.target.value)
+                      }
+                      className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:outline-none focus:ring-0 focus:ring-offset-0 focus:border-[#EC4999]"
+                    >
+                      <option value="">Select Carat</option>
+                      <option value="14k">14K</option>
+                      <option value="18k">18K</option>
+                      <option value="22k">22K</option>
+                      <option value="24k">24K</option>
+                    </select>
+                  </div>
+                )}
 
                 {formData.metalType === "Silver" && (
                   <div>
@@ -366,39 +423,6 @@ export default function CustomDesignForm() {
                   ))}
                 </div>
               </div>
-{/* 
-              {subtypes.length > 0 && (
-                <div className="mb-8">
-                  <label className="block text-sm font-medium text-gray-700 mb-3">
-                    {formData.jewelryType} Styles
-                  </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-                    {subtypes.map((subtype) => (
-                      <div
-                        key={subtype.name}
-                        onClick={() => handleChange("designType", subtype.name)}
-                        className={`cursor-pointer border rounded-lg overflow-hidden ${
-                          formData.designType === subtype.name
-                            ? "ring-2 ring-[#EC4999]"
-                            : ""
-                        }`}
-                      >
-                        <div className="relative aspect-square">
-                          <Image
-                            src={subtype.image}
-                            alt={subtype.name}
-                            fill
-                            className="object-co"
-                          />
-                        </div>
-                        <p className="text-center text-sm p-2">
-                          {subtype.name}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )} */}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                 <div>
@@ -449,40 +473,6 @@ export default function CustomDesignForm() {
               <h2 className="text-2xl font-bold text-[#333] mb-6">
                 Design Details
               </h2>
-
-              <div className="mb-8">
-                <label className="block text-sm font-medium text-gray-700 mb-3">
-                  Design Method
-                </label>
-                <div className="flex flex-col md:flex-row gap-4">
-                  <button
-                    onClick={() => handleChange("designMethod", "details")}
-                    className={`p-4 border-2 rounded-lg flex-1 text-left ${
-                      formData.designMethod === "details"
-                        ? "border-[#EC4999] bg-[#FFF6F6]"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <h3 className="font-medium mb-1">Describe in Details</h3>
-                    <p className="text-sm text-gray-600">
-                      Tell us about your design preferences
-                    </p>
-                  </button>
-                  <button
-                    onClick={() => handleChange("designMethod", "upload")}
-                    className={`p-4 border-2 rounded-lg flex-1 text-left ${
-                      formData.designMethod === "upload"
-                        ? "border-[#EC4999] bg-[#FFF6F6]"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <h3 className="font-medium mb-1">Upload Image/Reference</h3>
-                    <p className="text-sm text-gray-600">
-                      Upload a sketch or reference image
-                    </p>
-                  </button>
-                </div>
-              </div>
 
               <div className="mb-8">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -564,35 +554,58 @@ export default function CustomDesignForm() {
                 )}
               </div>
 
-              {formData.designMethod === "details" ? (
-                <div className="mb-8">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Design Details
-                  </label>
-                  <textarea
-                    value={formData.additionalDetails || ""}
-                    onChange={(e) =>
-                      handleChange("additionalDetails", e.target.value)
-                    }
-                    className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999] h-32"
-                    placeholder="Describe your design in detail..."
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Design Details
+                </label>
+                <textarea
+                  value={formData.additionalDetails || ""}
+                  onChange={(e) =>
+                    handleChange("additionalDetails", e.target.value)
+                  }
+                  className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999] h-32"
+                  placeholder="Describe your design in detail..."
+                />
+              </div>
+
+              <div className="mb-8">
+                <label className="block text-sm font-medium text-gray-700 mb-1">
+                  Upload Image
+                </label>
+                <div
+                  className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center"
+                  onDrop={handleDrop}
+                  onDragOver={(event) => event.preventDefault()} // Prevent default behavior for drag-over
+                >
+                  <p className="mb-2 text-gray-500">
+                    Drag & drop your image here or
+                  </p>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    id="file-upload"
                   />
-                </div>
-              ) : (
-                <div className="mb-8">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    Upload Image
+                  <label
+                    htmlFor="file-upload"
+                    className="bg-gray-100 px-4 py-2 rounded text-sm hover:bg-gray-200 transition cursor-pointer"
+                  >
+                    Browse Files
                   </label>
-                  <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                    <p className="mb-2 text-gray-500">
-                      Drag & drop your image here or
-                    </p>
-                    <button className="bg-gray-100 px-4 py-2 rounded text-sm hover:bg-gray-200 transition">
-                      Browse Files
-                    </button>
-                  </div>
+
+                  {/* Image Preview */}
+                  {image && (
+                    <div className="mt-4">
+                      <img
+                        src={image}
+                        alt="Preview"
+                        className="mx-auto max-w-full max-h-40 object-contain"
+                      />
+                    </div>
+                  )}
                 </div>
-              )}
+              </div>
 
               <div className="flex justify-between">
                 <button

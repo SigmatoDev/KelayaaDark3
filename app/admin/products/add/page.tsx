@@ -60,8 +60,8 @@ export default function ProductAddPage() {
       </div>
 
       {/* <ExcelUploader /> */}
-      {/* <UploadSetProductExcelFile /> */}
-      {/* <SetPricingUpload /> */}
+      <UploadSetProductExcelFile />
+      <SetPricingUpload />
     </AdminLayout>
   );
 }
