@@ -1,10 +1,10 @@
-import NextAuth from 'next-auth';
-import type { NextAuthConfig } from 'next-auth';
+import NextAuth from "next-auth";
+import type { NextAuthConfig } from "next-auth";
 
 const authConfig = {
   providers: [],
   callbacks: {
-    authorized({ request, auth }: any) {
+    async authorized({ request, auth }: any) {
       const protectedPaths = [
         /\/shipping/,
         /\/payment/,
@@ -14,8 +14,13 @@ const authConfig = {
         /\/admin/,
       ];
       const { pathname } = request.nextUrl;
-      if (protectedPaths.some((p) => p.test(pathname))) return !!auth;
-      return true;
+
+      // If auth exists, allow access to protected paths
+      if (protectedPaths.some((p) => p.test(pathname))) {
+        return !!auth?.user; // Make sure auth contains a user object
+      }
+
+      return true; // For non-protected paths, allow access
     },
   },
 } satisfies NextAuthConfig;
@@ -31,6 +36,6 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (favicon file)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    "/((?!api|_next/static|_next/image|favicon.ico).*)",
   ],
 };
