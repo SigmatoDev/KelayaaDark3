@@ -56,11 +56,11 @@ const CartDetails = () => {
   };
 
   const handleProceedToCheckOut = () => {
-    if (!userId) {
-      setIsSignInOpen(true);
-      // toast.error("Please log in to manage wishlist");
-      return;
-    }
+    // if (!userId) {
+    //   setIsSignInOpen(true);
+    //   // toast.error("Please log in to manage wishlist");
+    //   return;
+    // }
     router.push("/shipping");
     setTotalPriceAfterCheckout(totalPrice);
   };

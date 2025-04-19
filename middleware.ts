@@ -6,7 +6,7 @@ const authConfig = {
   callbacks: {
     async authorized({ request, auth }: any) {
       const protectedPaths = [
-        /\/shipping/,
+        // /\/shipping/,
         /\/payment/,
         /\/place-order/,
         /\/profile/,
