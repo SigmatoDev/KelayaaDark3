@@ -53,31 +53,31 @@ export const {
     }),
 
     // 🔗 Google OAuth
-    GoogleProvider({
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      allowDangerousEmailAccountLinking: true,
-      async profile(profile) {
-        await dbConnect();
+    // GoogleProvider({
+    //   clientId: process.env.GOOGLE_CLIENT_ID!,
+    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+    //   allowDangerousEmailAccountLinking: true,
+    //   async profile(profile) {
+    //     await dbConnect();
 
-        let user = await UserModel.findOne({ email: profile.email });
+    //     let user = await UserModel.findOne({ email: profile.email });
 
-        if (!user) {
-          user = await UserModel.create({
-            name: profile.name,
-            email: profile.email,
-            provider: "google",
-          });
-        }
+    //     if (!user) {
+    //       user = await UserModel.create({
+    //         name: profile.name,
+    //         email: profile.email,
+    //         provider: "google",
+    //       });
+    //     }
 
-        return {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin,
-        };
-      },
-    }),
+    //     return {
+    //       id: user._id.toString(),
+    //       name: user.name,
+    //       email: user.email,
+    //       isAdmin: user.isAdmin,
+    //     };
+    //   },
+    // }),
   ],
 
   pages: {
