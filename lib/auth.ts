@@ -102,8 +102,10 @@ export const {
     },
   
     async session({ session, token }) {
-      if (token) {
+      if (token?.id) {
         session.user.id = token.id as string;
+      }
+      if (token?.isAdmin !== undefined) {
         session.user.isAdmin = token.isAdmin as boolean;
       }
       return session;
@@ -114,7 +116,8 @@ export const {
       else if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
     }
-  },
+  }
+  ,
   
   
 
