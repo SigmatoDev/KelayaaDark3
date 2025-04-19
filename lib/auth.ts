@@ -20,37 +20,44 @@ export const {
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
-        await dbConnect();
-
-        if (!credentials?.email || !credentials?.password) {
-          throw new Error("Invalid credentials");
+        try {
+          await dbConnect();
+    
+          if (!credentials?.email || !credentials?.password) {
+            console.error("Missing email or password");
+            return null; // Instead of throwing
+          }
+    
+          const user = await UserModel.findOne({ email: credentials.email });
+    
+          if (!user || !user.password) {
+            console.error("User not found or password missing");
+            return null;
+          }
+    
+          const isValid = await bcrypt.compare(
+            credentials.password as string,
+            user.password
+          );
+    
+          if (!isValid) {
+            console.error("Password mismatch");
+            return null;
+          }
+    
+          return {
+            id: user._id.toString(),
+            name: user.name,
+            email: user.email,
+            isAdmin: user.isAdmin,
+          };
+        } catch (error) {
+          console.error("Authorize() failed:", error);
+          return null;
         }
-
-        const user = await UserModel.findOne({ email: credentials.email });
-
-        if (!user) {
-          throw new Error("No user found");
-        }
-
-        const isValid = await bcrypt.compare(
-          credentials.password as string,
-          user.password
-        );
-        
-
-        if (!isValid) {
-          throw new Error("Invalid password");
-        }
-
-        // ✅ Return a plain object (not raw mongoose document)
-        return {
-          id: user._id.toString(),
-          name: user.name,
-          email: user.email,
-          isAdmin: user.isAdmin,
-        };
-      },
-    }),
+      }
+    })
+    
 
     // 🔗 Google OAuth
     // GoogleProvider({
