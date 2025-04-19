@@ -33,9 +33,10 @@ export const {
         }
 
         const isValid = await bcrypt.compare(
-          credentials.password,
+          credentials.password as string,
           user.password
         );
+        
 
         if (!isValid) {
           throw new Error("Invalid password");
@@ -92,15 +93,23 @@ export const {
       }
       return token;
     },
-
+  
     async session({ session, token }) {
       if (token) {
-        session.user.id = token.id;
-        session.user.isAdmin = token.isAdmin;
+        session.user.id = token.id as string;
+        session.user.isAdmin = token.isAdmin as boolean;
       }
       return session;
     },
+  
+    async redirect({ url, baseUrl }) {
+      if (url.startsWith("/")) return `${baseUrl}${url}`;
+      else if (new URL(url).origin === baseUrl) return url;
+      return baseUrl;
+    }
   },
+  
+  
 
   secret: process.env.NEXTAUTH_SECRET,
   debug: true, // optional for debugging errors

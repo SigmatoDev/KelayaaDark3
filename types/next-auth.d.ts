@@ -4,12 +4,19 @@ declare module 'next-auth' {
   interface Session {
     user: {
       _id?: string | null;
+      id?: string | null;
       isAdmin?: boolean;
     } & DefaultSession['user'];
   }
 
-  export interface User extends DefaultUser {
+  interface User extends DefaultUser {
     _id?: string;
+    id?: string;
+    isAdmin?: boolean;
+  }
+
+  interface JWT {
+    id?: string;
     isAdmin?: boolean;
   }
 }
