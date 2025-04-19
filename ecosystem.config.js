@@ -7,7 +7,7 @@ module.exports = {
         env: {
           NODE_ENV: "production",
           NEXTAUTH_URL: "https://staging.kelayaa.com",
-          NEXTAUTH_SECRET: "MIwt4h2XCQoRZ/VyVeO97nBnpRJJvnGzb3C01OMtZHA=",  // put your actual secret here
+          NEXTAUTH_SECRET: "dXNjX2F1dGhfc2VjcmV0X2tleV9nZW5lcmF0ZWQ=",  // put your actual secret here
           NEXTAUTH_TRUST_HOST: "true",
         },
       },
