@@ -2,70 +2,107 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
 import CheckoutSteps from "@/components/checkout/CheckoutSteps";
 import useCartService from "@/lib/hooks/useCartStore";
 
 const Form = () => {
   const router = useRouter();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState("");
+  const [selectedPaymentType, setSelectedPaymentType] = useState<"Razorpay" | "CashOnDelivery">("Razorpay");
+  const [selectedRazorpayOption, setSelectedRazorpayOption] = useState<string>("Card");
 
-  const { savePaymentMethod, paymentMethod, shippingAddress } =
-    useCartService();
+  const { savePaymentMethod, paymentMethod, shippingAddress } = useCartService();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    savePaymentMethod(selectedPaymentMethod);
+
+    if (selectedPaymentType === "CashOnDelivery") {
+      savePaymentMethod("CashOnDelivery");
+    } else {
+      savePaymentMethod(`Razorpay - ${selectedRazorpayOption}`);
+    }
+
     router.push("/place-order");
   };
 
   useEffect(() => {
     if (!shippingAddress) {
-      return router.push("/shipping");
+      router.push("/shipping");
     }
-    setSelectedPaymentMethod(paymentMethod);
+    if (paymentMethod) {
+      if (paymentMethod.includes("CashOnDelivery")) {
+        setSelectedPaymentType("CashOnDelivery");
+      } else {
+        setSelectedPaymentType("Razorpay");
+      }
+    }
   }, [paymentMethod, router, shippingAddress]);
 
   return (
     <div>
       <CheckoutSteps current={2} />
-      <div className="card mx-auto my-4 max-w-sm bg-base-300">
-        <div className="card-body">
-          <h1 className="card-title">Payment Method</h1>
-          <form onSubmit={handleSubmit}>
-            {["Razorpay", "Stripe", "CashOnDelivery"].map((payment) => (
-              <div key={payment}>
-                <label className="label cursor-pointer">
-                  <span className="label-text">{payment}</span>
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    className="radio"
-                    value={payment}
-                    checked={selectedPaymentMethod === payment}
-                    onChange={() => setSelectedPaymentMethod(payment)}
-                  />
-                </label>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto my-8 p-6 bg-white shadow-md rounded-lg">
+        {/* Left - Payment Method Type */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold mb-2">Choose Payment Method</h2>
+          <div className="space-y-2">
+            {["Razorpay", "CashOnDelivery"].map((type) => (
+              <div key={type} className="flex items-center space-x-3">
+                <input
+                  type="radio"
+                  id={type}
+                  value={type}
+                  name="paymentType"
+                  checked={selectedPaymentType === type}
+                  onChange={() => setSelectedPaymentType(type as "Razorpay" | "CashOnDelivery")}
+                  className="radio radio-primary"
+                />
+                <label htmlFor={type} className="text-sm font-medium">{type === "CashOnDelivery" ? "Cash on Delivery (COD)" : "Pay with Razorpay"}</label>
               </div>
             ))}
-            <div className="my-2">
-              <button type="submit" className="btn text-white font-semibold bg-gradient-to-r from-pink-500 to-red-500 w-full">
-                Next
-              </button>
+          </div>
+        </div>
+
+        {/* Right - Razorpay Options */}
+        {selectedPaymentType === "Razorpay" && (
+          <div className="space-y-4">
+            <h2 className="text-xl font-semibold mb-2">Choose Razorpay Payment Option</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {["Card", "UPI", "Netbanking", "Wallet"].map((option) => (
+                <div key={option} className="flex items-center space-x-3">
+                  <input
+                    type="radio"
+                    id={option}
+                    value={option}
+                    name="razorpayOption"
+                    checked={selectedRazorpayOption === option}
+                    onChange={() => setSelectedRazorpayOption(option)}
+                    className="radio radio-secondary"
+                  />
+                  <label htmlFor={option} className="text-sm font-medium">{option}</label>
+                </div>
+              ))}
             </div>
-            <div className="my-2">
-              <button
-                type="button"
-                className="btn my-2 w-full"
-                onClick={() => router.back()}
-              >
-                Back
-              </button>
-            </div>
+          </div>
+        )}
+
+        {/* Buttons */}
+        <div className="col-span-2 mt-6">
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <button type="submit" className="btn bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold w-full">
+              Next
+            </button>
+            <button
+              type="button"
+              className="btn w-full"
+              onClick={() => router.back()}
+            >
+              Back
+            </button>
           </form>
         </div>
       </div>
     </div>
   );
 };
+
 export default Form;

@@ -14,11 +14,13 @@ const orderSchema = new mongoose.Schema({
   totalAmount: { type: Number, required: true },
   shippingAddress: {
     street: String,
+    landmark: String,
     city: String,
     state: String,
     postalCode: String,
     country: String,
   },
+  
   paymentStatus: {
     type: String,
     enum: ['pending', 'completed', 'failed'],

@@ -1,39 +1,54 @@
-import { auth } from '@/lib/auth';
-import dbConnect from '@/lib/dbConnect';
-import OrderModel from '@/lib/models/OrderModel';
-import { paypal } from '@/lib/paypal';
+import { auth } from "@/lib/auth";
+import dbConnect from "@/lib/dbConnect";
+import OrderModel from "@/lib/models/OrderModel";
 
 export const POST = auth(async (...request: any) => {
-  const [req, { params }] = request;
-  if (!req.auth) {
-    return Response.json(
-      { message: 'unauthorized' },
-      {
-        status: 401,
-      },
-    );
-  }
-  await dbConnect();
+  const [req] = request;
 
-  const order = await OrderModel.findById(params.id);
-  if (order) {
-    try {
-      const paypalOrder = await paypal.createOrder(order.totalPrice);
-      return Response.json(paypalOrder);
-    } catch (err: any) {
-      return Response.json(
-        { message: err.message },
-        {
-          status: 500,
-        },
-      );
+  if (!req.auth) {
+    return Response.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
+  try {
+    await dbConnect();
+
+    const body = await req.json();
+    console.log("🔥 Incoming order payload:", body);
+
+    const {
+      paymentMethod,
+      shippingAddress,
+      items,
+      itemsPrice,
+      taxPrice,
+      shippingPrice,
+      totalPrice,
+      paymentIntentId,
+    } = body;
+
+    if (!items || items.length === 0) {
+      return Response.json({ message: "No items to order" }, { status: 400 });
     }
-  } else {
-    return Response.json(
-      { message: 'Order not found' },
-      {
-        status: 404,
-      },
-    );
+
+    const order = await OrderModel.create({
+      user: req.auth.user.id,
+      items,
+      shippingAddress,
+      paymentMethod,
+      paymentIntentId,
+      itemsPrice,
+      taxPrice,
+      shippingPrice,
+      totalPrice,
+      isPaid: true,
+      paidAt: new Date(),
+    });
+
+    console.log("✅ Order Created:", order);
+
+    return Response.json({ order });
+  } catch (err: any) {
+    console.error("❌ Order creation error:", err);
+    return Response.json({ message: err.message || "Failed to create order" }, { status: 500 });
   }
 });

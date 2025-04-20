@@ -9,3 +9,11 @@
 .dropdown-button {
   @apply flex items-center w-full px-3 py-2 text-white bg-pink-700 hover:bg-pink-500 rounded-md;
 } 
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-in-out;
+}

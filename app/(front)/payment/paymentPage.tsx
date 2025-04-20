@@ -30,7 +30,7 @@ const PaymentPage = () => {
         amount={totalPrice} // Convert to cents
         customerName={`${shippingAddress.firstName} ${shippingAddress.lastName}`}
         customerAddress={{
-          line1: shippingAddress.streetAddress1,
+          line1: shippingAddress.address,
           line2: "", // Assuming shippingAddress doesn't contain line2
           city: shippingAddress.city,
           state: "", // Assuming shippingAddress doesn't have state

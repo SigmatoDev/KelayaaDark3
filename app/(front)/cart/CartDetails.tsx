@@ -32,6 +32,8 @@ const CartDetails = () => {
   const { data: session } = useSession();
   const userId = session?.user?.id;
   const [isSignInOpen, setIsSignInOpen] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState(false);
+
 
   // const discount = itemsPrice >= 2500 ? itemsPrice * 0.1 : 0; // 10% discount on orders above ₹25,000
   const [couponInput, setCouponInput] = useState("");
@@ -61,6 +63,7 @@ const CartDetails = () => {
     //   // toast.error("Please log in to manage wishlist");
     //   return;
     // }
+    setCheckoutLoading(true); // Show loader on button
     router.push("/shipping");
     setTotalPriceAfterCheckout(totalPrice);
   };
@@ -77,11 +80,11 @@ const CartDetails = () => {
       ) : (
         <div className="grid md:grid-cols-4 md:gap-6">
           {/* Product Details Section */}
-          <div className="md:col-span-3 bg-white p-4 shadow-sm">
+          <div className="md:col-span-3 bg-white p-4 shadow-sm bg-[#f5f5f5]">
             {items.map((item) => (
               <div
                 key={item.slug}
-                className="grid grid-cols-3 gap-6 items-satrt justify-between border-b p-4 mb-4 bg-gray-100"
+                className="grid grid-cols-3 gap-6 items-satrt justify-between border-b p-4 mb-4 bg-white"
               >
                 <div className="flex">
                   <Image
@@ -152,7 +155,7 @@ const CartDetails = () => {
           </div>
 
           {/* Order Summary Section */}
-          <div className="p-6 bg-gray-50 border border-[#17183B] ">
+          <div className="p-6 bg-gray-50 border border-[#eaeaea] ">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
               Order Summary
             </h2>
@@ -223,12 +226,23 @@ const CartDetails = () => {
             </div>
 
             <button
-              type="button"
-              className="w-full mt-6 py-3 text-[12px] text-white font-semibold bg-gradient-to-r from-[#Dd91a6] to-red-500"
-              onClick={() => handleProceedToCheckOut()}
-            >
-              PROCEED TO CHECKOUT
-            </button>
+  type="button"
+  disabled={checkoutLoading}
+  className={`w-full mt-6 py-3 text-[12px] text-white font-semibold bg-gradient-to-r from-[#Dd91a6] to-red-500 flex items-center justify-center`}
+  onClick={handleProceedToCheckOut}
+>
+  {checkoutLoading ? (
+    <div className="flex items-center space-x-2">
+      <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"></path>
+      </svg>
+      <span>Processing...</span>
+    </div>
+  ) : (
+    "PROCEED TO CHECKOUT"
+  )}
+</button>
           </div>
         </div>
       )}

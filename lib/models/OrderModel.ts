@@ -27,16 +27,14 @@ const orderSchema = new mongoose.Schema(
       createAccountAfterCheckout: { type: Boolean, default: false },
     },
     shippingAddress: {
-      firstName: { type: String, required: true },
-      lastName: { type: String, required: true },
-      streetAddress1: { type: String, required: true },
-      streetAddress2: { type: String },
-      streetAddress3: { type: String },
-      country: { type: String, required: true },
-      state: { type: String, required: true },
+      address: { type: String, required: true },
+      landmark: { type: String },
       city: { type: String, required: true },
+      state: { type: String, required: true },
       postalCode: { type: String, required: true },
+      country: { type: String, required: true },
     },
+    
     gstDetails: {
       hasGST: { type: Boolean, required: true },
       companyName: { type: String },
@@ -46,9 +44,8 @@ const orderSchema = new mongoose.Schema(
       sameAsShipping: { type: Boolean, default: true },
       firstName: { type: String },
       lastName: { type: String },
-      streetAddress1: { type: String },
-      streetAddress2: { type: String },
-      streetAddress3: { type: String },
+      address: { type: String },
+      landmark:{ type: String },
       country: { type: String },
       state: { type: String },
       city: { type: String },
@@ -123,9 +120,8 @@ export type OrderItem = {
 export type ShippingAddress = {
   firstName: string;
   lastName: string;
-  streetAddress1: string;
-  streetAddress2?: string;
-  streetAddress3?: string;
+  address: string;
+  landmark?: string;
   country: string;
   state: string;
   city: string;
@@ -136,9 +132,8 @@ export type BillingDetails = {
   sameAsShipping: boolean;
   firstName?: string;
   lastName?: string;
-  streetAddress1?: string;
-  streetAddress2?: string;
-  streetAddress3?: string;
+  address?: string;
+  landmark: string;
   country?: string;
   state?: string;
   city?: string;
@@ -148,8 +143,10 @@ export type BillingDetails = {
 export type PersonalInfo = {
   email: string;
   mobileNumber: string;
+  password?: string; // ✅ Added
   createAccountAfterCheckout: boolean;
 };
+
 
 export type GstDetails = {
   hasGST: boolean;

@@ -1,9 +1,28 @@
+"use client";
+
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { OrderItem, ShippingAddress } from "../models/OrderModel";
+import { ShippingAddress } from "../models/OrderModel";
 import { round2 } from "../utils";
 
-type CartItem = OrderItem & { basePrice: number };
+// ✅ Corrected CartItem with _id
+type CartItem = {
+  _id: string;
+  name: string;
+  slug: string;
+  qty: number;
+  price: number;
+  image: string;
+  color?: string;
+  size?: string;
+  productCode: string;
+  productType: string;
+  ring_size?: string;
+  countInStock: number;
+  productCategory: string;
+  category: string;
+  basePrice: number;
+};
 
 type Cart = {
   items: CartItem[];
@@ -12,7 +31,7 @@ type Cart = {
   taxPrice: number;
   shippingPrice: number;
   totalPrice: number;
-  totalPriceAfterCheckout: number; // ✅ NEW STATE
+  totalPriceAfterCheckout: number;
   totalCartQuantity: number;
   paymentMethod: string;
   shippingAddress: ShippingAddress;
@@ -39,15 +58,14 @@ const initialState: Cart = {
   taxPrice: 0,
   shippingPrice: 0,
   totalPrice: 0,
-  totalPriceAfterCheckout: 0, // ✅ INITIAL VALUE
+  totalPriceAfterCheckout: 0,
   totalCartQuantity: 0,
-  paymentMethod: "Stripe",
+  paymentMethod: "Razorpay",
   shippingAddress: {
     firstName: "",
     lastName: "",
-    streetAddress1: "",
-    streetAddress2: "",
-    streetAddress3: "",
+    address: "",
+    landmark: "",
     country: "",
     state: "",
     city: "",
@@ -115,7 +133,8 @@ const useCartService = () => {
     gstDetails,
     personalInfo,
 
-    increase: (item: OrderItem) => {
+    // Add item or increase quantity
+    increase: (item: CartItem) => {
       const exist = items.find((x) => x.slug === item.slug);
       const updatedCartItems = exist
         ? items.map((x) =>
@@ -125,7 +144,8 @@ const useCartService = () => {
       updateCart(updatedCartItems);
     },
 
-    decrease: (item: OrderItem) => {
+    // Decrease quantity or remove item
+    decrease: (item: CartItem) => {
       const exist = items.find((x) => x.slug === item.slug);
       if (!exist) return;
 
@@ -198,7 +218,7 @@ const useCartService = () => {
     },
 
     setTotalPriceAfterCheckout: (amount: number) => {
-      cartStore.setState({ totalPriceAfterCheckout: amount }); // ✅ NEW SETTER
+      cartStore.setState({ totalPriceAfterCheckout: amount });
     },
 
     clear: () => {
@@ -212,6 +232,7 @@ const useCartService = () => {
 
 export default useCartService;
 
+// ⛏ Internal function to update price
 const updateCart = (items: CartItem[]) => {
   const {
     itemsPrice: newItemsPrice,
@@ -236,6 +257,7 @@ const updateCart = (items: CartItem[]) => {
   });
 };
 
+// ⛏ Internal function to calculate cart total
 export const calcPrice = (items: CartItem[]) => {
   const itemsPrice = round2(
     items.reduce((acc, item) => acc + item.price * item.qty, 0)

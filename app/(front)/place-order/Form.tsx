@@ -123,7 +123,7 @@ const Form = () => {
               <h2 className="card-title">Shipping Address</h2>
               <p>{`${shippingAddress.firstName} ${shippingAddress.lastName}`}</p>
               <p>
-                {shippingAddress.streetAddress1}, {shippingAddress.city},{" "}
+                {shippingAddress.address}, {shippingAddress.city},{" "}
                 {shippingAddress.postalCode}, {shippingAddress.country}{" "}
               </p>
               <div>
