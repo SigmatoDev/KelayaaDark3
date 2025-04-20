@@ -1,7 +1,6 @@
 import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import GoogleProvider from "next-auth/providers/google";
 
 import dbConnect from "./dbConnect";
 import UserModel from "./models/UserModel";
@@ -10,9 +9,14 @@ export const {
   handlers: { GET, POST },
   auth,
 } = NextAuth({
-  trustHost: true,
+  trustHost: true, // ✅ Good
+
+  session: {
+    strategy: "jwt", // ✅ Needed, missing earlier
+    maxAge: 30 * 24 * 60 * 60, // (Optional) 30 days login valid
+  },
+
   providers: [
-    // 🔐 Credentials (Email & Password) Login
     CredentialsProvider({
       id: "credentials",
       name: "Credentials",
@@ -23,29 +27,34 @@ export const {
       async authorize(credentials) {
         try {
           await dbConnect();
-    
+      
           if (!credentials?.email || !credentials?.password) {
             console.error("Missing email or password");
-            return null; // Instead of throwing
-          }
-    
-          const user = await UserModel.findOne({ email: credentials.email });
-    
-          if (!user || !user.password) {
-            console.error("User not found or password missing");
             return null;
           }
-    
+      
+          const user = await UserModel.findOne({ email: credentials.email });
+      
+          if (!user) {
+            console.error("User not found");
+            return null;
+          }
+      
+          if (!user.password || typeof user.password !== "string") {
+            console.error("Invalid password stored for user");
+            return null;
+          }
+      
           const isValid = await bcrypt.compare(
-            credentials.password as string,
-            user.password
+            String(credentials.password),
+            String(user.password)
           );
-    
+      
           if (!isValid) {
             console.error("Password mismatch");
             return null;
           }
-    
+      
           return {
             id: user._id.toString(),
             name: user.name,
@@ -53,39 +62,12 @@ export const {
             isAdmin: user.isAdmin,
           };
         } catch (error) {
-          console.error("Authorize() failed:", error);
+          console.error("Authorize failed:", error);
           return null;
         }
       }
-    })
-    
-
-    // 🔗 Google OAuth
-    // GoogleProvider({
-    //   clientId: process.env.GOOGLE_CLIENT_ID!,
-    //   clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-    //   allowDangerousEmailAccountLinking: true,
-    //   async profile(profile) {
-    //     await dbConnect();
-
-    //     let user = await UserModel.findOne({ email: profile.email });
-
-    //     if (!user) {
-    //       user = await UserModel.create({
-    //         name: profile.name,
-    //         email: profile.email,
-    //         provider: "google",
-    //       });
-    //     }
-
-    //     return {
-    //       id: user._id.toString(),
-    //       name: user.name,
-    //       email: user.email,
-    //       isAdmin: user.isAdmin,
-    //     };
-    //   },
-    // }),
+      
+    }),
   ],
 
   pages: {
@@ -101,7 +83,7 @@ export const {
       }
       return token;
     },
-  
+
     async session({ session, token }) {
       if (token?.id) {
         session.user.id = token.id as string;
@@ -111,17 +93,30 @@ export const {
       }
       return session;
     },
-  
+
     async redirect({ url, baseUrl }) {
       if (url.startsWith("/")) return `${baseUrl}${url}`;
-      else if (new URL(url).origin === baseUrl) return url;
+      if (new URL(url).origin === baseUrl) return url;
       return baseUrl;
-    }
-  }
-  ,
-  
-  
+    },
+  },
 
-  secret: process.env.NEXTAUTH_SECRET,
-  debug: true, // optional for debugging errors
+  secret: process.env.NEXTAUTH_SECRET, // ✅ Must match between frontend and server
+
+  cookies: {
+    sessionToken: {
+      name:
+        process.env.NODE_ENV === "production"
+          ? "__Secure-authjs.session-token"
+          : "authjs.session-token",
+      options: {
+        httpOnly: true,
+        sameSite: "lax",
+        path: "/",
+        secure: process.env.NODE_ENV === "production",
+      },
+    },
+  },
+
+  debug: true, // ✅ Good for finding errors
 });
