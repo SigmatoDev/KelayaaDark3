@@ -122,7 +122,9 @@ export const {
   
   
 
-  secret: process.env.NEXTAUTH_SECRET,
+  // secret: process.env.NEXTAUTH_SECRET,
+
+  secret:"dXNjX2F1dGhfc2VjcmV0X2tleV9nZW5lcmF0ZWQ=",
 
   
   debug: true, // optional for debugging errors
