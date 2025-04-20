@@ -63,7 +63,11 @@ const Form = () => {
 
   useEffect(() => {
     if (sameAsShipping) {
-      setValue("billingDetails", { ...watch("shippingAddress"), sameAsShipping: true });
+      setValue("billingDetails", { 
+        ...watch("shippingAddress"), 
+        landmark: watch("shippingAddress.landmark") || "", 
+        sameAsShipping: true 
+      });
     }
   }, [sameAsShipping, setValue, watch]);
 
@@ -88,11 +92,18 @@ const Form = () => {
           setIsSignInPopupOpen(true);
           return;
         } else {
-          await signIn("credentials", {
+          const result = await signIn("credentials", {
             email: form.personalInfo.email,
             password: form.personalInfo.password || "guestpassword",
             redirect: false,
           });
+          
+          if (result?.ok) {
+            window.location.reload(); // ✅ force page reload after login
+          } else {
+            alert("Login failed. Please try again manually.");
+          }
+          
         }
       }
 
