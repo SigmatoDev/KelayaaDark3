@@ -5,8 +5,29 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Search, XIcon } from "lucide-react";
 import clsx from "clsx";
+import Image from "next/image"; // add this import at top
 
-const keywords = ["Gold", "Diamond", "Silver", "Special", "Ring", "Necklace", "Bracelet"];
+
+type ProductSuggestion = {
+  _id: string;
+  name: string;
+  category: string;
+  collectionType: string;
+  slug: string;
+  productCode: string;
+  image: string;
+};
+
+const popularKeywords = [
+  "Wedding Rings",
+  "Engagement Necklaces",
+  "Bridal Bangles",
+  "Anniversary Gifts",
+  "Diamond Earrings",
+  "Gold Bracelets",
+  "Silver Pendants",
+  "Customized Jewelry",
+];
 
 export const SearchBox = () => {
   const searchParams = useSearchParams();
@@ -16,19 +37,10 @@ export const SearchBox = () => {
   const [formQuery, setFormQuery] = useState(q);
   const [showSearch, setShowSearch] = useState(false);
   const [fadeOut, setFadeOut] = useState(false);
-  const [suggestions, setSuggestions] = useState<string[]>([]);
-  const [currentKeyword, setCurrentKeyword] = useState(keywords[0]);
+  const [suggestions, setSuggestions] = useState<ProductSuggestion[]>([]);
+  const [loading, setLoading] = useState(false);
 
   const searchRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    let index = 0;
-    const interval = setInterval(() => {
-      index = (index + 1) % keywords.length;
-      setCurrentKeyword(keywords[index]);
-    }, 2000);
-    return () => clearInterval(interval);
-  }, []);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -44,6 +56,27 @@ export const SearchBox = () => {
     };
   }, [showSearch]);
 
+  useEffect(() => {
+    if (formQuery.trim() === "") {
+      setSuggestions([]);
+      return;
+    }
+
+    const timeout = setTimeout(async () => {
+      try {
+        setLoading(true);
+        const res = await fetch(`/api/search-products?q=${encodeURIComponent(formQuery)}`);
+        const data = await res.json();
+        setSuggestions(data.products || []);
+      } catch (error) {
+        console.error("Error fetching products:", error);
+      } finally {
+        setLoading(false);
+      }
+    }, 300);
+    return () => clearTimeout(timeout);
+  }, [formQuery]);
+
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     handleCloseModal();
@@ -55,23 +88,21 @@ export const SearchBox = () => {
     setTimeout(() => {
       setShowSearch(false);
       setFadeOut(false);
+      setFormQuery("");
+      setSuggestions([]);
     }, 300);
   };
 
-  const handleChange = (val: string) => {
-    setFormQuery(val);
-    if (!val.trim()) return setSuggestions([]);
-    const filtered = keywords.filter((k) =>
-      k.toLowerCase().includes(val.toLowerCase())
-    );
-    setSuggestions(filtered);
+  const handleProductClick = (productCode: string) => {
+    handleCloseModal();
+    router.push(`/product/${productCode}`);
   };
 
-  const handlePillClick = (term: string) => {
-    setFormQuery(term);
-    setSuggestions([]);
-    handleSubmit();
+  const handlePillClick = (keyword: string) => {
+    handleCloseModal();
+    router.push(`/search?q=${encodeURIComponent(keyword)}&materialType=all&productCategory=all&price=all&rating=all&sort=newest&page=1&collectionType=all`);
   };
+  
 
   return (
     <>
@@ -88,62 +119,81 @@ export const SearchBox = () => {
               "opacity-0 pointer-events-none": fadeOut,
             }
           )}
-          style={{ position: "fixed" }}
         >
           <div className="w-full max-w-2xl p-4">
             <div
               ref={searchRef}
-              className="bg-white border border-black rounded-2xl p-6 shadow-xl relative animate-fadeZoom"
+              className="bg-white border border-black rounded-2xl p-8 shadow-xl relative animate-fadeZoom"
             >
               <button
                 onClick={handleCloseModal}
-                className="absolute top-3 right-3 text-gray-400"
+                className="absolute top-4 right-4 text-gray-400"
               >
-                <XIcon className="w-5 h-5" />
+                <XIcon className="w-6 h-6" />
               </button>
 
-              <form onSubmit={handleSubmit} className="flex flex-col space-y-4">
+              <form onSubmit={handleSubmit} className="flex flex-col space-y-6">
                 <input
                   type="text"
-                  placeholder={`Search in Kelayaa... ${currentKeyword}`}
+                  placeholder={`Search your dream jewelry...`}
                   value={formQuery}
-                  onChange={(e) => handleChange(e.target.value)}
+                  onChange={(e) => setFormQuery(e.target.value)}
                   autoFocus
-                  className="w-full border-b border-black text-sm py-2 px-2 placeholder-gray-500 focus:outline-none"
+                  className="w-full border-b-2 border-black text-lg py-4 px-3 placeholder-gray-500 focus:outline-none"
                 />
 
-                {suggestions.length > 0 && (
-                  <ul className="rounded-md border border-gray-300 max-h-48 overflow-y-auto">
-                    {suggestions.map((item, idx) => (
-                      <li
-                        key={idx}
-                        onClick={() => handlePillClick(item)}
-                        className="px-4 py-2 text-sm cursor-pointer hover:bg-gray-100"
-                      >
-                        {item}
-                      </li>
-                    ))}
+                {/* Suggestions */}
+                {loading && <div className="text-sm text-gray-400 mt-2">Loading...</div>}
+
+                {!loading && formQuery.trim() !== "" && suggestions.length > 0 && (
+                  <ul className="border rounded-md max-h-60 overflow-y-auto mt-2 text-sm">
+                    {suggestions.map((product) => (
+  <li
+    key={product._id}
+    onClick={() => handleProductClick(product.productCode)}
+    className="px-2 py-2 flex items-center gap-3 cursor-pointer hover:bg-gray-100"
+  >
+    {product.image && (
+      <div className="w-10 h-10 relative">
+        <Image
+          src={product.image}
+          alt={product.name}
+          fill
+          sizes="40px"
+          className="rounded-md object-cover"
+        />
+      </div>
+    )}
+    <div className="flex flex-col">
+      <div className="font-medium text-[12px]">{product.name}</div>
+      <div className="text-[10px] text-gray-400">
+        {product.category} | {product.collectionType}
+      </div>
+    </div>
+  </li>
+))}
+
                   </ul>
                 )}
 
-                <div className="flex flex-wrap gap-2 mt-1">
-                  {keywords.map((word, i) => (
-                    <span
-                      key={i}
-                      onClick={() => handlePillClick(word)}
-                      className="px-3 py-1 rounded-full border border-black text-xs text-black cursor-pointer hover:bg-black hover:text-white transition"
-                    >
-                      {word}
-                    </span>
-                  ))}
-                </div>
+                {/* Popular Search Pills */}
+                {formQuery.trim() === "" && (
+                  <>
+                  <p className="text-[13px] text-gray-500">Popular Searches</p>
+                  <div className="flex flex-wrap gap-2 mt-4">
+                    {popularKeywords.map((word, i) => (
+  <span
+    key={i}
+    onClick={() => handlePillClick(word)}
+    className="px-4 py-1 rounded-full border border-gray-500 text-[10px] text-gray-500 cursor-pointer hover:bg-black hover:text-white transition"
+  >
+    {word}
+  </span>
+))}
 
-                <button
-                  type="submit"
-                  className="bg-black text-white px-4 py-2 rounded-md self-start text-sm"
-                >
-                  Search
-                </button>
+                  </div>
+                  </>
+                )}
               </form>
             </div>
           </div>
