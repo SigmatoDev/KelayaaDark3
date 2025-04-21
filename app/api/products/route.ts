@@ -9,10 +9,22 @@ import SetsProductModel from "@/lib/models/SetsProductsModel";
 export const GET = auth(async (req: any) => {
   await dbConnect();
 
-  const products = await ProductModel.find().sort({ createdAt: -1 });
+  // Fetch from all three models
+  const [products, sets, bangles] = await Promise.all([
+    ProductModel.find().sort({ createdAt: -1 }),
+    SetsProductModel.find().sort({ createdAt: -1 }),
+    BanglesProductModel.find().sort({ createdAt: -1 }),
+  ]);
 
-  // Sort: products with valid image URLs (http/https) come first
-  const sortedProducts = products.sort((a, b) => {
+  // Merge all into one array
+  const allProducts = [
+    ...products.map((p) => ({ ...p.toObject(), type: "product" })),
+    ...sets.map((s) => ({ ...s.toObject(), type: "set" })),
+    ...bangles.map((b) => ({ ...b.toObject(), type: "bangle" })),
+  ];
+
+  // Optional: Sort by image presence
+  const sortedProducts = allProducts.sort((a, b) => {
     const hasImageA = a.image && a.image.startsWith("http");
     const hasImageB = b.image && b.image.startsWith("http");
     return Number(hasImageB) - Number(hasImageA);
