@@ -178,16 +178,7 @@ const getByProductCode = cache(
       productCode,
     }).lean()) as Product | null;
 
-    // ✅ 2. If found but no valid image, try alternate variant
-    if (product && !(product.image && product.image.startsWith("http"))) {
-      const alt = (await ProductModel.findOne({
-        productCode,
-        // image: { $regex: /^http/ },
-      }).lean()) as Product | null;
-      if (alt) product = alt;
-    }
-
-    // ✅ 3. If not found in ProductModel, check SetsProductModel (only gold sets)
+    // ✅ 2. If not found in ProductModel, check SetsProductModel (only gold sets)
     if (!product) {
       product = (await SetsProductModel.findOne({
         productCode,
@@ -195,23 +186,23 @@ const getByProductCode = cache(
         materialType: { $regex: /^gold$/i },
       }).lean()) as Product | null;
 
-      if (product && !(product.image && /^http/.test(product.image))) {
-        const altSet = (await SetsProductModel.findOne({
-          productCode,
-          // image: { $regex: /^http/ },
-        }).lean()) as Product | null;
+      if (product) return product; // Sets don't need pricing merge
+    }
 
-        return altSet || product;
-      }
-
-      return product; // Sets don't need pricing merge
+    // ✅ 3. If not found in SetsProductModel, check BanglesModel (only gold bangles)
+    if (!product) {
+      product = (await BanglesProductModel.findOne({
+        productCode,
+        productType: { $regex: /^bangles$/i },
+        materialType: { $regex: /^gold$/i },
+      }).lean()) as Product | null;
     }
 
     // ✅ 4. If product is gold and not a set, merge pricing info
-    const isGold = product.materialType === "gold";
-    const isSet = product.productType?.toLowerCase() === "sets";
+    const isGold = product?.materialType === "gold";
+    const isSet = product?.productType?.toLowerCase() === "sets";
 
-    if (isGold && !isSet) {
+    if (product && isGold && !isSet) {
       const pricing = (await GoldDiamondProductPricingModel.findOne({
         productCode,
       }).lean()) as GoldDiamondPricing | null;

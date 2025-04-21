@@ -324,7 +324,8 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             <p className="text-gray-600">Category</p>
             <p className="font-semibold">
               :{" "}
-              {product?.productType === "Sets"
+              {product?.productType === "Sets" ||
+              product?.productType === "Bangles"
                 ? product?.productType
                 : product?.productCategory}
             </p>

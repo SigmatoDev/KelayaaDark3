@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import ProductModel from "@/lib/models/ProductModel";
 import SetsProductModel from "@/lib/models/SetsProductsModel";
+import BanglesProductModel from "@/lib/models/BanglesProductSchema";
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,6 +23,11 @@ export async function POST(req: NextRequest) {
     // If not found, try from SetsProductModel
     if (!product) {
       product = await SetsProductModel.findOne({ productCode });
+    }
+
+    // If not found, try from SetsProductModel
+    if (!product) {
+      product = await BanglesProductModel.findOne({ productCode });
     }
 
     if (!product) {
