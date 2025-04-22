@@ -168,8 +168,5 @@ export const POST = auth(async (req: NextRequest) => {
 });
 
 // 🧩 Disable body parser
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const dynamic = "auto";
+// 'auto' | 'force-dynamic' | 'error' | 'force-static'
