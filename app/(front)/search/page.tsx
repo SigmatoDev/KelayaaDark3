@@ -162,20 +162,6 @@ export default async function SearchPage({
         <div className="p-0 m-0">
           <hr />
         </div>
-        <CollectionTypeFilter
-          collectionTypes={collectionTypes}
-          selectedCollectionType={collectionType}
-          q={q}
-          productCategory={productCategory}
-          price={price}
-          rating={rating}
-          sort={sort}
-          page={page}
-          materialType={materialType}
-        />
-        <div className="p-0 m-0">
-          <hr />
-        </div>
         <CategoryDropdown
           categories={
             (collectionType !== "all" || materialType !== "all") &&
@@ -230,6 +216,20 @@ export default async function SearchPage({
           materialType={materialType}
           collectionType={collectionType}
         />{" "}
+        <div className="p-0 m-0">
+          <hr />
+        </div>
+        <CollectionTypeFilter
+          collectionTypes={collectionTypes}
+          selectedCollectionType={collectionType}
+          q={q}
+          productCategory={productCategory}
+          price={price}
+          rating={rating}
+          sort={sort}
+          page={page}
+          materialType={materialType}
+        />
         <div className="p-0 m-0">
           <hr />
         </div>
