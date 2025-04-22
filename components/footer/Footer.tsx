@@ -70,24 +70,24 @@ const Footer = () => {
 
           {/* Column 3 - Advantage */}
           <div className="text-center md:text-left">
-            <h3 className="font-semibold text-lg mb-4">Advantage</h3>
-            <ul className="space-y-2 text-sm">
-              {[
-                "Gold Saving scheme",
-                "Gold Exchange",
-                "Gold rates",
-                "Refer a friend",
-              ].map((item) => (
-                <li
-                  key={item}
-                  onClick={() => router.push("/")}
-                  className="cursor-pointer hover:text-[#EC008C] transition"
-                >
-                  {item}
-                </li>
-              ))}
-            </ul>
-          </div>
+  <h3 className="font-semibold text-lg mb-4">Advantage</h3>
+  <ul className="space-y-2 text-sm">
+    {[
+      { name: "Size Guide", url: "/ring-bangle-size-guide" },
+      { name: "Gold rates", url: "/" },
+      { name: "Refer a friend", url: "/" },
+    ].map((item) => (
+      <li
+        key={item.name}
+        onClick={() => router.push(item.url)}
+        className="cursor-pointer hover:text-[#EC008C] transition"
+      >
+        {item.name}
+      </li>
+    ))}
+  </ul>
+</div>
+
 
           {/* Column 4 - Quick Links */}
           <div className="text-center md:text-left">
@@ -96,14 +96,14 @@ const Footer = () => {
               {[
                 "About Us",
                 "Privacy Policy",
-                "Terms",
+                "Terms and Conditions",
                 "Return Policy",
                 "FAQs",
               ].map((item) => (
                 <li
                   key={item}
                   onClick={() =>
-                    router.push(`/${item.toLowerCase().replace(" ", "-")}`)
+                    router.push(`/${item.toLowerCase().replace(/\s+/g, "-")}`)
                   }
                   className="cursor-pointer hover:text-[#EC008C] transition"
                 >
@@ -120,6 +120,14 @@ const Footer = () => {
               <li>Write To Us</li>
               <li>
                 <a
+                  href="mailto:info@kelayaa.com"
+                  className="hover:text-[#EC008C] transition"
+                >
+                  info@kelayaa.com
+                </a>
+              </li>
+              <li>
+                <a
                   href="tel:1800-1800-900"
                   className="hover:text-[#EC008C] transition"
                 >
@@ -127,14 +135,7 @@ const Footer = () => {
                   +91 8431358078
                 </a>
               </li>
-              <li>
-                <a
-                  href="mailto:info@kelayaa.com"
-                  className="hover:text-[#EC008C] transition"
-                >
-                  info@kelayaa.com
-                </a>
-              </li>
+          
             </ul>
           </div>
         </div>

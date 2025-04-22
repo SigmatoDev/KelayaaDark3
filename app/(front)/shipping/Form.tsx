@@ -99,7 +99,7 @@ const Form = () => {
           });
           
           if (result?.ok) {
-            window.location.reload(); // ✅ force page reload after login
+            // window.location.reload(); // ✅ force page reload after login
           } else {
             alert("Login failed. Please try again manually.");
           }

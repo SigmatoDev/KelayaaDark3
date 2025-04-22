@@ -18,16 +18,17 @@ type ProductSuggestion = {
   image: string;
 };
 
-const popularKeywords = [
-  "Wedding Rings",
-  "Engagement Necklaces",
-  "Bridal Bangles",
-  "Anniversary Gifts",
-  "Diamond Earrings",
-  "Gold Bracelets",
-  "Silver Pendants",
-  "Customized Jewelry",
-];
+const keywordRedirects: { [key: string]: string } = {
+  "Wedding Rings": "search?q=all&materialType=all&productCategory=Rings&category=all&price=all&rating=all&sort=newest&page=1",
+  "Engagement Necklaces": "search?q=all&productCategory=all&category=Necklace+and+Earrings&price=all&rating=all&sort=newest&page=1&materialType=all&collectionType=all",
+  "Bridal Bangles": "search?q=all&productCategory=Bangles&category=all&materialType=gold&price=all&rating=all&sort=newest&page=1",
+  "Anniversary Gifts": "search?q=all&productCategory=Sets&category=all&materialType=silver&price=all&rating=all&sort=newest&page=1",
+  "Diamond Earrings": "search?q=all&productCategory=Earrings&category=all&materialType=gold&price=all&rating=all&sort=newest&page=1",
+  "Gold Bracelets": "search?q=all&productCategory=Bracelets&category=all&materialType=gold&price=all&rating=all&sort=newest&page=1",
+  "Silver Pendants": "search?q=all&materialType=silver&productCategory=Pendants&category=all&price=all&rating=all&sort=newest&page=1",
+  "Customized Jewelry": "custom-design",
+};
+
 
 export const SearchBox = () => {
   const searchParams = useSearchParams();
@@ -79,9 +80,21 @@ export const SearchBox = () => {
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    
     handleCloseModal();
-    router.push(`/search?q=${formQuery}`);
+    
+    const trimmedQuery = formQuery.trim();
+    
+    // Check if query matches any keyword exactly
+    const matchedCategoryUrl = keywordRedirects[trimmedQuery];
+    
+    if (matchedCategoryUrl) {
+      router.push(matchedCategoryUrl);
+    } else {
+      router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+    }
   };
+  
 
   const handleCloseModal = () => {
     setFadeOut(true);
@@ -100,8 +113,16 @@ export const SearchBox = () => {
 
   const handlePillClick = (keyword: string) => {
     handleCloseModal();
-    router.push(`/search?q=${encodeURIComponent(keyword)}&materialType=all&productCategory=all&price=all&rating=all&sort=newest&page=1&collectionType=all`);
+    
+    const matchedCategoryUrl = keywordRedirects[keyword];
+    
+    if (matchedCategoryUrl) {
+      router.push(matchedCategoryUrl);
+    } else {
+      router.push(`/search?q=${encodeURIComponent(keyword)}&materialType=all&productCategory=all&price=all&rating=all&sort=newest&page=1&collectionType=all`);
+    }
   };
+  
   
 
   return (
@@ -120,10 +141,10 @@ export const SearchBox = () => {
             }
           )}
         >
-          <div className="w-full max-w-2xl p-4">
+          <div className="w-full max-w-2xl p-4 min-h-[600px]">
             <div
               ref={searchRef}
-              className="bg-white border border-black rounded-2xl p-8 shadow-xl relative animate-fadeZoom"
+              className="bg-white border border-black rounded-2xl p-8 shadow-xl relative animate-fadeZoom min-h-[500px]"
             >
               <button
                 onClick={handleCloseModal}
@@ -146,7 +167,7 @@ export const SearchBox = () => {
                 {loading && <div className="text-sm text-gray-400 mt-2">Loading...</div>}
 
                 {!loading && formQuery.trim() !== "" && suggestions.length > 0 && (
-                  <ul className="border rounded-md max-h-60 overflow-y-auto mt-2 text-sm">
+                  <ul className="border rounded-md max-h-80 overflow-y-auto mt-2 text-sm">
                     {suggestions.map((product) => (
   <li
     key={product._id}
@@ -181,7 +202,7 @@ export const SearchBox = () => {
                   <>
                   <p className="text-[13px] text-gray-500">Popular Searches</p>
                   <div className="flex flex-wrap gap-2 mt-4">
-                    {popularKeywords.map((word, i) => (
+                    {Object.keys(keywordRedirects).map((word, i) => (
   <span
     key={i}
     onClick={() => handlePillClick(word)}
