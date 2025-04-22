@@ -34,7 +34,7 @@ const SuccessPage = () => {
   const { trigger: placeOrder, isMutating: isPlacing } = useSWRMutation(
     `/api/orders`,
     async (url) => {
-      if (!session?.user?.id) {
+      if (!session?.user?._id) {
         toast.error("User session not found. Please login again.");
         return;
       }

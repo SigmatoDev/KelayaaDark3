@@ -74,8 +74,8 @@ const Footer = () => {
   <ul className="space-y-2 text-sm">
     {[
       { name: "Size Guide", url: "/ring-bangle-size-guide" },
-      { name: "Gold rates", url: "/" },
-      { name: "Refer a friend", url: "/" },
+      // { name: "Gold rates", url: "/" },
+      { name: "Refer a Friend", url: "/refer-friend" },
     ].map((item) => (
       <li
         key={item.name}
