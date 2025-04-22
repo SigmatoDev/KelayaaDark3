@@ -4,6 +4,7 @@ import { Types } from "mongoose";
 import Wishlist from "@/lib/models/WishList";
 import ProductModel from "@/lib/models/ProductModel";
 import SetsProductModel from "@/lib/models/SetsProductsModel";
+import BanglesProductModel from "@/lib/models/BanglesProductSchema";
 
 // ✅ Toggle Wishlist (Add/Remove)
 export async function POST(req: Request) {
@@ -11,7 +12,6 @@ export async function POST(req: Request) {
 
   try {
     const { userId, productId } = await req.json();
-    console.log("🆔 ids", userId, productId);
 
     if (!userId || !productId) {
       return NextResponse.json(
@@ -23,24 +23,23 @@ export async function POST(req: Request) {
     const userObjectId = new Types.ObjectId(userId);
     const productObjectId = new Types.ObjectId(productId);
 
-    // ✅ Check if product exists in either ProductModel or SetsProductModel
-    const [isProduct, isSet] = await Promise.all([
+    // ✅ Check if product exists in any model
+    const [isProduct, isSet, isBangle] = await Promise.all([
       ProductModel.exists({ _id: productObjectId }),
       SetsProductModel.exists({ _id: productObjectId }),
+      BanglesProductModel.exists({ _id: productObjectId }),
     ]);
 
-    if (!isProduct && !isSet) {
+    if (!isProduct && !isSet && !isBangle) {
       return NextResponse.json(
-        { message: "Product not found in either model" },
+        { message: "Product not found in any model" },
         { status: 404 }
       );
     }
 
-    // ✅ Find the user's wishlist
     let wishlist = await Wishlist.findOne({ userId: userObjectId });
 
     if (!wishlist) {
-      // ✅ Create new wishlist if not exists
       wishlist = await Wishlist.create({
         userId: userObjectId,
         productIds: [productObjectId],
@@ -52,20 +51,17 @@ export async function POST(req: Request) {
       );
     }
 
-    // ✅ Check if product already exists
     const productIndex = wishlist.productIds.findIndex((id: any) =>
       id.equals(productObjectId)
     );
 
     if (productIndex > -1) {
-      // ✅ Product exists, remove it
       wishlist.productIds.splice(productIndex, 1);
     } else {
-      // ✅ Product doesn't exist, add it
       wishlist.productIds.push(productObjectId);
     }
 
-    await wishlist.save(); // ✅ Save the changes
+    await wishlist.save();
 
     return NextResponse.json(
       {
@@ -77,7 +73,6 @@ export async function POST(req: Request) {
       { status: 200 }
     );
   } catch (error) {
-    console.error("❌ Wishlist POST Error:", error);
     return NextResponse.json(
       { message: "Internal server error", error: (error as Error).message },
       { status: 500 }
@@ -85,42 +80,40 @@ export async function POST(req: Request) {
   }
 }
 
-// ✅ Check Wishlist Status (For a Single Product)
-// ✅ Fetch Wishlist Details (for a user)
+// ✅ Get Wishlist for a user
 export async function GET(req: NextRequest) {
   try {
-    // 📌 Connect to database
     await dbConnect();
 
-    // 📌 Get and validate userId
     const userId = req.nextUrl.searchParams.get("userId");
     if (!userId) {
       return NextResponse.json({ message: "Missing userId" }, { status: 400 });
     }
-    const objectUserId = new Types.ObjectId(userId);
 
-    // 📌 Fetch wishlist for the user
+    const objectUserId = new Types.ObjectId(userId);
     const wishlist = await Wishlist.findOne({ userId: objectUserId });
-    if (!wishlist || !wishlist.productIds || wishlist.productIds.length === 0) {
-      return NextResponse.json([]);
+
+    if (!wishlist || wishlist.productIds.length === 0) {
+      return NextResponse.json({
+        status: true,
+        message: "Wishlist is empty",
+        products: [],
+      });
     }
 
-    // 📌 Convert productIds to ObjectId and reverse order
     const productIds = wishlist.productIds
       .slice()
       .reverse()
       .map((id: any) => (typeof id === "string" ? new Types.ObjectId(id) : id));
 
-    // 📌 Fetch products from both models
-    const [products, sets] = await Promise.all([
+    const [products, sets, bangles] = await Promise.all([
       ProductModel.find({ _id: { $in: productIds } }),
       SetsProductModel.find({ _id: { $in: productIds } }),
+      BanglesProductModel.find({ _id: { $in: productIds } }),
     ]);
 
-    // 📌 Combine all matching products
-    const all = [...products, ...sets];
+    const all = [...products, ...sets, ...bangles];
 
-    // 📌 Return response
     return NextResponse.json({
       status: true,
       message: "Wishlist fetched successfully",
@@ -128,13 +121,13 @@ export async function GET(req: NextRequest) {
     });
   } catch (err) {
     return NextResponse.json(
-      { message: "Internal Server Error" },
+      { message: "Internal Server Error", status: false },
       { status: 500 }
     );
   }
 }
 
-//remove from wishlist
+// ✅ Remove from wishlist
 export async function DELETE(req: Request) {
   await dbConnect();
   try {
@@ -159,7 +152,6 @@ export async function DELETE(req: Request) {
       );
     }
 
-    // Remove productId if it exists
     wishlist.productIds = wishlist.productIds.filter(
       (id: Types.ObjectId) => !id.equals(productObjectId)
     );
