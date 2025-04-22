@@ -25,13 +25,15 @@ interface WishlistResponse {
 }
 
 const Wishlist = () => {
-  const [wishlistData, setWishlistData] = useState<WishlistResponse | null>(null);
+  const [wishlistData, setWishlistData] = useState<WishlistResponse | null>(
+    null
+  );
   const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const userId = session?.user?._id;
   const router = useRouter();
   const pathname = usePathname();
   const hasFetchedRef = useRef(false);
-
+  console.log("userId", userId);
   useEffect(() => {
     const fetchWishlist = async () => {
       if (!userId || hasFetchedRef.current) return;
@@ -131,8 +133,12 @@ const Wishlist = () => {
                 className="flex flex-col flex-grow justify-between cursor-pointer"
                 onClick={() => handleNavigateToProduct(product?.productCode)}
               >
-                <h3 className="text-lg font-semibold text-gray-800">{product.name}</h3>
-                <p className="text-sm text-gray-600 mt-1 line-clamp-2">{product.description}</p>
+                <h3 className="text-lg font-semibold text-gray-800">
+                  {product.name}
+                </h3>
+                <p className="text-sm text-gray-600 mt-1 line-clamp-2">
+                  {product.description}
+                </p>
                 <p className="text-md font-semibold text-black my-2">
                   ₹
                   {new Intl.NumberFormat("en-IN", {
