@@ -1,0 +1,384 @@
+// const getByQuery = cache(
+//   async ({
+//     q,
+//     productCategory,
+//     category,
+//     sort,
+//     price,
+//     rating,
+//     page = "1",
+//     materialType,
+//     collectionType,
+//   }: {
+//     q: string;
+//     productCategory: string;
+//     category: string;
+//     price: string;
+//     rating: string;
+//     sort: string;
+//     page: string;
+//     materialType: string;
+//     collectionType: string;
+//   }) => {
+//     await dbConnect();
+
+//     const categories = await ProductModel.find()
+//       .distinct("productCategory")
+//       .lean();
+
+//     const queryFilter =
+//       q && q !== "all" ? { name: { $regex: q, $options: "i" } } : {};
+
+//     const categoryFilter =
+//       productCategory && productCategory !== "all"
+//         ? { productCategory: { $in: productCategory.split(",") } }
+//         : { productCategory: { $in: categories } };
+
+//     let categoryOnlyFilter = {};
+
+//     if (category && category !== "all") {
+//       const isGold =
+//         materialType && materialType.toLowerCase().includes("gold");
+
+//       const isSilver =
+//         materialType && materialType.toLowerCase().includes("silver");
+
+//       if (isGold || isSilver) {
+//         const isSubCategory = await ProductModel.exists({
+//           subCategories: { $regex: new RegExp(`^${category}$`, "i") },
+//         });
+
+//         categoryOnlyFilter = isSubCategory
+//           ? { subCategories: { $regex: new RegExp(`^${category}$`, "i") } }
+//           : { category: { $regex: new RegExp(`^${category}$`, "i") } };
+//       }
+//     }
+
+//     const ratingFilter =
+//       rating && rating !== "all" ? { rating: { $gte: Number(rating) } } : {};
+
+//     const decodedPrice = price;
+//     const priceFilter =
+//       decodedPrice && decodedPrice !== "all"
+//         ? decodedPrice.includes("-")
+//           ? {
+//               price: {
+//                 $gte: parseFloat(decodedPrice.split("-")[0]),
+//                 $lte: parseFloat(decodedPrice.split("-")[1]),
+//               },
+//             }
+//           : decodedPrice.includes("+")
+//             ? {
+//                 price: {
+//                   $gte: parseFloat(decodedPrice.replace("+", "")),
+//                 },
+//               }
+//             : {
+//                 price: parseFloat(decodedPrice),
+//               }
+//         : {};
+
+//     const materialTypeFilter =
+//       materialType && materialType !== "all"
+//         ? {
+//             materialType: {
+//               $in: materialType
+//                 .split(",")
+//                 .map((m) => new RegExp(`^${m}$`, "i")),
+//             },
+//           }
+//         : {};
+
+//     const collectionTypeFilter =
+//       collectionType && collectionType !== "all"
+//         ? {
+//             collectionType: {
+//               $in: collectionType
+//                 .split(",")
+//                 .map((ct) => new RegExp(`^${ct}$`, "i")),
+//             },
+//           }
+//         : {};
+
+//     const order: Record<string, 1 | -1> =
+//       sort === "lowest"
+//         ? { price: 1 }
+//         : sort === "highest"
+//           ? { price: -1 }
+//           : sort === "toprated"
+//             ? { rating: -1 }
+//             : { _id: -1 };
+
+//     // Handle collection-specific search
+//     if (productCategory?.toLowerCase() === "collections") {
+//       const collectionQuery: any = {
+//         collectionType: { $exists: true, $ne: null },
+//       };
+
+//       if (collectionType && collectionType !== "all") {
+//         collectionQuery.collectionType = {
+//           $in: collectionType
+//             .split(",")
+//             .map((ct) => new RegExp(`^${ct}$`, "i")),
+//         };
+//       }
+
+//       if (q && q !== "all") {
+//         collectionQuery.name = { $regex: q, $options: "i" };
+//       }
+
+//       if (rating && rating !== "all") {
+//         collectionQuery.rating = { $gte: Number(rating) };
+//       }
+
+//       if (decodedPrice && decodedPrice !== "all") {
+//         if (decodedPrice.includes("-")) {
+//           collectionQuery.price = {
+//             $gte: parseFloat(decodedPrice.split("-")[0]),
+//             $lte: parseFloat(decodedPrice.split("-")[1]),
+//           };
+//         } else if (decodedPrice.includes("+")) {
+//           collectionQuery.price = {
+//             $gte: parseFloat(decodedPrice.replace("+", "")),
+//           };
+//         } else {
+//           collectionQuery.price = parseFloat(decodedPrice);
+//         }
+//       }
+
+//       let products = await ProductModel.find(collectionQuery)
+//         .sort(order)
+//         .lean();
+
+//       products = products.filter(
+//         (p) =>
+//           typeof p.price === "number" &&
+//           p.price > 0 &&
+//           typeof p.name === "string" &&
+//           p.name.trim() !== "" &&
+//           typeof p.productCode === "string" &&
+//           p.productCode.trim() !== ""
+//       );
+
+//       const countProducts = products.length;
+
+//       const paginatedProducts = products.slice(
+//         PAGE_SIZE * (Number(page) - 1),
+//         PAGE_SIZE * Number(page)
+//       );
+
+//       return {
+//         products: paginatedProducts as unknown as Product[],
+//         countProducts,
+//         page,
+//         pages: Math.ceil(countProducts / PAGE_SIZE),
+//         categories,
+//       };
+//     }
+
+//     // Main query from ProductModel
+//     let products = await ProductModel.aggregate([
+//       {
+//         $match: {
+//           ...queryFilter,
+//           ...categoryFilter,
+//           ...categoryOnlyFilter,
+//           ...priceFilter,
+//           ...ratingFilter,
+//           ...materialTypeFilter,
+//           ...collectionTypeFilter,
+//         },
+//       },
+//     ]);
+
+//     const shouldAddGoldSets =
+//       productCategory?.toLowerCase() === "sets" &&
+//       materialType?.toLowerCase().includes("gold");
+
+//     const shouldAddGoldBangles =
+//       productCategory?.toLowerCase() === "bangles" &&
+//       materialType?.toLowerCase().includes("gold");
+
+//     const shouldAddGoldBanglePairs =
+//       productCategory?.toLowerCase() === "bangle pair" &&
+//       materialType?.toLowerCase().includes("gold");
+
+//     const isDefaultSearch =
+//       (!productCategory || productCategory === "all") &&
+//       (!category || category === "all") &&
+//       (!materialType || materialType === "all") &&
+//       (!price || price === "all") &&
+//       (!rating || rating === "all") &&
+//       (!q || q === "all");
+
+//     // Debugging the shouldAddGoldBanglePairs condition
+//     console.log("Should Add Gold Bangle Pairs:", shouldAddGoldBanglePairs);
+//     console.log("Is Default Search:", isDefaultSearch);
+
+//     if (shouldAddGoldSets || isDefaultSearch) {
+//       const setQuery: any = {
+//         materialType: /gold/i,
+//         productType: /sets/i,
+//       };
+
+//       if (collectionType && collectionType !== "all") {
+//         setQuery.collectionType = {
+//           $in: collectionType
+//             .split(",")
+//             .map((ct) => new RegExp(`^${ct}$`, "i")),
+//         };
+//       }
+
+//       if (category && category !== "all") {
+//         setQuery.subCategories = category;
+//       }
+
+//       if (q && q !== "all") {
+//         setQuery.name = { $regex: q, $options: "i" };
+//       }
+
+//       if (rating && rating !== "all") {
+//         setQuery.rating = { $gte: Number(rating) };
+//       }
+
+//       if (decodedPrice && decodedPrice !== "all") {
+//         if (decodedPrice.includes("-")) {
+//           setQuery.price = {
+//             $gte: parseFloat(decodedPrice.split("-")[0]),
+//             $lte: parseFloat(decodedPrice.split("-")[1]),
+//           };
+//         } else if (decodedPrice.includes("+")) {
+//           setQuery.price = {
+//             $gte: parseFloat(decodedPrice.replace("+", "")),
+//           };
+//         } else {
+//           setQuery.price = parseFloat(decodedPrice);
+//         }
+//       }
+
+//       const setProducts = await SetsProductModel.find(setQuery)
+//         .sort(order)
+//         .lean();
+
+//       products = [...products, ...setProducts];
+//     }
+
+//     if (shouldAddGoldBangles || isDefaultSearch) {
+//       const banglesQuery: any = {
+//         materialType: /gold/i,
+//         productType: /bangles/i, // Ensure it only targets regular bangles
+//       };
+
+//       if (collectionType && collectionType !== "all") {
+//         banglesQuery.collectionType = {
+//           $in: collectionType
+//             .split(",")
+//             .map((ct) => new RegExp(`^${ct}$`, "i")),
+//         };
+//       }
+
+//       if (category && category !== "all") {
+//         banglesQuery.subCategories = {
+//           $regex: new RegExp(`^${category}$`, "i"),
+//         };
+//       }
+
+//       if (q && q !== "all") {
+//         banglesQuery.name = { $regex: q, $options: "i" };
+//       }
+
+//       if (rating && rating !== "all") {
+//         banglesQuery.rating = { $gte: Number(rating) };
+//       }
+
+//       if (decodedPrice && decodedPrice !== "all") {
+//         if (decodedPrice.includes("-")) {
+//           banglesQuery.price = {
+//             $gte: parseFloat(decodedPrice.split("-")[0]),
+//             $lte: parseFloat(decodedPrice.split("-")[1]),
+//           };
+//         } else if (decodedPrice.includes("+")) {
+//           banglesQuery.price = {
+//             $gte: parseFloat(decodedPrice.replace("+", "")),
+//           };
+//         } else {
+//           banglesQuery.price = parseFloat(decodedPrice);
+//         }
+//       }
+
+//       const banglesProducts = await BanglesProductModel.find(banglesQuery)
+//         .sort(order)
+//         .lean();
+
+//       console.log("Bangles Products:", banglesProducts); // Debugging
+
+//       products = [...products, ...banglesProducts];
+//     }
+
+//     // Adding the "Bangle Pair" filtering logic
+//     if (shouldAddGoldBanglePairs || isDefaultSearch) {
+//       const banglePairQuery: any = {
+//         materialType: /gold/i,
+//         productType: /bangle pair/i, // Ensure it only targets bangle pair products
+//       };
+
+//       if (collectionType && collectionType !== "all") {
+//         banglePairQuery.collectionType = {
+//           $in: collectionType
+//             .split(",")
+//             .map((ct) => new RegExp(`^${ct}$`, "i")),
+//         };
+//       }
+
+//       if (category && category !== "all") {
+//         banglePairQuery.subCategories = {
+//           $regex: new RegExp(`^${category}$`, "i"),
+//         };
+//       }
+
+//       if (q && q !== "all") {
+//         banglePairQuery.name = { $regex: q, $options: "i" };
+//       }
+
+//       if (rating && rating !== "all") {
+//         banglePairQuery.rating = { $gte: Number(rating) };
+//       }
+
+//       if (decodedPrice && decodedPrice !== "all") {
+//         if (decodedPrice.includes("-")) {
+//           banglePairQuery.price = {
+//             $gte: parseFloat(decodedPrice.split("-")[0]),
+//             $lte: parseFloat(decodedPrice.split("-")[1]),
+//           };
+//         } else if (decodedPrice.includes("+")) {
+//           banglePairQuery.price = {
+//             $gte: parseFloat(decodedPrice.replace("+", "")),
+//           };
+//         } else {
+//           banglePairQuery.price = parseFloat(decodedPrice);
+//         }
+//       }
+
+//       const banglePairProducts = await BanglesProductModel.find(banglePairQuery)
+//         .sort(order)
+//         .lean();
+
+//       products = [...products, ...banglePairProducts];
+//     }
+
+//     const countProducts = products.length;
+
+//     const paginatedProducts = products.slice(
+//       PAGE_SIZE * (Number(page) - 1),
+//       PAGE_SIZE * Number(page)
+//     );
+
+//     return {
+//       products: paginatedProducts as unknown as Product[],
+//       countProducts,
+//       page,
+//       pages: Math.ceil(countProducts / PAGE_SIZE),
+//       categories,
+//     };
+//   }
+// );

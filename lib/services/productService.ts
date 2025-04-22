@@ -583,7 +583,7 @@ const getByQuery = cache(
     rating,
     page = "1",
     materialType,
-    collectionType,
+    collectionType, // still accepted, but not used anymore
   }: {
     q: string;
     productCategory: string;
@@ -609,24 +609,15 @@ const getByQuery = cache(
         ? { productCategory: { $in: productCategory.split(",") } }
         : { productCategory: { $in: categories } };
 
+    // ✅ FIXED: Always check both category and subCategories
     let categoryOnlyFilter = {};
-
     if (category && category !== "all") {
-      const isGold =
-        materialType && materialType.toLowerCase().includes("gold");
-
-      const isSilver =
-        materialType && materialType.toLowerCase().includes("silver");
-
-      if (isGold || isSilver) {
-        const isSubCategory = await ProductModel.exists({
-          subCategories: { $regex: new RegExp(`^${category}$`, "i") },
-        });
-
-        categoryOnlyFilter = isSubCategory
-          ? { subCategories: { $regex: new RegExp(`^${category}$`, "i") } }
-          : { category: { $regex: new RegExp(`^${category}$`, "i") } };
-      }
+      categoryOnlyFilter = {
+        $or: [
+          { category: { $regex: new RegExp(`^${category}$`, "i") } },
+          { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
+        ],
+      };
     }
 
     const ratingFilter =
@@ -664,17 +655,6 @@ const getByQuery = cache(
           }
         : {};
 
-    const collectionTypeFilter =
-      collectionType && collectionType !== "all"
-        ? {
-            collectionType: {
-              $in: collectionType
-                .split(",")
-                .map((ct) => new RegExp(`^${ct}$`, "i")),
-            },
-          }
-        : {};
-
     const order: Record<string, 1 | -1> =
       sort === "lowest"
         ? { price: 1 }
@@ -684,74 +664,6 @@ const getByQuery = cache(
             ? { rating: -1 }
             : { _id: -1 };
 
-    // Handle collection-specific search
-    if (productCategory?.toLowerCase() === "collections") {
-      const collectionQuery: any = {
-        collectionType: { $exists: true, $ne: null },
-      };
-
-      if (collectionType && collectionType !== "all") {
-        collectionQuery.collectionType = {
-          $in: collectionType
-            .split(",")
-            .map((ct) => new RegExp(`^${ct}$`, "i")),
-        };
-      }
-
-      if (q && q !== "all") {
-        collectionQuery.name = { $regex: q, $options: "i" };
-      }
-
-      if (rating && rating !== "all") {
-        collectionQuery.rating = { $gte: Number(rating) };
-      }
-
-      if (decodedPrice && decodedPrice !== "all") {
-        if (decodedPrice.includes("-")) {
-          collectionQuery.price = {
-            $gte: parseFloat(decodedPrice.split("-")[0]),
-            $lte: parseFloat(decodedPrice.split("-")[1]),
-          };
-        } else if (decodedPrice.includes("+")) {
-          collectionQuery.price = {
-            $gte: parseFloat(decodedPrice.replace("+", "")),
-          };
-        } else {
-          collectionQuery.price = parseFloat(decodedPrice);
-        }
-      }
-
-      let products = await ProductModel.find(collectionQuery)
-        .sort(order)
-        .lean();
-
-      products = products.filter(
-        (p) =>
-          typeof p.price === "number" &&
-          p.price > 0 &&
-          typeof p.name === "string" &&
-          p.name.trim() !== "" &&
-          typeof p.productCode === "string" &&
-          p.productCode.trim() !== ""
-      );
-
-      const countProducts = products.length;
-
-      const paginatedProducts = products.slice(
-        PAGE_SIZE * (Number(page) - 1),
-        PAGE_SIZE * Number(page)
-      );
-
-      return {
-        products: paginatedProducts as unknown as Product[],
-        countProducts,
-        page,
-        pages: Math.ceil(countProducts / PAGE_SIZE),
-        categories,
-      };
-    }
-
-    // Main query from ProductModel
     let products = await ProductModel.aggregate([
       {
         $match: {
@@ -761,7 +673,6 @@ const getByQuery = cache(
           ...priceFilter,
           ...ratingFilter,
           ...materialTypeFilter,
-          ...collectionTypeFilter,
         },
       },
     ]);
@@ -786,26 +697,17 @@ const getByQuery = cache(
       (!rating || rating === "all") &&
       (!q || q === "all");
 
-    // Debugging the shouldAddGoldBanglePairs condition
-    console.log("Should Add Gold Bangle Pairs:", shouldAddGoldBanglePairs);
-    console.log("Is Default Search:", isDefaultSearch);
-
     if (shouldAddGoldSets || isDefaultSearch) {
       const setQuery: any = {
         materialType: /gold/i,
         productType: /sets/i,
       };
 
-      if (collectionType && collectionType !== "all") {
-        setQuery.collectionType = {
-          $in: collectionType
-            .split(",")
-            .map((ct) => new RegExp(`^${ct}$`, "i")),
-        };
-      }
-
       if (category && category !== "all") {
-        setQuery.subCategories = category;
+        setQuery.$or = [
+          { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
+          { category: { $regex: new RegExp(`^${category}$`, "i") } },
+        ];
       }
 
       if (q && q !== "all") {
@@ -841,21 +743,14 @@ const getByQuery = cache(
     if (shouldAddGoldBangles || isDefaultSearch) {
       const banglesQuery: any = {
         materialType: /gold/i,
-        productType: /bangles/i, // Ensure it only targets regular bangles
+        productType: /bangles/i,
       };
 
-      if (collectionType && collectionType !== "all") {
-        banglesQuery.collectionType = {
-          $in: collectionType
-            .split(",")
-            .map((ct) => new RegExp(`^${ct}$`, "i")),
-        };
-      }
-
       if (category && category !== "all") {
-        banglesQuery.subCategories = {
-          $regex: new RegExp(`^${category}$`, "i"),
-        };
+        banglesQuery.$or = [
+          { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
+          { category: { $regex: new RegExp(`^${category}$`, "i") } },
+        ];
       }
 
       if (q && q !== "all") {
@@ -885,30 +780,20 @@ const getByQuery = cache(
         .sort(order)
         .lean();
 
-      console.log("Bangles Products:", banglesProducts); // Debugging
-
       products = [...products, ...banglesProducts];
     }
 
-    // Adding the "Bangle Pair" filtering logic
     if (shouldAddGoldBanglePairs || isDefaultSearch) {
       const banglePairQuery: any = {
         materialType: /gold/i,
-        productType: /bangle pair/i, // Ensure it only targets bangle pair products
+        productType: /bangle pair/i,
       };
 
-      if (collectionType && collectionType !== "all") {
-        banglePairQuery.collectionType = {
-          $in: collectionType
-            .split(",")
-            .map((ct) => new RegExp(`^${ct}$`, "i")),
-        };
-      }
-
       if (category && category !== "all") {
-        banglePairQuery.subCategories = {
-          $regex: new RegExp(`^${category}$`, "i"),
-        };
+        banglePairQuery.$or = [
+          { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
+          { category: { $regex: new RegExp(`^${category}$`, "i") } },
+        ];
       }
 
       if (q && q !== "all") {
