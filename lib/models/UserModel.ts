@@ -20,6 +20,11 @@ const UserSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    mobileNumber: {
+      type: String,
+      required: true,
+      unique: true,
+    },
     password: {
       type: String, // Remove `required: true` to allow OAuth users
     },

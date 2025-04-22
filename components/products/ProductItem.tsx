@@ -19,7 +19,7 @@ const isValidImageUrl = (url: string) => {
 const ProductItem = ({ product }: { product: Product }) => {
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const userId = session?.user?._id;
   const hasFetchedRef = useRef(false);
 
   // Validate the product image or fallback

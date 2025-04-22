@@ -49,6 +49,7 @@ export const config = {
           email: user.email,
           name: user.name,
           isAdmin: user.isAdmin,
+          mobileNumber:user.mobileNumber
         };
       }
       if (trigger === 'update' && session) {
@@ -56,6 +57,7 @@ export const config = {
           ...token.user,
           email: session.user.email,
           name: session.user.name,
+          mobileNumber:session.user.mobileNumber
         };
       }
       return token;

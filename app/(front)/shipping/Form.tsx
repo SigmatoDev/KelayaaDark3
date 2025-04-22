@@ -11,7 +11,7 @@ import { ShippingAddress, PersonalInfo, BillingDetails, GstDetails } from "@/lib
 import SignInPopup from "@/components/signin/SignIn";
 
 type FormData = {
-  personalInfo: PersonalInfo;
+  personalInfo: PersonalInfo & { fullName?: string };
   shippingAddress: ShippingAddress;
   gstDetails: GstDetails;
   billingDetails: BillingDetails;
@@ -61,6 +61,23 @@ const Form = () => {
     }
   }, [shippingAddress, setValue]);
 
+
+  useEffect(() => {
+    if (session?.user) {
+      if (session.user.email) {
+        setValue("personalInfo.email", session.user.email);
+      }
+      if (session.user.mobileNumber) {
+        setValue("personalInfo.mobileNumber", session.user.mobileNumber);
+      }
+      if (session.user.name) {
+        setValue("personalInfo.fullName", session.user.name);
+      }
+    }
+  }, [session, setValue]);
+  
+  
+
   useEffect(() => {
     if (sameAsShipping) {
       setValue("billingDetails", { 
@@ -78,11 +95,13 @@ const Form = () => {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
+            fullName: form.personalInfo.fullName,
             email: form.personalInfo.email,
             mobileNumber: form.personalInfo.mobileNumber,
             password: form.personalInfo.password,
           }),
         });
+        
 
         const { success, newAccount } = await res.json();
         if (!success) throw new Error("Failed to create or check user.");
@@ -147,26 +166,42 @@ const Form = () => {
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Personal Information</h2>
             <div className="space-y-3">
+
+            <div>
+  <label className="text-xs font-medium">Full Name</label>
+  <input
+    type="text"
+    placeholder="Full Name"
+    disabled={!!session}
+    {...register("personalInfo.fullName", { required: true })}
+    className="input input-bordered w-full text-sm bg-gray-100"
+  />
+</div>
+
+
+
               <div>
                 <label className="text-xs font-medium">Mobile Number</label>
                 <div className="space-y-1">
-  <div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
-    <span className="px-3 text-gray-600 text-sm">+91</span>
-    <input
-      type="text"
-      maxLength={10}
-      placeholder="Enter 10 digit number"
-      {...register("personalInfo.mobileNumber", {
-        required: "Mobile number is required",
-        pattern: {
-          value: /^[6-9]\d{9}$/,
-          message: "Enter valid 10 digit Indian mobile number",
-        },
-      })}
-      className="w-full px-2 py-2 outline-none text-sm"
-      inputMode="numeric"
-    />
-  </div>
+                <div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
+  <span className="px-3 text-gray-600 text-sm">+91</span>
+  <input
+    type="text"
+    maxLength={10}
+    placeholder="Enter 10 digit number"
+    disabled={!!session}
+    {...register("personalInfo.mobileNumber", {
+      required: "Mobile number is required",
+      pattern: {
+        value: /^[6-9]\d{9}$/,
+        message: "Enter valid 10 digit Indian mobile number",
+      },
+    })}
+    className="w-full px-2 py-2 outline-none text-sm bg-gray-100"
+    inputMode="numeric"
+  />
+</div>
+
   {errors.personalInfo?.mobileNumber && (
     <p className="text-red-500 text-xs mt-1">
       {errors.personalInfo.mobileNumber.message}
@@ -176,15 +211,14 @@ const Form = () => {
 
               </div>
 
-              <div>
-                <label className="text-xs font-medium">Email</label>
-                <input
-                  type="email"
-                  placeholder="Email Address"
-                  {...register("personalInfo.email", { required: true })}
-                  className="input input-bordered w-full text-sm"
-                />
-              </div>
+              <input
+  type="email"
+  placeholder="Email Address"
+  disabled={!!session}
+  {...register("personalInfo.email", { required: true })}
+  className="input input-bordered w-full text-sm bg-gray-100"
+/>
+
 
               {!session && (
                 <div>
