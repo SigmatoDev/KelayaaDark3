@@ -555,7 +555,7 @@ const Header = () => {
                                         Profile
                                       </Link>
                                     </li>
-                                    <li
+                                    {/* <li
                                       onClick={handleClick}
                                       className="flex items-center px-3 py-2 hover:bg-white/20 rounded-md"
                                     >
@@ -566,7 +566,7 @@ const Header = () => {
                                       >
                                         Custom Orders
                                       </Link>
-                                    </li>
+                                    </li> */}
                                     <li>
                                       <button
                                         type="button"

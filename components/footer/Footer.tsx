@@ -2,6 +2,8 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
+import MailchimpForm from "@/components/newsletter/MailchimpForm";
+
 
 const Footer = () => {
   const router = useRouter();
@@ -9,10 +11,10 @@ const Footer = () => {
     <footer className="w-full bg-[#FFF6F6] text-[#282828]">
       {/* Main Footer Content */}
       <div className="container mx-auto py-[60px] md:py-[100px]">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(250px,1fr)_repeat(4,1fr)]">
+        <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(350px,1fr)_repeat(4,1fr)]">
           {/* Column 1 - Logo & Email (Smaller Width) */}
-          <div className="flex flex-col items-center md:items-start md:max-w-[300px]">
-            <div className="flex justify-center w-[200px] h-[80px] md:w-[250px] md:h-[90px] overflow-hidden">
+          <div className="flex flex-col items-center md:items-start md:max-w-[400px]">
+            {/* <div className="flex justify-center w-[200px] h-[80px] md:w-[250px] md:h-[90px] overflow-hidden">
               <Link href="/">
                 <img
                   src="/Kelayaa - logo.webp"
@@ -20,17 +22,12 @@ const Footer = () => {
                   className="w-full h-full object-cover"
                 />
               </Link>
+            </div> */}
+            <div className="rounded-sm p-1 w-full">
+           
+            <MailchimpForm />
             </div>
-            <div className="mt-6 border rounded-sm border-[#3d3d3d] p-3 w-full">
-              <input
-                type="email"
-                placeholder="Enter Your Mail"
-                className="w-full outline-none bg-transparent font-normal"
-              />
-            </div>
-            <p className="text-sm mt-4 text-center md:text-left">
-              Join our community for exclusive updates and offers
-            </p>
+           
           </div>
 
           {/* Column 2 - Categories */}
