@@ -5,8 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { Search, XIcon } from "lucide-react";
 import clsx from "clsx";
-import Image from "next/image"; // add this import at top
-
+import Image from "next/image";
 
 type ProductSuggestion = {
   _id: string;
@@ -19,16 +18,22 @@ type ProductSuggestion = {
 };
 
 const keywordRedirects: { [key: string]: string } = {
-  "Wedding Rings": "search?q=all&materialType=all&productCategory=Rings&category=all&price=all&rating=all&sort=newest&page=1",
-  "Engagement Necklaces": "search?q=all&productCategory=all&category=Necklace+and+Earrings&price=all&rating=all&sort=newest&page=1&materialType=all&collectionType=all",
-  "Bridal Bangles": "search?q=all&productCategory=Bangles&category=all&materialType=gold&price=all&rating=all&sort=newest&page=1",
-  "Anniversary Gifts": "search?q=all&productCategory=Sets&category=all&materialType=silver&price=all&rating=all&sort=newest&page=1",
-  "Diamond Earrings": "search?q=all&productCategory=Earrings&category=all&materialType=gold&price=all&rating=all&sort=newest&page=1",
-  "Gold Bracelets": "search?q=all&productCategory=Bracelets&category=all&materialType=gold&price=all&rating=all&sort=newest&page=1",
-  "Silver Pendants": "search?q=all&materialType=silver&productCategory=Pendants&category=all&price=all&rating=all&sort=newest&page=1",
-  "Customized Jewelry": "custom-design",
+  "Wedding Rings":
+    "/search?q=all&materialType=all&productCategory=Rings&category=all&price=all&rating=all&sort=newest&page=1",
+  "Engagement Necklaces":
+    "/search?q=all&productCategory=all&category=Necklace+and+Earrings&price=all&rating=all&sort=newest&page=1&materialType=all&collectionType=all",
+  "Bridal Bangles":
+    "/search?q=all&productCategory=Bangles&category=all&materialType=gold&price=all&rating=all&sort=newest&page=1",
+  "Anniversary Gifts":
+    "/search?q=all&productCategory=Sets&category=all&materialType=silver&price=all&rating=all&sort=newest&page=1",
+  "Diamond Earrings":
+    "/search?q=all&productCategory=Earrings&category=all&materialType=gold&price=all&rating=all&sort=newest&page=1",
+  "Gold Bracelets":
+    "/search?q=all&productCategory=Bracelets&category=all&materialType=gold&price=all&rating=all&sort=newest&page=1",
+  "Silver Pendants":
+    "/search?q=all&materialType=silver&productCategory=Pendants&category=all&price=all&rating=all&sort=newest&page=1",
+  "Customized Jewelry": "/custom-design",
 };
-
 
 export const SearchBox = () => {
   const searchParams = useSearchParams();
@@ -66,7 +71,9 @@ export const SearchBox = () => {
     const timeout = setTimeout(async () => {
       try {
         setLoading(true);
-        const res = await fetch(`/api/search-products?q=${encodeURIComponent(formQuery)}`);
+        const res = await fetch(
+          `/api/search-products?q=${encodeURIComponent(formQuery)}`
+        );
         const data = await res.json();
         setSuggestions(data.products || []);
       } catch (error) {
@@ -80,21 +87,19 @@ export const SearchBox = () => {
 
   const handleSubmit = (e?: React.FormEvent) => {
     if (e) e.preventDefault();
-    
     handleCloseModal();
-    
     const trimmedQuery = formQuery.trim();
-    
-    // Check if query matches any keyword exactly
     const matchedCategoryUrl = keywordRedirects[trimmedQuery];
-    
     if (matchedCategoryUrl) {
       router.push(matchedCategoryUrl);
-    } else {
+    } else if (suggestions.length > 0) {
       router.push(`/search?q=${encodeURIComponent(trimmedQuery)}`);
+    } else {
+      router.push(
+        `/search?q=all&materialType=all&productCategory=all&price=all&rating=all&sort=newest&page=1&collectionType=all`
+      );
     }
   };
-  
 
   const handleCloseModal = () => {
     setFadeOut(true);
@@ -113,17 +118,15 @@ export const SearchBox = () => {
 
   const handlePillClick = (keyword: string) => {
     handleCloseModal();
-    
     const matchedCategoryUrl = keywordRedirects[keyword];
-    
     if (matchedCategoryUrl) {
       router.push(matchedCategoryUrl);
     } else {
-      router.push(`/search?q=${encodeURIComponent(keyword)}&materialType=all&productCategory=all&price=all&rating=all&sort=newest&page=1&collectionType=all`);
+      router.push(
+        `/search?q=${encodeURIComponent(keyword)}&materialType=all&productCategory=all&price=all&rating=all&sort=newest&page=1&collectionType=all`
+      );
     }
   };
-  
-  
 
   return (
     <>
@@ -163,56 +166,62 @@ export const SearchBox = () => {
                   className="w-full border-b-2 border-black text-lg py-4 px-3 placeholder-gray-500 focus:outline-none"
                 />
 
-                {/* Suggestions */}
-                {loading && <div className="text-sm text-gray-400 mt-2">Loading...</div>}
-
-                {!loading && formQuery.trim() !== "" && suggestions.length > 0 && (
-                  <ul className="border rounded-md max-h-80 overflow-y-auto mt-2 text-sm">
-                    {suggestions.map((product) => (
-  <li
-    key={product._id}
-    onClick={() => handleProductClick(product.productCode)}
-    className="px-2 py-2 flex items-center gap-3 cursor-pointer hover:bg-gray-100"
-  >
-    {product.image && (
-      <div className="w-10 h-10 relative">
-        <Image
-          src={product.image}
-          alt={product.name}
-          fill
-          sizes="40px"
-          className="rounded-md object-cover"
-        />
-      </div>
-    )}
-    <div className="flex flex-col">
-      <div className="font-medium text-[12px]">{product.name}</div>
-      <div className="text-[10px] text-gray-400">
-        {product.category} | {product.collectionType}
-      </div>
-    </div>
-  </li>
-))}
-
-                  </ul>
+                {loading && (
+                  <div className="text-sm text-gray-400 mt-2">Loading...</div>
                 )}
 
-                {/* Popular Search Pills */}
+                {!loading &&
+                  formQuery.trim() !== "" &&
+                  suggestions.length > 0 && (
+                    <ul className="border rounded-md max-h-80 overflow-y-auto mt-2 text-sm">
+                      {suggestions.map((product) => (
+                        <li
+                          key={product._id}
+                          onClick={() =>
+                            handleProductClick(product.productCode)
+                          }
+                          className="px-2 py-2 flex items-center gap-3 cursor-pointer hover:bg-gray-100"
+                        >
+                          {product.image && (
+                            <div className="w-10 h-10 relative">
+                              <Image
+                                src={product.image}
+                                alt={product.name}
+                                fill
+                                sizes="40px"
+                                className="rounded-md object-cover"
+                              />
+                            </div>
+                          )}
+                          <div className="flex flex-col">
+                            <div className="font-medium text-[12px]">
+                              {product.name}
+                            </div>
+                            <div className="text-[10px] text-gray-400">
+                              {product.category} | {product.collectionType}
+                            </div>
+                          </div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+
                 {formQuery.trim() === "" && (
                   <>
-                  <p className="text-[13px] text-gray-500">Popular Searches</p>
-                  <div className="flex flex-wrap gap-2 mt-4">
-                    {Object.keys(keywordRedirects).map((word, i) => (
-  <span
-    key={i}
-    onClick={() => handlePillClick(word)}
-    className="px-4 py-1 rounded-full border border-gray-500 text-[10px] text-gray-500 cursor-pointer hover:bg-black hover:text-white transition"
-  >
-    {word}
-  </span>
-))}
-
-                  </div>
+                    <p className="text-[13px] text-gray-500">
+                      Popular Searches
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-4">
+                      {Object.keys(keywordRedirects).map((word, i) => (
+                        <span
+                          key={i}
+                          onClick={() => handlePillClick(word)}
+                          className="px-4 py-1 rounded-full border border-gray-500 text-[10px] text-gray-500 cursor-pointer hover:bg-black hover:text-white transition"
+                        >
+                          {word}
+                        </span>
+                      ))}
+                    </div>
                   </>
                 )}
               </form>

@@ -4,18 +4,17 @@ import { toast } from "react-hot-toast";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 
 interface DesignFormData {
   gender: string;
   contactNumber: string;
   countryCode: string;
-  designType: string;
   jewelryType: string;
   metalType: string;
   materialKarat: string | null;
   budget: number;
   occasion: string;
-  productName: string;
   designMethod: "details" | "upload";
   stoneType?: string;
   diamondType?: string;
@@ -33,13 +32,12 @@ const initialFormData: DesignFormData = {
   gender: "",
   contactNumber: "",
   countryCode: "+91",
-  designType: "",
   jewelryType: "",
   metalType: "",
   materialKarat: null,
   budget: 0,
   occasion: "",
-  productName: "",
+  // productName: "",
   designMethod: "details",
   appointmentDate: null,
   personalConsultation: false,
@@ -110,43 +108,59 @@ export default function CustomDesignForm() {
   const [subtypes, setSubtypes] = useState<
     Array<{ name: string; image: string }>
   >([]);
-
-  const [image, setImage] = useState<string | null>(null);
+  const [image, setImage] = useState<string | null>(null); // For preview
+  const [file, setFile] = useState<File | null>(null); // For file upload
+  const router = useRouter();
 
   // Handle file change from the input
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
+    const selectedFile = event.target.files?.[0];
+    if (selectedFile) {
+      console.log("Original file selected:", selectedFile);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImage(reader.result as string); // TypeScript requires casting here since FileReader returns 'string | ArrayBuffer'
+        setImage(reader.result as string); // Preview image as base64
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(selectedFile);
+      setFile(selectedFile); // Store the selected file for upload
     }
   };
 
   // Handle drag and drop event
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const file = event.dataTransfer.files[0];
-    if (file) {
+    const droppedFile = event.dataTransfer.files[0];
+    if (droppedFile) {
+      console.log("Dropped file:", droppedFile);
       const reader = new FileReader();
       reader.onloadend = () => {
-        setImage(reader.result as string); // Again casting the result as string
+        setImage(reader.result as string); // Preview image as base64
       };
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(droppedFile);
+      setFile(droppedFile); // Store the dropped file for upload
+    }
+
+    // Update the hidden file input so it gets included in FormData
+    const dataTransfer = new DataTransfer();
+    dataTransfer.items.add(event.dataTransfer.files[0]);
+    const fileInput = document.getElementById(
+      "file-upload"
+    ) as HTMLInputElement;
+    if (fileInput) {
+      fileInput.files = dataTransfer.files;
     }
   };
 
-  useEffect(() => {
-    switch (formData.jewelryType) {
-      case "Earrings":
-        setSubtypes(earringSubtypes);
-        break;
-      default:
-        setSubtypes([]);
-    }
-  }, [formData.jewelryType]);
+  // Handle subtype updates based on jewelry type
+  // useEffect(() => {
+  //   switch (formData.jewelryType) {
+  //     case "Earrings":
+  //       setSubtypes(earringSubtypes);
+  //       break;
+  //     default:
+  //       setSubtypes([]);
+  //   }
+  // }, [formData.jewelryType]);
 
   const handleNext = () => setStep(step + 1);
   const handleBack = () => setStep(step - 1);
@@ -155,66 +169,81 @@ export default function CustomDesignForm() {
     setFormData({ ...formData, [field]: value });
   };
 
+  // Handle form submission
   const handleSubmit = async () => {
-    setShowConfirmation(true);
+    setIsSubmitting(true);
+
     try {
-      setIsSubmitting(true);
+      const formDataToSend = new FormData();
+
+      // Append form data fields
+      Object.entries(formData).forEach(([key, value]) => {
+        if (value !== null) {
+          formDataToSend.append(key, String(value));
+        }
+      });
+
+      // Check if image exists and handle dynamic image type
+      if (file) {
+        // Append the file as a blob with the appropriate MIME type
+        console.log("Uploading file:", file); // Log the file being uploaded
+        formDataToSend.append("customImage", file, file.name);
+      }
+
       const response = await fetch("/api/custom-design", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: formDataToSend,
       });
 
       const data = await response.json();
-      console.log("data", data);
-
       if (!response.ok)
         throw new Error(data.message || "Failed to submit design");
 
-      setOrderNumber(data.design.orderNumber);
+      toast.success("Design submitted successfully!");
+      setFormData(initialFormData);
+      setImage(null); // Clear preview image
+      setFile(null); // Clear file data
       setShowConfirmation(true);
-      toast.success("Appointment booked successfully!");
     } catch (error: any) {
-      toast.error(error.message || "Failed to book appointment");
+      toast.error(error.message || "Submission failed");
     } finally {
       setIsSubmitting(false);
     }
   };
+  // if (showConfirmation) {
+  //   return (
+  //     <div className="w-full min-h-screen bg-[#FFF6F6] flex items-center justify-center p-4">
+  //       <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
+  //         <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
+  //           <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
+  //           <p>
+  //             Your order number:{" "}
+  //             <span className="font-bold">{orderNumber}</span>
+  //           </p>
+  //         </div>
 
-  if (showConfirmation) {
-    return (
-      <div className="w-full min-h-screen bg-[#FFF6F6] flex items-center justify-center p-4">
-        <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full text-center">
-          <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-6">
-            <h2 className="text-2xl font-bold mb-2">Thank You!</h2>
-            <p>
-              Your order number:{" "}
-              <span className="font-bold">{orderNumber}</span>
-            </p>
-          </div>
+  //         <div className="mb-6">
+  //           <h3 className="text-xl font-semibold mb-4">What's Next?</h3>
+  //           <p className="mb-4">
+  //             We'll contact you within 24 hours to confirm your consultation
+  //             details.
+  //           </p>
+  //           <p>
+  //             Prepare any reference images or ideas for your 1-on-1 session with
+  //             our designer.
+  //           </p>
+  //         </div>
 
-          <div className="mb-6">
-            <h3 className="text-xl font-semibold mb-4">What's Next?</h3>
-            <p className="mb-4">
-              We'll contact you within 24 hours to confirm your consultation
-              details.
-            </p>
-            <p>
-              Prepare any reference images or ideas for your 1-on-1 session with
-              our designer.
-            </p>
-          </div>
-
-          <button
-            onClick={() => (window.location.href = "/")}
-            className="bg-[#EC4999] text-white px-6 py-2 rounded hover:bg-[#d14284] transition"
-          >
-            Back to Home
-          </button>
-        </div>
-      </div>
-    );
-  }
+  //         <button
+  //           onClick={() => (window.location.href = "/")}
+  //           className="bg-[#EC4999] text-white px-6 py-2 rounded hover:bg-[#d14284] transition"
+  //         >
+  //           Back to Home
+  //         </button>
+  //       </div>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="w-full min-h-screen bg-[#FFF6F6] py-12">
@@ -649,12 +678,18 @@ export default function CustomDesignForm() {
                     selected={formData.appointmentDate}
                     onChange={(date) => handleChange("appointmentDate", date)}
                     showTimeSelect
-                    timeFormat="HH:mm"
+                    timeFormat="hh:mm aa" // 12-hour format with AM/PM
                     timeIntervals={30}
-                    dateFormat="MMMM d, yyyy h:mm aa"
-                    minDate={new Date()}
+                    dateFormat="dd-MM-yyyy h:mm aa" // Set the date format as dd-MM-yyyy
+                    minDate={
+                      new Date(new Date().setDate(new Date().getDate() + 1))
+                    } // Set minDate to tomorrow
                     className="w-full p-3 border border-gray-300 rounded focus:ring-2 focus:ring-[#EC4999] focus:border-[#EC4999]"
                     placeholderText="Select date and time"
+                    filterTime={(time) => {
+                      const hour = time.getHours();
+                      return hour >= 11 && hour <= 19; // Restrict time to between 11 AM and 7 PM
+                    }}
                   />
                 </div>
 
@@ -727,6 +762,61 @@ export default function CustomDesignForm() {
           )}
         </div>
       </div>
+      {showConfirmation && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
+          <div
+            className="bg-white rounded-2xl shadow-2xl p-8 max-w-md w-full text-center relative transition-all duration-300 scale-100 opacity-100"
+            style={{
+              animation: "fadeIn 0.4s ease-out forwards",
+            }}
+          >
+            <div
+              className="text-green-500 text-5xl mb-4"
+              style={{ animation: "bounce 1s infinite" }}
+            >
+              ✅
+            </div>
+            <h2 className="text-2xl font-bold text-gray-800 mb-2">
+              Thank You for Your Interest!
+            </h2>
+            <p className="text-gray-600 mb-6">
+              We've received your custom design request. Our team will contact
+              you soon!
+            </p>
+            <button
+              onClick={() => {
+                setShowConfirmation(false);
+                router.push("/");
+              }}
+              className="mt-2 px-6 py-2 bg-green-500 text-white rounded-full hover:bg-green-600 transition"
+            >
+              Close
+            </button>
+
+            <style jsx>{`
+              @keyframes fadeIn {
+                from {
+                  opacity: 0;
+                  transform: scale(0.95);
+                }
+                to {
+                  opacity: 1;
+                  transform: scale(1);
+                }
+              }
+              @keyframes bounce {
+                0%,
+                100% {
+                  transform: translateY(0);
+                }
+                50% {
+                  transform: translateY(-8px);
+                }
+              }
+            `}</style>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

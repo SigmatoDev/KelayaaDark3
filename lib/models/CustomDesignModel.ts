@@ -1,71 +1,31 @@
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
-const customDesignSchema = new mongoose.Schema({
-  orderNumber: { type: String, required: true, unique: true },
-  user: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
-    required: true
+const customDesignSchema = new mongoose.Schema(
+  {
+    gender: { type: String, required: true },
+    contactNumber: { type: String, required: true },
+    countryCode: { type: String, required: true },
+    jewelryType: { type: String, required: true },
+    metalType: { type: String, required: true },
+    budget: { type: Number, required: true },
+    occasion: { type: String, required: true },
+    designDetails: { type: String, required: false }, // Optional text for design details
+    customImage: { type: String, required: false }, // Optional image for design
+    stoneType: { type: String },
+    diamondType: { type: String },
+    gemstoneType: { type: String },
+    semiPreciousType: { type: String },
+    additionalDetails: { type: String },
+    appointmentDate: { type: Date, default: null },
+    personalConsultation: { type: Boolean, required: true },
+    termsAccepted: { type: Boolean, required: true },
+    goldKarat: { type: String },
   },
-  // Step 1 fields
-  gender: { type: String, enum: ['myself', 'someone else'], required: true },
-  contactNumber: {
-    type: String,
-    required: true,
-  },
-  designType: { 
-    type: String, 
-    enum: ['Rings', 'Bracelets', 'Bangles', 'Necklaces', 'Earings'], 
-    required: true 
-  },
-  metalType: { type: String, enum: ['gold', 'silver'], required: true },
-  materialKarat: { type: Number, enum: [14, 18, 22, 24], required: true },
-  budget: { type: Number, min: 20000, required: true },
+  { timestamps: true }
+);
 
-  // Step 2 fields
-  designMethod: { type: String, enum: ['details', 'image'], required: true },
-  stoneType: { type: String, enum: ['diamond', 'gemstone', 'no stone'] },
-  customImage: {
-    type: String,
-    required: false,
-  },
-  occasion: { type: String, enum: ['wedding', 'engagement'], required: true },
-  size: { type: Number, min: 7, max: 20, required: true },
-  additionalDetails: { type: String },
+const CustomDesignModel =
+  mongoose.models.CustomDesign ||
+  mongoose.model("CustomDesign", customDesignSchema);
 
-  // Step 3 fields
-  timeline: { type: String, required: true },
-  termsAccepted: { type: Boolean, required: true },
-  customizationAccepted: { type: Boolean, required: true },
-  
-  // Order details
-  subtotal: { type: Number, required: true },
-  gst: { type: Number, required: true },
-  couponApplied: { type: String },
-  couponDiscount: { type: Number, default: 0 },
-  deliveryCharge: { type: Number, default: 0 },
-  totalPayable: { type: Number, required: true },
-  
-  description: String,
-  imageUrls: [String], // Array of image URLs
-  specifications: {
-    gender: String,
-    size: String,
-    occasion: String,
-    stoneType: String,
-    materialKarat: String,
-    designMethod: String
-  },
-  contactPreference: String,
-  status: {
-    type: String,
-    enum: ['pending', 'confirmed', 'in_progress', 'completed', 'cancelled'],
-    default: 'pending'
-  },
-  adminNotes: String,
-  createdAt: { type: Date, default: Date.now },
-  updatedAt: { type: Date, default: Date.now }
-});
-
-const CustomDesignModel = mongoose.models.CustomDesign || mongoose.model('CustomDesign', customDesignSchema);
-export default CustomDesignModel; 
+export default CustomDesignModel;

@@ -8,6 +8,7 @@ import {
   FaInstagram,
   FaWhatsapp,
   FaHeart,
+  FaSearchPlus,
 } from "react-icons/fa";
 import AddToCart from "@/components/products/AddToCart";
 import { convertDocToObj } from "@/lib/utils";
@@ -27,8 +28,10 @@ import ProductItems, {
 } from "@/components/products/ProductItems";
 import ProductItem from "@/components/products/ProductItem";
 import SignInPopup from "@/components/signin/SignIn";
+import SetPriceBreakupCard from "./setDetailsCard";
 
 interface Product {
+  items: Item[];
   productType: string;
   size: string;
   ring_size: string;
@@ -92,13 +95,15 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
 
-  // Zoom state for the image
-  const [scale, setScale] = useState(1); // Initial scale of 1
-  const [position, setPosition] = useState({ x: 0, y: 0 }); // Position for dragging the image
+  const [isZoomed, setIsZoomed] = useState(false); // Track zoom state
 
-  // sharing
+  // Handle the Zoom button click
+  const handleZoomClick = () => {
+    setIsZoomed(!isZoomed); // Toggle zoom state
+  };
+
+  // Sharing logic
   const [shareUrl, setShareUrl] = useState("");
-
   useEffect(() => {
     setShareUrl(window.location.href);
   }, []);
@@ -135,7 +140,6 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
   const toggleWishlist = async () => {
     if (!userId) {
       setIsSignInOpen(true);
-      // toast.error("Please log in to manage wishlist");
       return;
     }
 
@@ -148,50 +152,10 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
     const data = await response.json();
     setIsWishlisted(data.status);
   };
-
-  const handleMouseMove = (e: React.MouseEvent) => {
-    const container = e.currentTarget.getBoundingClientRect();
-    const offsetX = e.clientX - container.left;
-    const offsetY = e.clientY - container.top;
-
-    const zoomLevel = 2.5; // Adjust zoom level as needed
-    const centerX = offsetX / container.width;
-    const centerY = offsetY / container.height;
-
-    const scaleValue = 1 + zoomLevel * Math.max(centerX, centerY); // Zoom based on position
-    setScale(scaleValue);
-  };
-
-  // Start dragging
-  const handleMouseDown = (e: React.MouseEvent) => {
-    e.preventDefault();
-    const startX = e.clientX - position.x;
-    const startY = e.clientY - position.y;
-
-    const onMouseMove = (moveEvent: MouseEvent) => {
-      const newX = moveEvent.clientX - startX;
-      const newY = moveEvent.clientY - startY;
-      setPosition({ x: newX, y: newY });
-    };
-
-    const onMouseUp = () => {
-      window.removeEventListener("mousemove", onMouseMove);
-      window.removeEventListener("mouseup", onMouseUp);
-    };
-
-    window.addEventListener("mousemove", onMouseMove);
-    window.addEventListener("mouseup", onMouseUp);
-  };
-
-  // Handle Mouse Leave to reset zoom and position
-  const handleMouseLeave = () => {
-    setScale(1); // Reset zoom
-    setPosition({ x: 0, y: 0 }); // Reset position after leaving
-  };
-
   return (
     <>
       <div className="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+        {/* Left Section - Image Gallery */}
         {/* Left Section - Image Gallery */}
         <div className="flex flex-col md:flex-row gap-4 sticky top-24 self-start">
           {product.images.length > 0 ? (
@@ -231,51 +195,51 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
 
               {/* Main image display */}
               {selectedImage && (
-                <div
-                  className="relative w-full max-w-[500px] h-[400px] md:h-[500px] overflow-hidden"
-                  onMouseMove={handleMouseMove}
-                  onMouseLeave={handleMouseLeave}
-                  onMouseDown={handleMouseDown}
-                  style={{ cursor: "grab" }}
-                >
-                  {/* <Image
-                  src={
-                    selectedImage.startsWith("http")
-                      ? selectedImage
-                      : `/${selectedImage}`
-                  }
-                  alt="Main product image"
-                  width={800}
-                  height={800}
-                  quality={75}
-                  priority // optional: only if above the fold
-                  placeholder="empty"
-                  className="w-full h-full object-contain transition-transform duration-300 ease-in-out"
-                  style={{
-                    transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
-                    transformOrigin: "center center",
-                  }}
-                  onError={(e) =>
-                    ((e.target as HTMLImageElement).style.display = "none")
-                  }
-                /> */}
+                <div className="relative w-full max-w-[500px] h-[400px] md:h-[500px] overflow-hidden">
+                  {/* Zoom icon button */}
+                  <button
+                    onClick={handleZoomClick}
+                    className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md z-10"
+                  >
+                    <FaSearchPlus className="text-gray-700" />
+                  </button>
 
-                  <InnerImageZoom
-                    src={
-                      selectedImage.startsWith("http")
-                        ? selectedImage
-                        : `/${selectedImage}`
-                    }
-                    zoomSrc={
-                      selectedImage.startsWith("http")
-                        ? selectedImage
-                        : `/${selectedImage}`
-                    }
-                    zoomType="hover"
-                    zoomPreload={true}
-                    width={600}
-                    height={600}
-                  />
+                  {/* Main Image with zoom feature */}
+                  {isZoomed ? (
+                    <InnerImageZoom
+                      src={
+                        selectedImage.startsWith("http")
+                          ? selectedImage
+                          : `/${selectedImage}`
+                      }
+                      zoomSrc={
+                        selectedImage.startsWith("http")
+                          ? selectedImage
+                          : `/${selectedImage}`
+                      }
+                      zoomType="click" // Set zoom to click instead of hover
+                      zoomPreload={true}
+                      width={600}
+                      height={600}
+                    />
+                  ) : (
+                    <Image
+                      src={
+                        selectedImage.startsWith("http")
+                          ? selectedImage
+                          : `/${selectedImage}`
+                      }
+                      alt="Main product image"
+                      width={800}
+                      height={800}
+                      quality={75}
+                      placeholder="empty"
+                      className="w-full h-full object-contain transition-transform duration-300 ease-in-out"
+                      onError={(e) =>
+                        ((e.target as HTMLImageElement).style.display = "none")
+                      }
+                    />
+                  )}
                 </div>
               )}
             </>
@@ -361,9 +325,16 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
           )} */}
 
             {product?.materialType === "gold" &&
-              product?.productType !== "Sets" && (
+              product?.productType !== "Sets" &&
+              product?.productType !== "Bangles" && (
                 <PriceBreakupCard product={product} />
               )}
+
+            {((product?.materialType === "gold" &&
+              product?.productType === "Sets") ||
+              product?.productType === "Bangles") && (
+              <SetPriceBreakupCard product={product} />
+            )}
           </div>
 
           {/* Buttons Grid */}
