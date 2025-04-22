@@ -91,7 +91,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
   const { items } = useCartService();
   const existItem = items.find((x) => x.slug === product.slug);
   const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const userId = session?.user?._id;
   const [isWishlisted, setIsWishlisted] = useState(false);
   const [isSignInOpen, setIsSignInOpen] = useState(false);
 
