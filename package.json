@@ -16,6 +16,7 @@
     "@plaiceholder/next": "^3.0.0",
     "@radix-ui/react-select": "^2.1.6",
     "@radix-ui/react-slot": "^1.0.2",
+    "@sendinblue/client": "^3.3.1",
     "@stripe/react-stripe-js": "^3.1.0",
     "@stripe/stripe-js": "^5.3.0",
     "@tanstack/react-table": "^8.21.2",

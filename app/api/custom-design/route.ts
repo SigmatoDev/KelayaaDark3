@@ -1,133 +1,175 @@
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import fs from "fs/promises";
+import path from "path";
+import os from "os";
+import { Readable } from "stream";
+import { IncomingMessage } from "http";
+import formidable, { File, Fields } from "formidable";
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/dbConnect";
 import CustomDesignModel from "@/lib/models/CustomDesignModel";
-import { serialize } from "@/lib/utils";
-import { nanoid } from 'nanoid';
+import { NextRequest, NextResponse } from "next/server";
+import sendAdminEmail from "@/utility/sendEmail";
 
-export const POST = auth(async (req: any) => {
-  if (!req.auth || !req.auth.user) {
-    return Response.json({ message: "unauthorized" }, { status: 401 });
+// 🔧 AWS S3 Client Setup
+const s3 = new S3Client({
+  region: process.env.AWS_REGION!,
+  credentials: {
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+  },
+});
+
+// 🔄 Convert NextRequest to IncomingMessage
+async function convertToIncomingMessage(
+  req: NextRequest
+): Promise<IncomingMessage> {
+  const reader = req.body?.getReader();
+  const stream = new Readable({
+    async read() {
+      if (!reader) return this.push(null);
+      const { done, value } = await reader.read();
+      if (done) return this.push(null);
+      this.push(value);
+    },
+  });
+
+  const incomingMessage = Object.assign(stream, {
+    headers: Object.fromEntries(req.headers.entries()),
+    method: req.method,
+    url: req.nextUrl.pathname,
+  }) as IncomingMessage;
+
+  return incomingMessage;
+}
+
+// 📦 Parse form data
+async function parseForm(
+  req: NextRequest
+): Promise<{ fields: Fields; files: File[] }> {
+  const incomingMessage = await convertToIncomingMessage(req);
+
+  const form = formidable({
+    uploadDir: os.tmpdir(),
+    keepExtensions: true,
+    multiples: true,
+    maxTotalFileSize: 3 * 1024 * 1024 * 1024,
+    maxFileSize: 1 * 1024 * 1024 * 1024,
+  });
+
+  return new Promise((resolve, reject) => {
+    form.parse(incomingMessage, (err, fields, files) => {
+      if (err) return reject(err);
+
+      const uploadedFiles: File[] = Array.isArray(files.customImage)
+        ? files.customImage
+        : files.customImage
+          ? [files.customImage as File]
+          : [];
+
+      resolve({ fields, files: uploadedFiles });
+    });
+  });
+}
+
+// 📤 Upload image to S3
+const uploadImageToS3 = async (file: File) => {
+  if (!file) {
+    console.warn("⚠️ No file provided to uploadImageToS3");
+    return "";
   }
 
+  console.log("📤 Preparing to upload image to S3");
+
+  // Read the temp file
+  const fileStream = await fs.readFile(file.filepath).catch((err) => {
+    console.error("❌ Error reading temp file:", err);
+    throw err;
+  });
+
+  // Use the original file name for the S3 key, ensuring it's sanitized if necessary
+  const originalFileName = file.newFilename || "default-name";
+  console.log("originalFileName", originalFileName);
+  const sanitizedFileName = path.basename(originalFileName); // Remove any path components
+  console.log("sanitizedFileName", sanitizedFileName);
+
+  // Construct the S3 key
+  const s3Key = `kelayaa-custom-designs-request/${sanitizedFileName}`;
+
+  const params = {
+    Bucket: process.env.AWS_S3_BUCKET_NAME!,
+    Key: s3Key,
+    Body: fileStream,
+    ContentType: file.mimetype || "application/octet-stream",
+  };
+
+  console.log("📦 S3 Upload Params:", params);
+
+  try {
+    await s3.send(new PutObjectCommand(params));
+    console.log("✅ File uploaded to S3");
+  } catch (s3Err) {
+    console.error("❌ S3 upload failed:", s3Err);
+    throw s3Err;
+  }
+
+  // Delete the temporary file after upload
+  try {
+    await fs.unlink(file.filepath);
+    console.log("🗑️ Temporary file deleted");
+  } catch (unlinkErr) {
+    console.warn("⚠️ Failed to delete temp file:", unlinkErr);
+  }
+
+  // Return the file URL
+  return `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${s3Key}`;
+};
+
+// 🚀 POST Handler
+export const POST = auth(async (req: NextRequest) => {
   try {
     await dbConnect();
-    const data = await req.json();
-    
-    console.log('Received form data:', {
-      contactNumber: data.contactNumber,
-      customImage: data.customImage,
-      // ... other fields for debugging
-    });
 
-    // Validate required fields
-    const requiredFields = [
-      'gender',
-      'contactNumber', // Make sure this is required
-      'designType',
-      'metalType',
-      'materialKarat',
-      'budget',
-      'designMethod',
-      'occasion',
-      'size',
-      'timeline',
-      'termsAccepted',
-      'customizationAccepted'
-    ];
+    const { fields, files } = await parseForm(req);
+    console.log("📋 Fields:", fields);
+    console.log("📂 Files:", files);
 
-    const missingFields = requiredFields.filter(field => !data[field]);
-    if (missingFields.length > 0) {
-      return Response.json({ 
-        message: `Missing required fields: ${missingFields.join(', ')}` 
-      }, { status: 400 });
+    const normalizedFields = Object.fromEntries(
+      Object.entries(fields).map(([key, value]) => [
+        key,
+        Array.isArray(value) ? value[0] : value,
+      ])
+    );
+
+    const customImage = files?.[0];
+    if (!customImage) {
+      return NextResponse.json({ error: "No image uploaded" }, { status: 400 });
     }
 
-    // Create custom design object
-    const customDesign = new CustomDesignModel({
-      orderNumber: `CD${nanoid(8).toUpperCase()}`,
-      user: req.auth.user.id,
-      contactNumber: data.contactNumber, // Ensure this is being set
-      customImage: data.customImage, // Store the full image URL
-      gender: data.gender,
-      designType: data.designType,
-      metalType: data.metalType,
-      materialKarat: data.materialKarat,
-      budget: data.budget,
-      designMethod: data.designMethod,
-      stoneType: data.stoneType || null,
-      occasion: data.occasion,
-      size: data.size,
-      additionalDetails: data.additionalDetails || "",
-      timeline: data.timeline,
-      termsAccepted: data.termsAccepted,
-      customizationAccepted: data.customizationAccepted,
-      subtotal: data.budget,
-      gst: data.budget * 0.18,
-      deliveryCharge: 0,
-      totalPayable: data.budget + (data.budget * 0.18),
-      status: 'pending',
-      createdAt: new Date(),
-      specifications: {
-        gender: data.gender,
-        size: data.size.toString(),
-        occasion: data.occasion,
-        stoneType: data.stoneType || 'no stone',
-        materialKarat: data.materialKarat.toString(),
-        designMethod: data.designMethod
-      }
-    });
+    const customImageUrl = await uploadImageToS3(customImage);
+    const designData = { ...normalizedFields, customImage: customImageUrl };
 
-    console.log('Saving custom design with data:', {
-      contactNumber: customDesign.contactNumber,
-      customImage: customDesign.customImage,
-    });
+    const design = await CustomDesignModel.create(designData);
 
-    const savedDesign = await customDesign.save();
-    return Response.json({ 
-      success: true, 
-      design: serialize(savedDesign)
-    }, { status: 201 });
+    // Send an email notification to admin
+    await sendAdminEmail(designData);
+
+    return NextResponse.json(
+      { message: "Design saved successfully", design },
+      { status: 201 }
+    );
   } catch (error: any) {
-    console.error('Custom design creation error:', error);
-    return Response.json({ 
-      message: error.message || "Failed to create custom design",
-      error: error.errors || error.message
-    }, { status: 500 });
+    console.error("❌ Error saving design:", error);
+    return NextResponse.json(
+      { message: "Internal Server Error", error: error.message },
+      { status: 500 }
+    );
   }
-}) as any;
+});
 
-// Update the GET route to include image and contact number in the response
-export const GET = auth(async (req: any) => {
-  if (!req.auth) {
-    return Response.json({ message: "unauthorized" }, { status: 401 });
-  }
-
-  try {
-    await dbConnect();
-    const designs = await CustomDesignModel.find({ user: req.auth.user.id })
-      .sort({ createdAt: -1 })
-      .lean();
-
-    const formattedDesigns = designs.map(design => ({
-      orderNumber: design.orderNumber,
-      status: design.status,
-      createdAt: design.createdAt,
-      customImage: design.customImage,
-      designType: design.designType,
-      metalType: design.metalType,
-      budget: design.budget,
-      specifications: {
-        size: design.specifications.size,
-        occasion: design.specifications.occasion,
-        stoneType: design.specifications.stoneType,
-      },
-      timeline: design.timeline,
-      adminNotes: design.adminNotes,
-    }));
-
-    return Response.json(serialize(formattedDesigns));
-  } catch (error: any) {
-    console.error('Error fetching user designs:', error);
-    return Response.json({ message: error.message }, { status: 500 });
-  }
-}) as any; 
+// 🧩 Disable body parser
+export const config = {
+  api: {
+    bodyParser: false,
+  },
+};
