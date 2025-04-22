@@ -30,7 +30,7 @@ const CartDetails = () => {
   const router = useRouter();
   const { theme } = useLayoutService();
   const { data: session } = useSession();
-  const userId = session?.user?.id;
+  const userId = session?.user?._id;
   const [isSignInOpen, setIsSignInOpen] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState(false);
 
