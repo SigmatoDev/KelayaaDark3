@@ -25,6 +25,9 @@ const Form = () => {
   const [isSignInPopupOpen, setIsSignInPopupOpen] = useState(false);
   const [prefillEmail, setPrefillEmail] = useState("");
   const [mounted, setMounted] = useState(false);
+  const isEmailLocked = !!session?.user?.email;
+const isMobileLocked = !!session?.user?.mobileNumber;
+const isNameLocked = !!session?.user?.name;
 
   const { saveShippingAddress, shippingAddress, savePersonalInfo, saveGSTDetails } = useCartService();
 
@@ -172,24 +175,22 @@ const Form = () => {
   <input
     type="text"
     placeholder="Full Name"
-    disabled={!!session}
+    disabled={isNameLocked}
     {...register("personalInfo.fullName", { required: true })}
-    className="input input-bordered w-full text-sm bg-gray-100"
+    className={`input input-bordered w-full text-sm ${isNameLocked ? 'bg-gray-100' : ''}`}
   />
 </div>
 
 
 
-              <div>
-                <label className="text-xs font-medium">Mobile Number</label>
-                <div className="space-y-1">
-                <div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
+
+<div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
   <span className="px-3 text-gray-600 text-sm">+91</span>
   <input
     type="text"
     maxLength={10}
     placeholder="Enter 10 digit number"
-    disabled={!!session}
+    disabled={isMobileLocked}
     {...register("personalInfo.mobileNumber", {
       required: "Mobile number is required",
       pattern: {
@@ -197,27 +198,20 @@ const Form = () => {
         message: "Enter valid 10 digit Indian mobile number",
       },
     })}
-    className="w-full px-2 py-2 outline-none text-sm bg-gray-100"
+    className={`w-full px-2 py-2 outline-none text-sm ${isMobileLocked ? 'bg-gray-100' : ''}`}
     inputMode="numeric"
   />
 </div>
 
-  {errors.personalInfo?.mobileNumber && (
-    <p className="text-red-500 text-xs mt-1">
-      {errors.personalInfo.mobileNumber.message}
-    </p>
-  )}
-</div>
 
-              </div>
-
-              <input
+<input
   type="email"
   placeholder="Email Address"
-  disabled={!!session}
+  disabled={isEmailLocked}
   {...register("personalInfo.email", { required: true })}
-  className="input input-bordered w-full text-sm bg-gray-100"
+  className={`input input-bordered w-full text-sm ${isEmailLocked ? 'bg-gray-100' : ''}`}
 />
+
 
 
               {!session && (

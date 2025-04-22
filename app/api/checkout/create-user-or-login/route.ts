@@ -5,7 +5,7 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const { email, mobileNumber, password } = await req.json();
+    const { email, mobileNumber, password, fullName } = await req.json(); // Accept fullName also
 
     await dbConnect();
 
@@ -16,8 +16,9 @@ export async function POST(req: Request) {
       const hashedPassword = await bcrypt.hash(password || "guestpassword", 10);
 
       user = await UserModel.create({
-        name: mobileNumber,
+        name: fullName || mobileNumber || email, // Prefer fullName if available
         email,
+        mobileNumber, // Save mobile separately
         password: hashedPassword,
       });
 
