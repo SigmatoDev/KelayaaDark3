@@ -139,6 +139,11 @@ const isNameLocked = !!session?.user?.name;
         gstNumber: form.gstDetails.gstNumber || "",
       });
       saveShippingAddress(form.shippingAddress);
+
+if (!sameAsShipping) {
+  saveShippingAddress(form.billingDetails); // <-- billing details if user entered different one
+}
+
       router.push("/payment");
     } catch (error: any) {
       console.error(error);
@@ -300,6 +305,77 @@ const isNameLocked = !!session?.user?.name;
               />
             </div>
           </div>
+
+          <div className="col-span-2 mt-6">
+  <label className="flex items-center space-x-2 text-sm">
+    <input
+      type="checkbox"
+      checked={sameAsShipping}
+      onChange={(e) => setSameAsShipping(e.target.checked)}
+      className="checkbox checkbox-sm"
+    />
+    <span>Billing address same as shipping address</span>
+  </label>
+</div>
+
+{!sameAsShipping && (
+  <div className="space-y-4 col-span-2 mt-4">
+    <h2 className="text-lg font-semibold">Billing Address</h2>
+
+    <div>
+      <label className="text-xs font-medium">Full Address</label>
+      <textarea
+        placeholder="Billing Address"
+        {...register("billingDetails.address", { required: true })}
+        className="textarea textarea-bordered w-full text-sm"
+        rows={3}
+      />
+    </div>
+
+    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div>
+        <label className="text-xs font-medium">City</label>
+        <input
+          type="text"
+          placeholder="City"
+          {...register("billingDetails.city", { required: true })}
+          className="input input-bordered w-full text-sm"
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium">State</label>
+        <input
+          type="text"
+          placeholder="State"
+          {...register("billingDetails.state", { required: true })}
+          className="input input-bordered w-full text-sm"
+        />
+      </div>
+
+      <div>
+        <label className="text-xs font-medium">Postal Code</label>
+        <input
+          type="text"
+          placeholder="Postal Code"
+          {...register("billingDetails.postalCode", { required: true })}
+          className="input input-bordered w-full text-sm"
+        />
+      </div>
+    </div>
+
+    <div>
+      <label className="text-xs font-medium">Country</label>
+      <input
+        type="text"
+        placeholder="Country"
+        {...register("billingDetails.country", { required: true })}
+        className="input input-bordered w-full text-sm"
+      />
+    </div>
+  </div>
+)}
+
 
           <div className="col-span-2">
             <button

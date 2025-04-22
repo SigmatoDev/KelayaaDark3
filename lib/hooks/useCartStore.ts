@@ -35,6 +35,7 @@ type Cart = {
   totalCartQuantity: number;
   paymentMethod: string;
   shippingAddress: ShippingAddress;
+  billingAddress: ShippingAddress;
   paymentStatus: "pending" | "success" | "failed";
   lastOrderId: string;
   discountPrice: number;
@@ -62,6 +63,16 @@ const initialState: Cart = {
   totalCartQuantity: 0,
   paymentMethod: "Razorpay",
   shippingAddress: {
+    firstName: "",
+    lastName: "",
+    address: "",
+    landmark: "",
+    country: "",
+    state: "",
+    city: "",
+    postalCode: "",
+  },
+  billingAddress: {
     firstName: "",
     lastName: "",
     address: "",
@@ -105,6 +116,7 @@ const useCartService = () => {
     totalCartQuantity,
     paymentMethod,
     shippingAddress,
+    billingAddress,
     paymentStatus,
     lastOrderId,
     discountPrice,
@@ -125,6 +137,7 @@ const useCartService = () => {
     totalCartQuantity,
     paymentMethod,
     shippingAddress,
+    billingAddress,
     paymentStatus,
     lastOrderId,
     discountPrice,
@@ -132,6 +145,7 @@ const useCartService = () => {
     couponCode,
     gstDetails,
     personalInfo,
+    
 
     // Add item or increase quantity
     increase: (item: CartItem) => {
@@ -220,6 +234,13 @@ const useCartService = () => {
     setTotalPriceAfterCheckout: (amount: number) => {
       cartStore.setState({ totalPriceAfterCheckout: amount });
     },
+
+    
+    
+    saveBillingAddress: (billingAddress: ShippingAddress) => {
+      cartStore.setState({ billingAddress });
+    },
+    
 
     clear: () => {
       cartStore.setState({
