@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 
 export function Sheet({
@@ -18,12 +18,6 @@ export function Sheet({
     setMounted(true);
   }, []);
 
-  useEffect(() => {
-    if (typeof document !== "undefined") {
-      document.body.style.overflow = open ? "hidden" : "";
-    }
-  }, [open]);
-
   return (
     <>
       {children}
@@ -37,9 +31,9 @@ export function Sheet({
                 onClick={() => onOpenChange(false)}
               ></div>
 
-              {/* Sheet Content */}
-              <div className="relative z-50 w-full max-w-md">
-                {/* This gets injected from SheetContent */}
+              {/* Sheet Content container */}
+              <div className="relative z-50 w-full max-w-md h-full pointer-events-none">
+                {/* Content gets injected by SheetContent */}
               </div>
             </div>,
             document.body
@@ -60,7 +54,7 @@ export function SheetContent({
 }) {
   return (
     <div
-      className={`bg-white shadow-lg rounded-t-2xl p-4 transition-transform ${className} ${
+      className={`bg-white shadow-lg rounded-t-2xl p-4 transition-transform pointer-events-auto ${className} ${
         side === "bottom" ? "translate-y-0" : ""
       }`}
     >
