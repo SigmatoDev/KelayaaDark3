@@ -13,6 +13,7 @@ import ClientSearchWrapper from "./clientSearchWrapper";
 import CollectionTypeFilter from "./collectionTypeFilter";
 // import ClientSearchWrapper from "./clientSearchWrapper";
 // import ClearAllFilters from "./clearAllFilters";
+import MobileFilter from "./MobileFilter";
 
 
 const sortOrders = ["newest", "lowest", "highest", "rating"];
@@ -263,8 +264,6 @@ export default async function SearchPage({
     collectionType={collectionType}
   />
 
-
-
   {/* Sort and showing products (below on mobile) */}
   <div className="flex flex-wrap items-center justify-end gap-2 text-[12px]">
     <div className="px-2 py-1">
@@ -360,9 +359,31 @@ export default async function SearchPage({
                 </div>
               </div>
             )}
+
+
+
           </ClientSearchWrapper>
 
           {/* Floating Mobile Filters */}
+          <MobileFilter
+  materials={materials}
+  categories={categories}
+  materialType={materialType}
+  productCategory={productCategory}
+  category={category}
+  price={price}
+  rating={rating}
+  sort={sort}
+  page={page}
+  q={q}
+  collectionType={collectionType}
+  collectionTypes={collectionTypes}
+  productCategoriesByCollectionType={productCategoriesByCollectionType}
+  productTypeByProductCategory={productTypeByProductCategory}
+  combineCategoryAndSubcategory={combineCategoryAndSubcategory}
+  materialTypeCounts={materialTypeCounts}
+/>
+
          
         </div>
       </div>

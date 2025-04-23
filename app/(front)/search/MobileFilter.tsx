@@ -1,58 +1,156 @@
-// components/MobileFilter.tsx
 "use client";
 
 import { useState } from "react";
-import { X, SlidersHorizontal } from "lucide-react";
+import { FaFilter } from "react-icons/fa";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/Sheet";
+import MaterialTypeDropdown from "./materialDropdown";
+import CategoryDropdown from "./dropDownCategories";
+import StyleFilter from "./styleFilter";
+import PriceFilter from "./priceFilter";
+import CollectionTypeFilter from "./collectionTypeFilter";
 
 export default function MobileFilter({
-  materialTypeDropdown,
-  categoryDropdown,
-  priceFilter,
-  collectionTypeFilter,
-}: {
-  materialTypeDropdown: React.ReactNode;
-  categoryDropdown: React.ReactNode;
-  priceFilter: React.ReactNode;
-  collectionTypeFilter: React.ReactNode;
-}) {
-  const [open, setOpen] = useState(false);
+  materials,
+  categories,
+  materialType,
+  productCategory,
+  category,
+  price,
+  rating,
+  sort,
+  page,
+  q,
+  collectionType,
+  collectionTypes,
+  productCategoriesByCollectionType,
+  productTypeByProductCategory,
+  combineCategoryAndSubcategory,
+  materialTypeCounts = [],
+}: any) {
+  const [open, setOpen] = useState(false); // start closed
 
   return (
-    <>
-      {/* Floating Button */}
-      <button
-        className="fixed bottom-5 right-5 bg-pink-500 text-white p-4 rounded-full shadow-lg md:hidden z-50"
-        onClick={() => setOpen(true)}
-      >
-        <SlidersHorizontal className="w-6 h-6" />
-      </button>
+    <div className="fixed bottom-4 left-4 z-[100] md:hidden">
 
-      {/* Mobile Filter Panel */}
-      {open && (
-        <div className="fixed inset-0 bg-white z-50 overflow-y-auto p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-semibold">Filters</h2>
-            <button onClick={() => setOpen(false)}>
-              <X className="w-7 h-7 text-gray-600" />
+       
+<Sheet open={open} onOpenChange={setOpen}>
+<SheetTrigger onClick={() => setOpen(true)}>
+  <div className="bg-black p-3 rounded-full text-white shadow-lg flex items-center gap-2">
+    <FaFilter className="w-4 h-4" />
+    <span className="text-sm">Filter</span>
+  </div>
+</SheetTrigger>
+
+  {open && (
+    
+ 
+
+
+
+
+
+
+        <SheetContent side="bottom" className="h-[90vh] overflow-y-auto p-4">
+          {/* Close button */}
+          <div className="flex justify-between items-center mb-4">
+            <h2 className="text-lg font-semibold">Filters</h2>
+            <button
+              className="text-sm text-gray-500 hover:text-red-500"
+              onClick={() => setOpen(false)}
+            >
+              ✕ Close
             </button>
           </div>
 
-          {/* Filters Content */}
-          <div className="space-y-6">
-            {materialTypeDropdown}
-            {categoryDropdown}
-            {priceFilter}
-            {collectionTypeFilter}
+          <div className="space-y-4">
+            <MaterialTypeDropdown
+              materials={materials}
+              selectedMaterialType={materialType}
+              q={q}
+              price={price}
+              rating={rating}
+              sort={sort}
+              page={page}
+              productCategory={productCategory}
+              collectionType={collectionType}
+              materialTypeCounts={materialTypeCounts}
+              materialType={materialType}
+            />
+
+            <CategoryDropdown
+              categories={
+                (collectionType !== "all" || materialType !== "all") &&
+                productCategoriesByCollectionType.length > 0
+                  ? productCategoriesByCollectionType
+                  : categories
+              }
+              selectedCategory={productCategory}
+              q={q}
+              productCategory={productCategory}
+              price={price}
+              rating={rating}
+              sort={sort}
+              page={page}
+              materialType={materialType}
+              collectionType={collectionType}
+            />
+
+            {productCategory !== "all" &&
+              productTypeByProductCategory.length > 0 && (
+                <StyleFilter
+                  category={
+                    productCategory === "all"
+                      ? combineCategoryAndSubcategory
+                      : productTypeByProductCategory
+                  }
+                  selectedCategory={category}
+                  q={q}
+                  productCategory={productCategory}
+                  price={price}
+                  rating={rating}
+                  sort={sort}
+                  page={page}
+                  materialType={materialType}
+                  collectionType={collectionType}
+                />
+              )}
+
+            <PriceFilter
+              selectedPrice={price}
+              q={q}
+              productCategory={productCategory}
+              rating={rating}
+              sort={sort}
+              page={page}
+              materialType={materialType}
+              collectionType={collectionType}
+            />
+
+            <CollectionTypeFilter
+              collectionTypes={collectionTypes}
+              selectedCollectionType={collectionType}
+              q={q}
+              productCategory={productCategory}
+              price={price}
+              rating={rating}
+              sort={sort}
+              page={page}
+              materialType={materialType}
+            />
           </div>
 
-          <button
-            onClick={() => setOpen(false)}
-            className="w-full mt-8 bg-pink-500 text-white py-3 rounded-md font-semibold shadow hover:bg-pink-600 transition"
-          >
-            Apply Filters
-          </button>
-        </div>
+          {/* Apply button */}
+          <div className="mt-6">
+            <button
+              onClick={() => setOpen(false)}
+              className="w-full bg-pink-500 hover:bg-pink-600 text-white py-2 rounded-lg text-sm font-medium"
+            >
+              Apply Filters
+            </button>
+          </div>
+        </SheetContent>
       )}
-    </>
+</Sheet>
+    </div>
   );
 }
