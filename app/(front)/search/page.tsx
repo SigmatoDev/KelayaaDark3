@@ -15,7 +15,6 @@ import CollectionTypeFilter from "./collectionTypeFilter";
 // import ClearAllFilters from "./clearAllFilters";
 import MobileFilter from "./MobileFilter";
 
-
 const sortOrders = ["newest", "lowest", "highest", "rating"];
 const pageSize = 10; // Default to 10 products per page
 
@@ -35,9 +34,7 @@ export default async function SearchPage({
     sort = "newest",
     page = "1",
     collectionType = "all",
-    
   },
-  
 }: {
   searchParams: {
     q: string;
@@ -112,10 +109,7 @@ export default async function SearchPage({
       materialType
     );
 
-  console.log(
-    "productCategoriesByCollectionType",
-    productCategoriesByCollectionType
-  );
+  const getBeadsStyles = await productServices.getDistinctBeadsStyles();
   const { countProducts, products, pages } = await productServices.getByQuery({
     productCategory,
     category,
@@ -129,16 +123,15 @@ export default async function SearchPage({
   });
 
   const validProducts = products;
-  console.log("Products from Backend:", products);
-  console.log("Count of Products:", countProducts);
 
   // Pagination Logic
   const startPage = Math.max(1, currentPage - 1);
   const endPage = Math.min(pages, startPage + 2);
-
+  console.log("materialType", materialType);
   return (
     <div className="w-full overflow-x-hidden">
       <div className="grid md:grid-cols-5 gap-6 p-6">
+        {/* Filters Section */}
         {/* Filters Section */}
         <div className="hidden md:sticky md:top-6 md:max-h-[calc(100vh-3rem)] md:overflow-y-auto md:pr-2 md:space-y-4 md:block">
           <div>
@@ -150,8 +143,9 @@ export default async function SearchPage({
           <div>
             <hr />
           </div>
+
+          {/* 👇 Always show MaterialTypeDropdown */}
           <MaterialTypeDropdown
-            // categories={combineCategoryAndSubcategory}
             materials={materials}
             selectedMaterialType={materialType}
             q={q}
@@ -163,132 +157,151 @@ export default async function SearchPage({
             productCategory={productCategory}
             materialTypeCounts={materialTypeCounts}
             collectionType={collectionType}
-          />{" "}
-          <div className="p-0 m-0">
-            <hr />
-          </div>
-          <CategoryDropdown
-            categories={
-              (collectionType !== "all" || materialType !== "all") &&
-                productCategoriesByCollectionType.length > 0
-                ? productCategoriesByCollectionType
-                : categories
-            }
-            selectedCategory={productCategory}
-            q={q}
-            productCategory={productCategory}
-            price={price}
-            rating={rating}
-            sort={sort}
-            page={page}
-            materialType={materialType}
-            collectionType={collectionType}
           />
           <div className="p-0 m-0">
             <hr />
           </div>
-          {productCategory !== "all" &&
-            productTypeByProductCategory.length > 0 && (
-              <>
-                <StyleFilter
-                  category={
-                    productCategory === "all"
-                      ? combineCategoryAndSubcategory
-                      : productTypeByProductCategory
-                  }
-                  selectedCategory={category}
-                  q={q}
-                  productCategory={productCategory}
-                  price={price}
-                  rating={rating}
-                  sort={sort}
-                  page={page}
-                  materialType={materialType}
-                  collectionType={collectionType}
-                />
-                <div className="p-0 m-0">
-                  <hr />
-                </div>
-              </>
-            )}
-          <PriceFilter
-            selectedPrice={price}
-            q={q}
-            productCategory={productCategory}
-            rating={rating}
-            sort={sort}
-            page={page}
-            materialType={materialType}
-            collectionType={collectionType}
-          />{" "}
-          <div className="p-0 m-0">
-            <hr />
-          </div>
-          <CollectionTypeFilter
-            collectionTypes={collectionTypes}
-            selectedCollectionType={collectionType}
-            q={q}
-            productCategory={productCategory}
-            price={price}
-            rating={rating}
-            sort={sort}
-            page={page}
-            materialType={materialType}
-          />
-          <div className="p-0 m-0">
-            <hr />
-          </div>
-          {/* <RatingFilter
-          selectedRating={rating}
-          q={q}
-          productCategory={productCategory}
-          price={price}
-          sort={sort}
-          page={page}
-        /> */}
+
+          {/* 🎯 Conditionally show only StyleFilter if materialType is "Beads" */}
+          {materialType.includes("Beads") ? (
+            <>
+              <StyleFilter
+                category={getBeadsStyles}
+                selectedCategory={category}
+                q={q}
+                productCategory={productCategory}
+                price={price}
+                rating={rating}
+                sort={sort}
+                page={page}
+                materialType={materialType}
+                collectionType={collectionType}
+              />
+              <div className="p-0 m-0">
+                <hr />
+              </div>
+            </>
+          ) : (
+            <>
+              <CategoryDropdown
+                categories={
+                  (collectionType !== "all" || materialType !== "all") &&
+                  productCategoriesByCollectionType.length > 0
+                    ? productCategoriesByCollectionType
+                    : categories
+                }
+                selectedCategory={productCategory}
+                q={q}
+                productCategory={productCategory}
+                price={price}
+                rating={rating}
+                sort={sort}
+                page={page}
+                materialType={materialType}
+                collectionType={collectionType}
+              />
+              <div className="p-0 m-0">
+                <hr />
+              </div>
+
+              {productCategory !== "all" &&
+                productTypeByProductCategory.length > 0 && (
+                  <>
+                    <StyleFilter
+                      category={
+                        productCategory === "all"
+                          ? combineCategoryAndSubcategory
+                          : productTypeByProductCategory
+                      }
+                      selectedCategory={category}
+                      q={q}
+                      productCategory={productCategory}
+                      price={price}
+                      rating={rating}
+                      sort={sort}
+                      page={page}
+                      materialType={materialType}
+                      collectionType={collectionType}
+                    />
+                    <div className="p-0 m-0">
+                      <hr />
+                    </div>
+                  </>
+                )}
+
+              <PriceFilter
+                selectedPrice={price}
+                q={q}
+                productCategory={productCategory}
+                rating={rating}
+                sort={sort}
+                page={page}
+                materialType={materialType}
+                collectionType={collectionType}
+              />
+              <div className="p-0 m-0">
+                <hr />
+              </div>
+
+              <CollectionTypeFilter
+                collectionTypes={collectionTypes}
+                selectedCollectionType={collectionType}
+                q={q}
+                productCategory={productCategory}
+                price={price}
+                rating={rating}
+                sort={sort}
+                page={page}
+                materialType={materialType}
+              />
+              <div className="p-0 m-0">
+                <hr />
+              </div>
+            </>
+          )}
         </div>
 
         {/* Results Section */}
         <div className="md:col-span-4">
-        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
-  {/* Filter Chips (top on mobile) */}
-  <FilterChips
-    q={q}
-    productCategory={productCategory}
-    category={category}
-    price={price}
-    rating={rating}
-    sort={sort}
-    page={page}
-    materialType={materialType}
-    collectionType={collectionType}
-  />
+          <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
+            {/* Filter Chips (top on mobile) */}
+            <FilterChips
+              q={q}
+              productCategory={productCategory}
+              category={category}
+              price={price}
+              rating={rating}
+              sort={sort}
+              page={page}
+              materialType={materialType}
+              collectionType={collectionType}
+            />
 
-  {/* Sort and showing products (below on mobile) */}
-  <div className="flex flex-wrap items-center justify-end gap-2 text-[12px]">
-    <div className="px-2 py-1">
-      Showing{" "}
-      <span className="font-semibold text-[14px] text-[#e688a2]">
-        {validProducts.length}
-      </span>{" "}
-      product{validProducts.length !== 1 && "s"}
-    </div>
-    <span className="hidden md:block">Sort by:</span>
-    {sortOrders.map((s) => (
-      <Link
-        key={s}
-        href={getFilterUrl({ s })}
-        className={`px-3 py-1 text-[12px] hidden md:block rounded-md ${
-          sort === s
-            ? "bg-pink-100 text-pink-500"
-            : "hover:bg-pink-100 text-pink-500"
-        }`}
-      >
-        {s}
-      </Link>
-    ))}
-  </div>
-</div>
+            {/* Sort and showing products (below on mobile) */}
+            <div className="flex flex-wrap items-center justify-end gap-2 text-[12px]">
+              <div className="px-2 py-1">
+                Showing{" "}
+                <span className="font-semibold text-[14px] text-[#e688a2]">
+                  {validProducts.length}
+                </span>{" "}
+                product{validProducts.length !== 1 && "s"}
+              </div>
+              <span className="hidden md:block">Sort by:</span>
+              {sortOrders.map((s) => (
+                <Link
+                  key={s}
+                  href={getFilterUrl({ s })}
+                  className={`px-3 py-1 text-[12px] hidden md:block rounded-md ${
+                    sort === s
+                      ? "bg-pink-100 text-pink-500"
+                      : "hover:bg-pink-100 text-pink-500"
+                  }`}
+                >
+                  {s}
+                </Link>
+              ))}
+            </div>
+          </div>
 
           <ClientSearchWrapper>
             {validProducts.length > 0 ? (
@@ -325,10 +338,11 @@ export default async function SearchPage({
                     <Link
                       key={p}
                       href={getFilterUrl({ pg: String(p) })}
-                      className={`px-4 py-2 rounded-md ${currentPage === p
+                      className={`px-4 py-2 rounded-md ${
+                        currentPage === p
                           ? "bg-[#e688a2] text-white"
                           : "hover:bg-pink-100 text-pink-500"
-                        }`}
+                      }`}
                     >
                       {p}
                     </Link>
@@ -359,32 +373,29 @@ export default async function SearchPage({
                 </div>
               </div>
             )}
-
-
-
           </ClientSearchWrapper>
 
           {/* Floating Mobile Filters */}
           <MobileFilter
-  materials={materials}
-  categories={categories}
-  materialType={materialType}
-  productCategory={productCategory}
-  category={category}
-  price={price}
-  rating={rating}
-  sort={sort}
-  page={page}
-  q={q}
-  collectionType={collectionType}
-  collectionTypes={collectionTypes}
-  productCategoriesByCollectionType={productCategoriesByCollectionType}
-  productTypeByProductCategory={productTypeByProductCategory}
-  combineCategoryAndSubcategory={combineCategoryAndSubcategory}
-  materialTypeCounts={materialTypeCounts}
-/>
-
-         
+            materials={materials}
+            categories={categories}
+            materialType={materialType}
+            productCategory={productCategory}
+            category={category}
+            price={price}
+            rating={rating}
+            sort={sort}
+            page={page}
+            q={q}
+            collectionType={collectionType}
+            collectionTypes={collectionTypes}
+            productCategoriesByCollectionType={
+              productCategoriesByCollectionType
+            }
+            productTypeByProductCategory={productTypeByProductCategory}
+            combineCategoryAndSubcategory={combineCategoryAndSubcategory}
+            materialTypeCounts={materialTypeCounts}
+          />
         </div>
       </div>
     </div>
