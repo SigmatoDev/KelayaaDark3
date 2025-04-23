@@ -157,8 +157,8 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
       <div className="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Section - Image Gallery */}
         {/* Left Section - Image Gallery */}
-        <div className="flex flex-col md:flex-row gap-4 sticky top-24 self-start">
-          {product.images.length > 0 ? (
+        <div className="flex flex-col md:flex-row gap-4 md:sticky md:top-24 self-start">
+        {product.images.length > 0 ? (
             <>
               {/* Thumbnail previews */}
               <div className="flex md:flex-col gap-2">
