@@ -5,6 +5,7 @@ import ProductModel, { Product } from "@/lib/models/ProductModel";
 import SetsProductModel from "../models/SetsProductsModel";
 import GoldDiamondProductPricingModel from "../models/GoldDiamondProductsPricingDetails";
 import BanglesProductModel from "../models/BanglesProductSchema";
+import BeadsProductModel from "../models/BeadsProductModel";
 
 export const revalidate = 3600;
 
@@ -195,6 +196,14 @@ const getByProductCode = cache(
         productCode,
         productType: { $regex: /^bangles$/i },
         materialType: { $regex: /^gold$/i },
+      }).lean()) as Product | null;
+    }
+
+    // ✅ 3. If not found in SetsProductModel, check BanglesModel (only gold bangles)
+    if (!product) {
+      product = (await BeadsProductModel.findOne({
+        productCode,
+        materialType: { $regex: /^beads$/i },
       }).lean()) as Product | null;
     }
 
@@ -583,7 +592,7 @@ const getByQuery = cache(
     rating,
     page = "1",
     materialType,
-    collectionType, // still accepted, but not used anymore
+    collectionType,
   }: {
     q: string;
     productCategory: string;
@@ -609,7 +618,6 @@ const getByQuery = cache(
         ? { productCategory: { $in: productCategory.split(",") } }
         : { productCategory: { $in: categories } };
 
-    // ✅ FIXED: Always check both category and subCategories
     let categoryOnlyFilter = {};
     if (category && category !== "all") {
       categoryOnlyFilter = {
@@ -826,6 +834,75 @@ const getByQuery = cache(
       products = [...products, ...banglePairProducts];
     }
 
+    // ✅ NEW: Beads logic - filter by `info` instead of `category`
+    // ✅ NEW: Beads logic - filter by `info` instead of `category`
+    const materialTypes = materialType
+      ? materialType.toLowerCase().split(",")
+      : [];
+
+    if (materialTypes.includes("beads") || isDefaultSearch) {
+      const beadsQuery: any = {
+        materialType: /beads/i, // Matches any product with materialType: beads
+      };
+
+      // Handle the category filter (multiple categories allowed)
+      if (category && category !== "all") {
+        // Decode the URL-encoded category (in case '+' and other characters are encoded)
+        const decodedCategory = decodeURIComponent(category); // Decode the URL-encoded category
+
+        // Replace '+' with a space to handle URL encoding correctly
+        const categoryWithSpaces = decodedCategory.replace(/\+/g, " ");
+
+        // Handle multiple categories by splitting the input string by commas
+        const categoriesArray = categoryWithSpaces
+          .split(",") // Split by commas to handle multiple categories
+          .map((cat) => cat.trim()) // Trim any leading or trailing spaces
+          .map(
+            (cat) =>
+              new RegExp(
+                `\\b${cat.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, "\\$&")}\\b`,
+                "i"
+              )
+          ); // Escape special characters and convert each category into a regex pattern
+
+        // Update the query to match any of the categories in the 'info' field
+        beadsQuery.info = { $in: categoriesArray };
+      }
+
+      // If search query `q` is provided, filter based on name
+      if (q && q !== "all") {
+        beadsQuery.name = { $regex: q, $options: "i" };
+      }
+
+      // If rating is provided, filter based on rating
+      if (rating && rating !== "all") {
+        beadsQuery.rating = { $gte: Number(rating) };
+      }
+
+      // Handle price filtering
+      if (decodedPrice && decodedPrice !== "all") {
+        if (decodedPrice.includes("-")) {
+          beadsQuery.pricePerLine = {
+            $gte: parseFloat(decodedPrice.split("-")[0]),
+            $lte: parseFloat(decodedPrice.split("-")[1]),
+          };
+        } else if (decodedPrice.includes("+")) {
+          beadsQuery.pricePerLine = {
+            $gte: parseFloat(decodedPrice.replace("+", "")),
+          };
+        } else {
+          beadsQuery.pricePerLine = parseFloat(decodedPrice);
+        }
+      }
+
+      // Fetch the beads products based on the updated query
+      const beadsProducts = await BeadsProductModel.find(beadsQuery)
+        .sort(order)
+        .lean();
+
+      products = [...products, ...beadsProducts];
+    }
+
     const countProducts = products.length;
 
     const paginatedProducts = products.slice(
@@ -874,6 +951,8 @@ const getMaterialTypes = cache(async () => {
     await SetsProductModel.find().distinct("materialType");
   const banglesMaterialTypes =
     await BanglesProductModel.find().distinct("materialType");
+  const beadsMaterialType =
+    await BeadsProductModel.find().distinct("materialType");
 
   // Combine and deduplicate
   const allMaterialTypes = Array.from(
@@ -881,6 +960,7 @@ const getMaterialTypes = cache(async () => {
       ...productMaterialTypes,
       ...setsMaterialTypes,
       ...banglesMaterialTypes,
+      ...beadsMaterialType,
     ])
   );
 
@@ -1364,6 +1444,46 @@ const getCategoriesByCollectionAndMaterialType = cache(
   }
 );
 
+// Beads
+
+export const getDistinctBeadsStyles = async () => {
+  await dbConnect();
+
+  console.log(
+    "🔍 Fetching distinct styles from BeadsProductModel (info field)..."
+  );
+
+  const rawStyles = await BeadsProductModel.distinct("info");
+  console.log("🎨 Raw distinct Beads styles:", rawStyles);
+
+  // Clean & deduplicate (ignore null, empty, and junk values)
+  const normalizedMap = new Map<string, string>();
+
+  // Regular expression to remove sizes (e.g., (3.5mm), (4mm), (4.5-5.5mm), etc.)
+  const sizeRegex = /\(\d+(\.\d+)?(-\d+(\.\d+)?)?mm\)/i;
+
+  for (const style of rawStyles) {
+    if (
+      style &&
+      typeof style === "string" &&
+      !["na", "n/a", "null"].includes(style.trim().toLowerCase())
+    ) {
+      // Remove size information (like (3.5mm), (4.5-5.5mm), etc.)
+      const normalizedStyle = style.replace(sizeRegex, "").trim().toLowerCase();
+
+      // Add the cleaned style to the map if it hasn't been added yet
+      if (!normalizedMap.has(normalizedStyle)) {
+        normalizedMap.set(normalizedStyle, style.trim());
+      }
+    }
+  }
+
+  const cleanedStyles = Array.from(normalizedMap.values());
+  console.log("✅ Final cleaned Beads styles:", cleanedStyles);
+
+  return cleanedStyles;
+};
+
 const productService = {
   getLatest,
   getFeatured,
@@ -1380,6 +1500,7 @@ const productService = {
   getMaterialTypesWithCounts,
   getDistinctCollectionTypes,
   getCategoriesByCollectionAndMaterialType,
+  getDistinctBeadsStyles,
 };
 
 export default productService;

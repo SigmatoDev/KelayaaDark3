@@ -205,6 +205,48 @@ const menuData: Record<string, MenuItem> = {
     ],
     images: ["/images/menu/golddpr1.webp", "/images/menu/golddpr2.webp"],
   },
+
+  beads: {
+    subitems: [
+      {
+        label: "Beads",
+        subcategories: [],
+        // subcategories: [
+        //   { label: "Amethyst" },
+        //   { label: "Aquamarine & Rose Quartz" },
+        //   { label: "Beryl" },
+        //   { label: "Blue Saphire" },
+        //   { label: "Cats Eye" },
+        //   { label: "Coral" },
+        //   { label: "Emerald" },
+        //   { label: "Florite" },
+        //   { label: "Garnet" },
+        //   { label: "Iolite" },
+        //   { label: "Labradorite" },
+        //   { label: "Lemon Topaz" },
+        //   { label: "Moonstone" },
+        //   { label: "Multi Semi Precious" },
+        //   { label: "Multi colored Sapphire" },
+        //   { label: "Onyx" },
+        //   { label: "Opal" },
+        //   { label: "Pearl" },
+        //   { label: "Peridot" },
+        //   { label: "Pink Opal" },
+        //   { label: "Quartz" },
+        //   { label: "Rose quartz" },
+        //   { label: "Ruby" },
+        //   { label: "Ruby Immitation" },
+        //   { label: "Russian Emerald" },
+        //   { label: "Smokey Quarts" },
+        //   { label: "Topaz" },
+        //   { label: "Tourmaline" },
+        //   { label: "Turqoise" },
+        // ],
+      },
+    ],
+    images: [],
+  },
+
   "custom-jewellery": {
     subitems: [
       {
@@ -814,6 +856,53 @@ const DesktopHeader = () => {
                             })}
                           </div>
                         )}
+
+                        {/* Beads Category with 4 Columns */}
+                        {/* {activeMenu === "beads" && (
+                          <div className="col-span-5 grid grid-cols-4 gap-6 h-full">
+                            {(() => {
+                              const allSubcategories =
+                                menuData["beads"].subitems[0]?.subcategories ??
+                                [];
+
+                              // Divide subcategories into 4 columns
+                              const columns = [[], [], [], []] as Array<
+                                typeof allSubcategories
+                              >;
+
+                              allSubcategories.forEach((item, index) => {
+                                const colIndex = index % 4;
+                                columns[colIndex].push(item);
+                              });
+
+                              return columns.map((col, colIdx) => {
+                                return (
+                                  <div
+                                    key={colIdx}
+                                    className="flex flex-col space-y-2"
+                                  >
+                                    {col.map((subItem, subIdx) => (
+                                      <Link
+                                        key={subIdx}
+                                        href="#"
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          handleSubClick(
+                                            "Beads",
+                                            subItem.label
+                                          );
+                                        }}
+                                        className="text-gray-800 uppercase hover:text-[#af5772] text-sm font-[500]"
+                                      >
+                                        {subItem.label}
+                                      </Link>
+                                    ))}
+                                  </div>
+                                );
+                              });
+                            })()}
+                          </div>
+                        )} */}
                       </motion.div>
                     )}
                   </div>
@@ -824,7 +913,6 @@ const DesktopHeader = () => {
         </header>
       </div>
       {/* Hide Carousel & HeroSection if not on homepage */}
-     
 
       {/* Render SignInPopup and control its visibility */}
       {isSignInOpen && (

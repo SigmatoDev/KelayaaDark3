@@ -29,6 +29,7 @@ import ProductItems, {
 import ProductItem from "@/components/products/ProductItem";
 import SignInPopup from "@/components/signin/SignIn";
 import SetPriceBreakupCard from "./setDetailsCard";
+import BangleDetails from "./bangleDetails";
 
 interface Product {
   items: Item[];
@@ -297,7 +298,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
           <p className="font-semibold capitalize">
             : {product?.tags?.join(", ")}
           </p> */}
-            {(Number(product?.size) > 0 || Number(product?.ring_size) > 0) && (
+            {(product?.size.length > 0 || Number(product?.ring_size) > 0) && (
               <>
                 <p className="text-gray-600">Size</p>
                 <p className="font-semibold">
@@ -315,6 +316,13 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             product?.productCategory === "Rings" && (
               <div>
                 <RingDetails product={product} />
+              </div>
+            )}
+
+          {product?.materialType === "gold" &&
+            product?.productType === "Bangles" && (
+              <div>
+                <BangleDetails product={product} />
               </div>
             )}
 

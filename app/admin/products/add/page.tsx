@@ -7,6 +7,7 @@ import UploadGoldDiamondProductPricingExcelFile from "./UploadGoldDiamondPricdea
 import ExcelUploader from "./updatingExcelCloumn";
 import UploadSetProductExcelFile from "./setsUpload";
 import SetPricingUpload from "./setsPricingUpload";
+import UploadBeadsProductExcelFile from "./UploadBeads";
 
 export function generateMetadata({ params }: { params: { id: string } }) {
   return {
@@ -62,6 +63,9 @@ export default function ProductAddPage() {
       {/* <ExcelUploader /> */}
       <UploadSetProductExcelFile />
       <SetPricingUpload />
+
+      {/* beads */}
+      <UploadBeadsProductExcelFile />
     </AdminLayout>
   );
 }
