@@ -9,7 +9,7 @@ const ProductItems = async () => {
   const latestProducts = await productService.getLatest();
   console.log("latestProducts", latestProducts);
   return (
-    <div className="px-4 mt-20">
+    <div className="px-2 mt-20">
       {/* <h2 className="text-2xl text-center  font-semibold">
         EXPLORE OUR PRODUCTS
       </h2> */}
@@ -23,8 +23,8 @@ const ProductItems = async () => {
         Discover what’s new, what’s bold, and what’s trending — our latest
         styles have just landed, and they’re ready to impress!
       </p>
-      <div className="grid grid-cols-1 mt-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-4 items-center justify-center justify-items-center">
-        {latestProducts?.map((product) => (
+      <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-x-6 gap-y-8 mt-6 items-center justify-center justify-items-center">
+      {latestProducts?.map((product) => (
           <ProductItem key={product.slug} product={convertDocToObj(product)} />
         ))}
       </div>
@@ -90,7 +90,7 @@ export const ProductItemsSkeleton = ({
         </span>
       </h2>
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4">
-        {Array.from({ length: qty }).map((_, i) => {
+      {Array.from({ length: qty }).map((_, i) => {
           return <ProductItemSkeleton key={i} />;
         })}
       </div>

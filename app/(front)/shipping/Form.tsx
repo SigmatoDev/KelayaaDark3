@@ -70,8 +70,8 @@ const isNameLocked = !!session?.user?.name;
       if (session.user.email) {
         setValue("personalInfo.email", session.user.email);
       }
-      if (session.user.mobileNumber) {
-        setValue("personalInfo.mobileNumber", session.user.mobileNumber);
+      if (session.user?.mobileNumber) {
+        setValue("personalInfo.mobileNumber", session.user?.mobileNumber);
       }
       if (session.user.name) {
         setValue("personalInfo.fullName", session.user.name);

@@ -194,7 +194,7 @@ const CartDetails = () => {
             {/* Coupon Code Input */}
             <div>
               <div className="relative mt-6 flex gap-2">
-                <input
+                {/* <input
                   type="text"
                   className="w-full px-4 py-2 border text-[12px]"
                   placeholder="Coupon Code"
@@ -206,7 +206,7 @@ const CartDetails = () => {
                   onClick={handleApplyCoupon}
                 >
                   Apply
-                </button>
+                </button> */}
                 {couponCode && (
                   <button
                     className="ml-2 px-4 py-2 bg-gray-500 text-white font-semibold hover:bg-gray-600 transition"

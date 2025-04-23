@@ -128,7 +128,7 @@ export type ShippingAddress = {
   postalCode: string;
 };
 
-export type BillingDetails = {
+export type BillingDetails = ShippingAddress & {
   sameAsShipping: boolean;
   firstName?: string;
   lastName?: string;

@@ -1,22 +1,19 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import Image from "next/image";
-
 import {
   Carousel as SCarousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
 } from "@/components/ui/carousel";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 
 import image1 from "../../public/images/featured/featured-11.webp";
-// import image2 from "../../public/images/featured/featured-2.webp";
 import image3 from "../../public/images/featured/featured-33.webp";
 import image4 from "../../public/images/featured/featured-36.webp";
 import image5 from "../../public/images/featured/featurad-31.webp";
 import image6 from "../../public/images/featured/featured3b.webp";
-import { Link } from "lucide-react";
 
 const images = [image1, image3, image4, image5, image6];
 
@@ -26,7 +23,7 @@ const Carousel = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
-    }, 4000); // Change slides every 4 seconds
+    }, 4000);
 
     return () => clearInterval(interval);
   }, []);
@@ -42,65 +39,72 @@ const Carousel = () => {
   };
 
   return (
-    <div className="relative w-full h-[100dvh]">
-      <SCarousel opts={{ loop: true }}>
-        <CarouselContent>
-          {images.map((image, index) => (
-            <CarouselItem
-              key={index}
-              className={`${
-                index === currentIndex ? "block" : "hidden"
-              } w-full h-[100vh] transition-opacity duration-700`}
-            >
-              <Image
-                src={image}
-                alt={`Slide ${index + 1}`}
-                className="w-full h-full object-cover"
-                placeholder="blur"
-                priority
-              />
-            </CarouselItem>
-          ))}
-          <div className="absolute z-50 top-[40%] md:top-[60%] left-[10%] flex gap-2 flex-col">
-            <div>
-              <h2 className="text-white text-2xl md:text-5xl font-normal md:leading-[1.3]">
-                Celebrate Every Moment with <br />
-                Pure, Elegant Gold
-              </h2>
-              <p className="text-white text-[15px] py-2 md:text-xl">
-                Crafted with Love, Worn with Pride, Timelessly Beautiful.
-              </p>
-            </div>
+<div className="relative w-full h-[50vh] md:h-[90vh] overflow-hidden mt-[10px] md:mt-0">
+<div className="relative mx-auto w-full h-full px-2 md:px-0 md:rounded-none rounded-lg">
+        <SCarousel opts={{ loop: true }}>
+          <CarouselContent>
+            {images.map((image, index) => (
+             <CarouselItem
+             key={index}
+             className={`${
+               index === currentIndex ? "block" : "hidden"
+             } w-full h-[50vh] md:h-[90vh] transition-opacity duration-700 overflow-hidden rounded-lg`}
+           >
+             <Image
+               src={image}
+               alt={`Slide ${index + 1}`}
+               className="w-full h-full object-cover object-center rounded-lg"
+               placeholder="blur"
+               priority
+             />
+           </CarouselItem>
+           
+            ))}
 
-            <div className="flex md:gap-2 flex-col md:flex-row gap-4">
-              <div className="w-[230px] h-[40px] bg-white hover:bg-transparent border border-transparent hover:border-white transition-all duration-500 group">
-                <a
-                  href="/search"
-                  className="w-full h-full flex items-center justify-center px-[20px] text-black group-hover:text-white transition-colors duration-500"
-                >
-                  Shop the collection
-                </a>
-              </div>
-              <div className="w-[230px] h-[40px] bg-transparent border border-white flex items-center justify-center px-[20px] hover:border-white hover:bg-white transition-all duration-500 group">
-                <a
-                  className="text-white group-hover:text-black  "
-                  href="/custom-design"
-                >
-                  Get Custom Designs
-                </a>
-              </div>
-            </div>
-          </div>
-        </CarouselContent>
-        {/* <CarouselPrevious
-          onClick={handlePrevious}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 cursor-pointer bg-white bg-opacity-50 hover:bg-opacity-100 p-3 rounded-full"
-        />
-        <CarouselNext
-          onClick={handleNext}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 cursor-pointer bg-white bg-opacity-50 hover:bg-opacity-100 p-3 rounded-full"
-        /> */}
-      </SCarousel>
+            {/* Centered Text */}
+            <div className="absolute z-30 top-[25%] md:top-[50%] left-1/2 transform -translate-x-1/2 flex flex-col items-center space-y-4 md:space-y-6 text-center px-4">
+  <h2 className="text-white text-lg md:text-5xl font-semibold leading-tight">
+    Celebrate Every Moment with <br /> Pure, Elegant Gold
+  </h2>
+  <p className="text-white text-xs md:text-xl mt-2">
+    Crafted with Love, Worn with Pride, Timelessly Beautiful.
+  </p>
+  <div className="flex flex-row flex-wrap justify-center gap-2 md:gap-4 mt-4">
+    <a
+      href="/search"
+      className="px-4 py-2 border border-white bg-white text-black hover:bg-transparent hover:text-white transition rounded-md text-xs md:text-base"
+    >
+      Shop the Collection
+    </a>
+    <a
+      href="/custom-design"
+      className="px-4 py-2 border border-white text-white hover:bg-white hover:text-black transition rounded-md text-xs md:text-base"
+    >
+      Get Custom Designs
+    </a>
+  </div>
+</div>
+
+
+          </CarouselContent>
+
+          {/* Left Arrow */}
+          <button
+            onClick={handlePrevious}
+            className="absolute top-1/2 text-white left-4 transform -translate-y-1/2 bg-transparent border border-white rounded-full p-2 z-30 hover:bg-white hover:text-black transition"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+
+          {/* Right Arrow */}
+          <button
+            onClick={handleNext}
+            className="absolute top-1/2 right-4 text-white transform -translate-y-1/2 bg-transparent border border-white rounded-full p-2 z-30 hover:bg-white hover:text-black transition"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+        </SCarousel>
+      </div>
     </div>
   );
 };
@@ -108,5 +112,5 @@ const Carousel = () => {
 export default Carousel;
 
 export const CarouselSkeleton = () => {
-  return <div className="skeleton h-[450px] md:h-[600px] w-full" />;
+  return <div className="skeleton h-[450px] md:h-[600px] w-full rounded-lg" />;
 };

@@ -102,7 +102,7 @@ const HeroSectionCustomDesign = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 mt-16 sm:mt-16 lg:mt-16 w-[95%] xl:w-[90%] 2xl:w-[80%] mx-auto px-4 sm:px-6">
+    <div className="hidden md:flex flex-col lg:flex-row gap-6 mt-16 sm:mt-16 lg:mt-16 w-[95%] xl:w-[90%] 2xl:w-[80%] mx-auto px-4 sm:px-6">
       {/* Column 1 — 50% width on desktop, full on mobile */}
       <div className="w-full lg:w-1/2 lg:mb-0">
         {cards.map((card, index) => (

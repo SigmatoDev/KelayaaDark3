@@ -1,9 +1,9 @@
 "use client";
+
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FaFacebook, FaInstagram, FaTwitter } from "react-icons/fa";
+import { FaFacebook, FaInstagram } from "react-icons/fa";
 import MailchimpForm from "@/components/newsletter/MailchimpForm";
-
 
 const Footer = () => {
   const router = useRouter();
@@ -11,23 +11,12 @@ const Footer = () => {
     <footer className="w-full bg-[#FFF6F6] text-[#282828]">
       {/* Main Footer Content */}
       <div className="container mx-auto py-[60px] md:py-[100px]">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-[minmax(350px,1fr)_repeat(4,1fr)]">
-          {/* Column 1 - Logo & Email (Smaller Width) */}
-          <div className="flex flex-col items-center md:items-start md:max-w-[400px]">
-            {/* <div className="flex justify-center w-[200px] h-[80px] md:w-[250px] md:h-[90px] overflow-hidden">
-              <Link href="/">
-                <img
-                  src="/Kelayaa - logo.webp"
-                  alt="Kelayaa Logo"
-                  className="w-full h-full object-cover"
-                />
-              </Link>
-            </div> */}
+        <div className="grid grid-cols-2 md:grid-cols-[minmax(350px,1fr)_repeat(4,1fr)] gap-6 md:gap-8">
+          {/* Column 1 - Logo & Email */}
+          <div className="col-span-2 md:col-span-1 flex flex-col items-center md:items-start md:max-w-[400px]">
             <div className="rounded-sm p-1 w-full">
-           
-            <MailchimpForm />
+              <MailchimpForm />
             </div>
-           
           </div>
 
           {/* Column 2 - Categories */}
@@ -45,12 +34,11 @@ const Footer = () => {
                       case "Beads":
                         return "/search";
                       case "Custom Design":
-                        return "/custom-design"; // corrected spelling
+                        return "/custom-design";
                       default:
                         return "/";
                     }
                   };
-
                   return (
                     <li
                       key={item}
@@ -67,24 +55,22 @@ const Footer = () => {
 
           {/* Column 3 - Advantage */}
           <div className="text-center md:text-left">
-  <h3 className="font-semibold text-lg mb-4">Advantage</h3>
-  <ul className="space-y-2 text-sm">
-    {[
-      { name: "Size Guide", url: "/ring-bangle-size-guide" },
-      // { name: "Gold rates", url: "/" },
-      { name: "Refer a Friend", url: "/refer-friend" },
-    ].map((item) => (
-      <li
-        key={item.name}
-        onClick={() => router.push(item.url)}
-        className="cursor-pointer hover:text-[#EC008C] transition"
-      >
-        {item.name}
-      </li>
-    ))}
-  </ul>
-</div>
-
+            <h3 className="font-semibold text-lg mb-4">Advantage</h3>
+            <ul className="space-y-2 text-sm">
+              {[
+                { name: "Size Guide", url: "/ring-bangle-size-guide" },
+                { name: "Refer a Friend", url: "/refer-friend" },
+              ].map((item) => (
+                <li
+                  key={item.name}
+                  onClick={() => router.push(item.url)}
+                  className="cursor-pointer hover:text-[#EC008C] transition"
+                >
+                  {item.name}
+                </li>
+              ))}
+            </ul>
+          </div>
 
           {/* Column 4 - Quick Links */}
           <div className="text-center md:text-left">
@@ -125,14 +111,13 @@ const Footer = () => {
               </li>
               <li>
                 <a
-                  href="tel:1800-1800-900"
+                  href="tel:+919945000100"
                   className="hover:text-[#EC008C] transition"
                 >
                   +91 9945000100 <br />
                   +91 8431358078
                 </a>
               </li>
-          
             </ul>
           </div>
         </div>
@@ -142,21 +127,12 @@ const Footer = () => {
       <div className="w-full p-6 bg-[#282828] text-white">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex space-x-4">
-            <a
-              href="#"
-              aria-label="Facebook"
-              className="hover:text-gray-300 transition"
-            >
+            <a href="#" aria-label="Facebook" className="hover:text-gray-300 transition">
               <FaFacebook className="text-xl" />
             </a>
-            <a
-              href="#"
-              aria-label="Instagram"
-              className="hover:text-gray-300 transition"
-            >
+            <a href="#" aria-label="Instagram" className="hover:text-gray-300 transition">
               <FaInstagram className="text-xl" />
             </a>
-            ¸
           </div>
           <p className="text-sm md:text-base">
             © {new Date().getFullYear()} Kelayaa

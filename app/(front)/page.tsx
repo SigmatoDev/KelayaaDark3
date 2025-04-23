@@ -18,6 +18,10 @@ import CardGrid from "@/components/special-collections/SpecialCollections";
 import HowToSection from "@/components/howto-section/howToSection";
 import CategoryGrid from "@/components/category-grid/categoryGrid";
 import KelayaFavourites from "@/components/KelayaFavourites/KelayaFavourites";
+import HeroSectionCustomDesign from "@/components/hero-section-customdesign/heroSectionCustomDesign";
+import { usePathname, useRouter } from "next/navigation";
+import MobileCategoryCarousel from "@/components/carousel/MobileCategoryCarousel";
+import MobileHeroSectionCustomDesign from "@/components/hero-section-customdesign/MobileHeroSectionCustomDesign";
 
 export const metadata: Metadata = {
   title: process.env.NEXT_PUBLIC_APP_NAME || "Kelayaa",
@@ -29,6 +33,23 @@ export const metadata: Metadata = {
 const HomePage = () => {
   return (
     <>
+
+
+        <>
+        <MobileCategoryCarousel />
+          <div>
+            <Suspense fallback={<CarouselSkeleton />}>
+              <Carousel />
+            </Suspense>
+          </div>
+          <div className="px-4">
+            {/* <HeroSection /> */}
+            <HeroSectionCustomDesign />
+            <MobileHeroSectionCustomDesign />
+          </div>
+          {/* <CardGrid /> */}
+        </>
+    
       <div className="w-full mt-0">
         <KelayaFavourites />
       </div>
@@ -38,7 +59,7 @@ const HomePage = () => {
       </div>
 
       {/* Regular Content Inside Container */}
-      <div className="w-full mx-auto px-10">
+      <div className="w-full mx-auto px-2">
         <Suspense
           fallback={<ProductItemsSkeleton qty={8} name="Latest Products" />}
         >
