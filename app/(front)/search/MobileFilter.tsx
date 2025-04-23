@@ -44,10 +44,10 @@ export default function MobileFilter({
       {open && (
         <Sheet open={open} onOpenChange={setOpen}>
           <SheetContent
-            side="right"
-            className="fixed inset-y-0 right-0 w-[90%] max-w-sm bg-white shadow-lg transform transition-transform duration-300 translate-x-0 z-[101]"
+            side="bottom"
+            className="fixed inset-y-0 right-0 w-[90%] max-w-sm bg-white shadow-lg transform transition-transform duration-300 translate-x-0 z-[101] flex flex-col"
           >
-            <div className="flex justify-between items-center mb-4">
+            <div className="flex justify-between items-center mb-4 px-4">
               <h2 className="text-lg font-semibold">Filters</h2>
               <button
                 className="text-sm text-gray-500 hover:text-red-500"
@@ -57,7 +57,8 @@ export default function MobileFilter({
               </button>
             </div>
 
-            <div className="space-y-4 pb-24">
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto space-y-4 px-4 pb-24">
               <MaterialTypeDropdown
                 materials={materials}
                 selectedMaterialType={materialType}
@@ -134,6 +135,7 @@ export default function MobileFilter({
               />
             </div>
 
+            {/* Fixed apply button */}
             <div className="fixed bottom-0 left-0 w-full bg-white px-4 py-3 border-t border-gray-200">
               <button
                 onClick={() => setOpen(false)}
