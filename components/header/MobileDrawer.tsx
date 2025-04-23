@@ -70,7 +70,7 @@ const MobileDrawer = ({ closeDrawer }: { closeDrawer: () => void }) => {
 
       {/* Footer Links */}
       <div className="flex flex-col space-y-2 text-gray-500 text-sm">
-        <Link href="/about" onClick={closeDrawer} className="hover:text-pink-600">About Us</Link>
+        <Link href="/about-us" onClick={closeDrawer} className="hover:text-pink-600">About Us</Link>
         <Link href="/privacy-policy" onClick={closeDrawer} className="hover:text-pink-600">Privacy Policy</Link>
         <Link href="/terms-and-conditions" onClick={closeDrawer} className="hover:text-pink-600">Terms & Conditions</Link>
         <Link href="/return-policy" onClick={closeDrawer} className="hover:text-pink-600">Refund Policy</Link>

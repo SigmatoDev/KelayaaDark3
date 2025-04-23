@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import useCartService from "@/lib/hooks/useCartStore";
 import MobileDrawer from "./MobileDrawer";
+import SignInPopup from "../signin/SignIn";
 
 const MobileHeader = () => {
   const router = useRouter();
@@ -107,6 +108,11 @@ const MobileHeader = () => {
             </button>
           </form>
         </div>
+      )}
+
+       {/* Render SignInPopup and control its visibility */}
+       {isSignInOpen && (
+        <SignInPopup isOpen={isSignInOpen} setIsOpen={setIsSignInOpen} />
       )}
     </>
   );
