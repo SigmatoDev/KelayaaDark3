@@ -34,7 +34,7 @@ const orderSchema = new mongoose.Schema(
       postalCode: { type: String, required: true },
       country: { type: String, required: true },
     },
-    
+
     gstDetails: {
       hasGST: { type: Boolean, required: true },
       companyName: { type: String },
@@ -45,7 +45,7 @@ const orderSchema = new mongoose.Schema(
       firstName: { type: String },
       lastName: { type: String },
       address: { type: String },
-      landmark:{ type: String },
+      landmark: { type: String },
       country: { type: String },
       state: { type: String },
       city: { type: String },
@@ -115,6 +115,8 @@ export type OrderItem = {
   productCode: string;
   productType: string;
   ring_size?: string;
+  pricePerLine?: number;
+  inventory_no_of_line?: number;
 };
 
 export type ShippingAddress = {
@@ -146,7 +148,6 @@ export type PersonalInfo = {
   password?: string; // ✅ Added
   createAccountAfterCheckout: boolean;
 };
-
 
 export type GstDetails = {
   hasGST: boolean;

@@ -36,7 +36,7 @@ export default function BangleDetails({ product }: { product: ProductType }) {
           <p className="text-xs text-gray-500 mb-1">Metal</p>
           <div className="flex items-center justify-center h-5">
             <p className="font-semibold text-sm">
-              {product?.items[0]?.goldPurity || "18 KT_Yellow"}
+              {product?.items[0]?.goldPurity || "-"}
             </p>
           </div>
         </div>
@@ -47,7 +47,7 @@ export default function BangleDetails({ product }: { product: ProductType }) {
             <p className="text-xs text-gray-500 mb-1">Diamond</p>
             <div className="flex items-center justify-center h-5">
               <p className="font-semibold text-[0.7rem]">
-                {product?.items[0]?.gemCut || "FG-SI"}
+                {product?.items[0]?.gemCut || "-"}
               </p>
             </div>
           </div>
@@ -65,7 +65,9 @@ export default function BangleDetails({ product }: { product: ProductType }) {
       <div className="relative bg-purple-100 text-purple-700 px-4 py-3 ">
         <div className="absolute -top-2 left-6 w-4 h-4 bg-purple-100 rotate-45"></div>
         <div className="flex justify-between items-center">
-          <p className="text-sm font-medium">Not sure about your bangle size?</p>
+          <p className="text-sm font-medium">
+            Not sure about your bangle size?
+          </p>
           <a
             href="/ring-bangle-size-guide"
             className="text-pink-500 text-sm font-semibold flex items-center gap-1"

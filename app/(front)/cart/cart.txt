@@ -1,0 +1,54 @@
+  {item?.materialType === "Beads" ? (
+                    <div className="flex items-center gap-2">
+                      <label
+                        htmlFor={`lines-${item._id}`}
+                        className="text-sm font-medium"
+                      >
+                        Select Lines:
+                      </label>
+                      <select
+                        id={`lines-${item._id}`}
+                        className="border border-gray-300 rounded px-2 py-1"
+                        value={item.qty}
+                        onChange={(e) => {
+                          const updatedQty = parseInt(e.target.value);
+                          const updatedItem = {
+                            ...item,
+                            qty: updatedQty,
+                            selectedLines: updatedQty,
+                          };
+                          updateItemInCart(updatedItem);
+                        }}
+                      >
+                        {[...Array(item.inventory_no_of_line || 1)].map(
+                          (_, i) => (
+                            <option key={i + 1} value={i + 1}>
+                              {i + 1} Line{i + 1 > 1 ? "s" : ""}
+                            </option>
+                          )
+                        )}
+                      </select>
+                    </div>
+                  ) : (
+                    <div className="flex items-center border border-[#17183B] w-max mt-1">
+                      <button
+                        className="w-12 h-10 text-black text-2xl font-semibold flex items-center justify-center hover:bg-black hover:text-white transition-colors duration-200"
+                        type="button"
+                        onClick={() => decrease(item)}
+                      >
+                        -
+                      </button>
+
+                      <span className="text-lg font-medium text-black mx-4">
+                        {item.qty}
+                      </span>
+
+                      <button
+                        className="w-10 h-10 text-black text-2xl font-semibold flex items-center justify-center hover:bg-black hover:text-white transition-colors duration-200"
+                        type="button"
+                        onClick={() => increase(item)}
+                      >
+                        +
+                      </button>
+                    </div>
+                  )}

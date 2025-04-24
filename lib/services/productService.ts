@@ -609,10 +609,8 @@ const getByQuery = cache(
     const categories = await ProductModel.find()
       .distinct("productCategory")
       .lean();
-
     const queryFilter =
       q && q !== "all" ? { name: { $regex: q, $options: "i" } } : {};
-
     const categoryFilter =
       productCategory && productCategory !== "all"
         ? { productCategory: { $in: productCategory.split(",") } }
@@ -672,239 +670,235 @@ const getByQuery = cache(
             ? { rating: -1 }
             : { _id: -1 };
 
-    let products = await ProductModel.aggregate([
-      {
-        $match: {
-          ...queryFilter,
-          ...categoryFilter,
-          ...categoryOnlyFilter,
-          ...priceFilter,
-          ...ratingFilter,
-          ...materialTypeFilter,
+    let products: any[] = [];
+
+    // New: Handle collections
+    if (productCategory?.toLowerCase() === "collections") {
+      const collectionQuery =
+        collectionType && collectionType !== "all"
+          ? {
+              collectionType: {
+                $regex: new RegExp(`^${collectionType}$`, "i"),
+              },
+            }
+          : { collectionType: { $exists: true, $ne: null } };
+
+      const baseFilters = {
+        ...queryFilter,
+        ...categoryOnlyFilter,
+        ...priceFilter,
+        ...ratingFilter,
+        ...collectionQuery,
+      };
+
+      const models = [
+        ProductModel,
+        SetsProductModel,
+        BanglesProductModel,
+        BeadsProductModel,
+      ];
+
+      for (const model of models) {
+        const docs = await model
+          .find({
+            ...baseFilters,
+          })
+          .sort(order)
+          .lean();
+        products = [...products, ...docs];
+      }
+    } else {
+      // default ProductModel search
+      products = await ProductModel.aggregate([
+        {
+          $match: {
+            ...queryFilter,
+            ...categoryFilter,
+            ...categoryOnlyFilter,
+            ...priceFilter,
+            ...ratingFilter,
+            ...materialTypeFilter,
+          },
         },
-      },
-    ]);
+      ]);
 
-    const shouldAddGoldSets =
-      productCategory?.toLowerCase() === "sets" &&
-      materialType?.toLowerCase().includes("gold");
+      const shouldAddGoldSets =
+        productCategory?.toLowerCase() === "sets" &&
+        materialType?.toLowerCase().includes("gold");
 
-    const shouldAddGoldBangles =
-      productCategory?.toLowerCase() === "bangles" &&
-      materialType?.toLowerCase().includes("gold");
+      const shouldAddGoldBangles =
+        productCategory?.toLowerCase() === "bangles" &&
+        materialType?.toLowerCase().includes("gold");
 
-    const shouldAddGoldBanglePairs =
-      productCategory?.toLowerCase() === "bangle pair" &&
-      materialType?.toLowerCase().includes("gold");
+      const shouldAddGoldBanglePairs =
+        productCategory?.toLowerCase() === "bangle pair" &&
+        materialType?.toLowerCase().includes("gold");
 
-    const isDefaultSearch =
-      (!productCategory || productCategory === "all") &&
-      (!category || category === "all") &&
-      (!materialType || materialType === "all") &&
-      (!price || price === "all") &&
-      (!rating || rating === "all") &&
-      (!q || q === "all");
+      const isDefaultSearch =
+        (!productCategory || productCategory === "all") &&
+        (!category || category === "all") &&
+        (!materialType || materialType === "all") &&
+        (!price || price === "all") &&
+        (!rating || rating === "all") &&
+        (!q || q === "all");
 
-    if (shouldAddGoldSets || isDefaultSearch) {
-      const setQuery: any = {
-        materialType: /gold/i,
-        productType: /sets/i,
-      };
-
-      if (category && category !== "all") {
-        setQuery.$or = [
-          { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
-          { category: { $regex: new RegExp(`^${category}$`, "i") } },
-        ];
-      }
-
-      if (q && q !== "all") {
-        setQuery.name = { $regex: q, $options: "i" };
-      }
-
-      if (rating && rating !== "all") {
-        setQuery.rating = { $gte: Number(rating) };
-      }
-
-      if (decodedPrice && decodedPrice !== "all") {
-        if (decodedPrice.includes("-")) {
-          setQuery.price = {
-            $gte: parseFloat(decodedPrice.split("-")[0]),
-            $lte: parseFloat(decodedPrice.split("-")[1]),
-          };
-        } else if (decodedPrice.includes("+")) {
-          setQuery.price = {
-            $gte: parseFloat(decodedPrice.replace("+", "")),
-          };
-        } else {
-          setQuery.price = parseFloat(decodedPrice);
+      if (shouldAddGoldSets || isDefaultSearch) {
+        const setQuery: any = {
+          materialType: /gold/i,
+          productType: /sets/i,
+        };
+        if (category && category !== "all") {
+          setQuery.$or = [
+            { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
+            { category: { $regex: new RegExp(`^${category}$`, "i") } },
+          ];
         }
-      }
-
-      const setProducts = await SetsProductModel.find(setQuery)
-        .sort(order)
-        .lean();
-
-      products = [...products, ...setProducts];
-    }
-
-    if (shouldAddGoldBangles || isDefaultSearch) {
-      const banglesQuery: any = {
-        materialType: /gold/i,
-        productType: /bangles/i,
-      };
-
-      if (category && category !== "all") {
-        banglesQuery.$or = [
-          { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
-          { category: { $regex: new RegExp(`^${category}$`, "i") } },
-        ];
-      }
-
-      if (q && q !== "all") {
-        banglesQuery.name = { $regex: q, $options: "i" };
-      }
-
-      if (rating && rating !== "all") {
-        banglesQuery.rating = { $gte: Number(rating) };
-      }
-
-      if (decodedPrice && decodedPrice !== "all") {
-        if (decodedPrice.includes("-")) {
-          banglesQuery.price = {
-            $gte: parseFloat(decodedPrice.split("-")[0]),
-            $lte: parseFloat(decodedPrice.split("-")[1]),
-          };
-        } else if (decodedPrice.includes("+")) {
-          banglesQuery.price = {
-            $gte: parseFloat(decodedPrice.replace("+", "")),
-          };
-        } else {
-          banglesQuery.price = parseFloat(decodedPrice);
+        if (q && q !== "all") setQuery.name = { $regex: q, $options: "i" };
+        if (rating && rating !== "all")
+          setQuery.rating = { $gte: Number(rating) };
+        if (decodedPrice && decodedPrice !== "all") {
+          if (decodedPrice.includes("-")) {
+            setQuery.price = {
+              $gte: parseFloat(decodedPrice.split("-")[0]),
+              $lte: parseFloat(decodedPrice.split("-")[1]),
+            };
+          } else if (decodedPrice.includes("+")) {
+            setQuery.price = {
+              $gte: parseFloat(decodedPrice.replace("+", "")),
+            };
+          } else {
+            setQuery.price = parseFloat(decodedPrice);
+          }
         }
+
+        const setProducts = await SetsProductModel.find(setQuery)
+          .sort(order)
+          .lean();
+        products = [...products, ...setProducts];
       }
 
-      const banglesProducts = await BanglesProductModel.find(banglesQuery)
-        .sort(order)
-        .lean();
-
-      products = [...products, ...banglesProducts];
-    }
-
-    if (shouldAddGoldBanglePairs || isDefaultSearch) {
-      const banglePairQuery: any = {
-        materialType: /gold/i,
-        productType: /bangle pair/i,
-      };
-
-      if (category && category !== "all") {
-        banglePairQuery.$or = [
-          { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
-          { category: { $regex: new RegExp(`^${category}$`, "i") } },
-        ];
-      }
-
-      if (q && q !== "all") {
-        banglePairQuery.name = { $regex: q, $options: "i" };
-      }
-
-      if (rating && rating !== "all") {
-        banglePairQuery.rating = { $gte: Number(rating) };
-      }
-
-      if (decodedPrice && decodedPrice !== "all") {
-        if (decodedPrice.includes("-")) {
-          banglePairQuery.price = {
-            $gte: parseFloat(decodedPrice.split("-")[0]),
-            $lte: parseFloat(decodedPrice.split("-")[1]),
-          };
-        } else if (decodedPrice.includes("+")) {
-          banglePairQuery.price = {
-            $gte: parseFloat(decodedPrice.replace("+", "")),
-          };
-        } else {
-          banglePairQuery.price = parseFloat(decodedPrice);
+      if (shouldAddGoldBangles || isDefaultSearch) {
+        const banglesQuery: any = {
+          materialType: /gold/i,
+          productType: /bangles/i,
+        };
+        if (category && category !== "all") {
+          banglesQuery.$or = [
+            { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
+            { category: { $regex: new RegExp(`^${category}$`, "i") } },
+          ];
         }
-      }
-
-      const banglePairProducts = await BanglesProductModel.find(banglePairQuery)
-        .sort(order)
-        .lean();
-
-      products = [...products, ...banglePairProducts];
-    }
-
-    // ✅ NEW: Beads logic - filter by `info` instead of `category`
-    // ✅ NEW: Beads logic - filter by `info` instead of `category`
-    const materialTypes = materialType
-      ? materialType.toLowerCase().split(",")
-      : [];
-
-    if (materialTypes.includes("beads") || isDefaultSearch) {
-      const beadsQuery: any = {
-        materialType: /beads/i, // Matches any product with materialType: beads
-      };
-
-      // Handle the category filter (multiple categories allowed)
-      if (category && category !== "all") {
-        // Decode the URL-encoded category (in case '+' and other characters are encoded)
-        const decodedCategory = decodeURIComponent(category); // Decode the URL-encoded category
-
-        // Replace '+' with a space to handle URL encoding correctly
-        const categoryWithSpaces = decodedCategory.replace(/\+/g, " ");
-
-        // Handle multiple categories by splitting the input string by commas
-        const categoriesArray = categoryWithSpaces
-          .split(",") // Split by commas to handle multiple categories
-          .map((cat) => cat.trim()) // Trim any leading or trailing spaces
-          .map(
-            (cat) =>
-              new RegExp(
-                `\\b${cat.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, "\\$&")}\\b`,
-                "i"
-              )
-          ); // Escape special characters and convert each category into a regex pattern
-
-        // Update the query to match any of the categories in the 'info' field
-        beadsQuery.info = { $in: categoriesArray };
-      }
-
-      // If search query `q` is provided, filter based on name
-      if (q && q !== "all") {
-        beadsQuery.name = { $regex: q, $options: "i" };
-      }
-
-      // If rating is provided, filter based on rating
-      if (rating && rating !== "all") {
-        beadsQuery.rating = { $gte: Number(rating) };
-      }
-
-      // Handle price filtering
-      if (decodedPrice && decodedPrice !== "all") {
-        if (decodedPrice.includes("-")) {
-          beadsQuery.pricePerLine = {
-            $gte: parseFloat(decodedPrice.split("-")[0]),
-            $lte: parseFloat(decodedPrice.split("-")[1]),
-          };
-        } else if (decodedPrice.includes("+")) {
-          beadsQuery.pricePerLine = {
-            $gte: parseFloat(decodedPrice.replace("+", "")),
-          };
-        } else {
-          beadsQuery.pricePerLine = parseFloat(decodedPrice);
+        if (q && q !== "all") banglesQuery.name = { $regex: q, $options: "i" };
+        if (rating && rating !== "all")
+          banglesQuery.rating = { $gte: Number(rating) };
+        if (decodedPrice && decodedPrice !== "all") {
+          if (decodedPrice.includes("-")) {
+            banglesQuery.price = {
+              $gte: parseFloat(decodedPrice.split("-")[0]),
+              $lte: parseFloat(decodedPrice.split("-")[1]),
+            };
+          } else if (decodedPrice.includes("+")) {
+            banglesQuery.price = {
+              $gte: parseFloat(decodedPrice.replace("+", "")),
+            };
+          } else {
+            banglesQuery.price = parseFloat(decodedPrice);
+          }
         }
+
+        const banglesProducts = await BanglesProductModel.find(banglesQuery)
+          .sort(order)
+          .lean();
+        products = [...products, ...banglesProducts];
       }
 
-      // Fetch the beads products based on the updated query
-      const beadsProducts = await BeadsProductModel.find(beadsQuery)
-        .sort(order)
-        .lean();
+      if (shouldAddGoldBanglePairs || isDefaultSearch) {
+        const banglePairQuery: any = {
+          materialType: /gold/i,
+          productType: /bangle pair/i,
+        };
+        if (category && category !== "all") {
+          banglePairQuery.$or = [
+            { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
+            { category: { $regex: new RegExp(`^${category}$`, "i") } },
+          ];
+        }
+        if (q && q !== "all")
+          banglePairQuery.name = { $regex: q, $options: "i" };
+        if (rating && rating !== "all")
+          banglePairQuery.rating = { $gte: Number(rating) };
+        if (decodedPrice && decodedPrice !== "all") {
+          if (decodedPrice.includes("-")) {
+            banglePairQuery.price = {
+              $gte: parseFloat(decodedPrice.split("-")[0]),
+              $lte: parseFloat(decodedPrice.split("-")[1]),
+            };
+          } else if (decodedPrice.includes("+")) {
+            banglePairQuery.price = {
+              $gte: parseFloat(decodedPrice.replace("+", "")),
+            };
+          } else {
+            banglePairQuery.price = parseFloat(decodedPrice);
+          }
+        }
 
-      products = [...products, ...beadsProducts];
+        const banglePairProducts = await BanglesProductModel.find(
+          banglePairQuery
+        )
+          .sort(order)
+          .lean();
+        products = [...products, ...banglePairProducts];
+      }
+
+      const materialTypes = materialType
+        ? materialType.toLowerCase().split(",")
+        : [];
+
+      if (materialTypes.includes("beads") || isDefaultSearch) {
+        const beadsQuery: any = { materialType: /beads/i };
+
+        if (category && category !== "all") {
+          const decodedCategory = decodeURIComponent(category);
+          const categoryWithSpaces = decodedCategory.replace(/\+/g, " ");
+          const categoriesArray = categoryWithSpaces
+            .split(",")
+            .map((cat) => cat.trim())
+            .map(
+              (cat) =>
+                new RegExp(
+                  `\\b${cat.replace(/[.*+?^=!:${}()|\[\]\/\\]/g, "\\$&")}\\b`,
+                  "i"
+                )
+            );
+          beadsQuery.info = { $in: categoriesArray };
+        }
+
+        if (q && q !== "all") beadsQuery.name = { $regex: q, $options: "i" };
+        if (rating && rating !== "all")
+          beadsQuery.rating = { $gte: Number(rating) };
+        if (decodedPrice && decodedPrice !== "all") {
+          if (decodedPrice.includes("-")) {
+            beadsQuery.pricePerLine = {
+              $gte: parseFloat(decodedPrice.split("-")[0]),
+              $lte: parseFloat(decodedPrice.split("-")[1]),
+            };
+          } else if (decodedPrice.includes("+")) {
+            beadsQuery.pricePerLine = {
+              $gte: parseFloat(decodedPrice.replace("+", "")),
+            };
+          } else {
+            beadsQuery.pricePerLine = parseFloat(decodedPrice);
+          }
+        }
+
+        const beadsProducts = await BeadsProductModel.find(beadsQuery)
+          .sort(order)
+          .lean();
+        products = [...products, ...beadsProducts];
+      }
     }
 
     const countProducts = products.length;
-
     const paginatedProducts = products.slice(
       PAGE_SIZE * (Number(page) - 1),
       PAGE_SIZE * Number(page)
@@ -1148,7 +1142,8 @@ const getSimilarProducts = cache(
     category?: string,
     subCategories?: string[] | string,
     materialType?: string,
-    currentProductCode?: string
+    currentProductCode?: string,
+    productType?: string
   ) => {
     await dbConnect();
 
@@ -1173,6 +1168,7 @@ const getSimilarProducts = cache(
     }
 
     const regexCategory = new RegExp(`^${productCategory}$`, "i");
+    const regexProductType = new RegExp(`^${productType}$`, "i");
     const regexMaterialType = materialType
       ? new RegExp(`^${materialType}$`, "i")
       : null;
@@ -1210,37 +1206,51 @@ const getSimilarProducts = cache(
       JSON.stringify(fullFilter, null, 2)
     );
 
-    // Fetch from all 3 models
-    const [regularProducts, setsProducts, banglesProducts] = await Promise.all([
-      ProductModel.find(fullFilter).sort({ createdAt: -1 }).lean(),
-      SetsProductModel.find({
-        productType: regexCategory,
-        ...(regexMainCategory && { category: regexMainCategory }),
-        ...(regexSubCategories.length > 0 && {
-          subCategories: { $in: regexSubCategories },
-        }),
-        ...(regexMaterialType && { materialType: regexMaterialType }),
-        ...(productIdToExclude && { _id: { $ne: productIdToExclude } }),
-      })
-        .sort({ createdAt: -1 })
-        .lean(),
-      BanglesProductModel.find({
-        productType: regexCategory,
-        ...(regexMainCategory && { category: regexMainCategory }),
-        ...(regexSubCategories.length > 0 && {
-          subCategories: { $in: regexSubCategories },
-        }),
-        ...(regexMaterialType && { materialType: regexMaterialType }),
-        ...(productIdToExclude && { _id: { $ne: productIdToExclude } }),
-      })
-        .sort({ createdAt: -1 })
-        .lean(),
-    ]);
+    // Fetch from all 4 models
+    const [regularProducts, setsProducts, banglesProducts, beadsProducts] =
+      await Promise.all([
+        ProductModel.find(fullFilter).sort({ createdAt: -1 }).lean(),
+        SetsProductModel.find({
+          productType: regexCategory,
+          ...(regexMainCategory && { category: regexMainCategory }),
+          ...(regexSubCategories.length > 0 && {
+            subCategories: { $in: regexSubCategories },
+          }),
+          ...(regexMaterialType && { materialType: regexMaterialType }),
+          ...(productIdToExclude && { _id: { $ne: productIdToExclude } }),
+        })
+          .sort({ createdAt: -1 })
+          .lean(),
+        BanglesProductModel.find({
+          productType: regexProductType,
+          // ...(regexMainCategory && { category: regexMainCategory }),
+          // ...(regexSubCategories.length > 0 && {
+          //   subCategories: { $in: regexSubCategories },
+          // }),
+          ...(regexMaterialType && { materialType: regexMaterialType }),
+          ...(productIdToExclude && { _id: { $ne: productIdToExclude } }),
+        })
+          .sort({ createdAt: -1 })
+          .lean(),
+        BeadsProductModel.find({
+          materialType: regexCategory,
+          ...(regexMainCategory && { category: regexMainCategory }),
+          ...(regexSubCategories.length > 0 && {
+            subCategories: { $in: regexSubCategories },
+          }),
+          ...(regexMaterialType && { materialType: regexMaterialType }),
+          ...(productIdToExclude && { _id: { $ne: productIdToExclude } }),
+        })
+          .sort({ createdAt: -1 })
+          .lean(),
+      ]);
 
+    // Combine all products
     const combined = [
       ...regularProducts,
       ...setsProducts,
       ...banglesProducts,
+      ...beadsProducts,
     ].slice(0, 8);
 
     console.log(`✅ Found ${combined.length} similar products.`);
@@ -1305,6 +1315,16 @@ async function getMaterialTypesWithCounts() {
     },
   ]);
 
+  // Step 4: Aggregate materialType counts from BeadsProductModel
+  const beadsProductCounts = await BeadsProductModel.aggregate([
+    {
+      $group: {
+        _id: "$materialType",
+        count: { $sum: 1 },
+      },
+    },
+  ]);
+
   // Step 4: Combine counts into one object
   const counts: Record<string, number> = {};
 
@@ -1324,6 +1344,13 @@ async function getMaterialTypesWithCounts() {
 
   // Add BanglesProductModel counts
   banglesProductCounts.forEach((item) => {
+    if (item._id) {
+      counts[item._id] = (counts[item._id] || 0) + item.count;
+    }
+  });
+
+  // Add BeadsProductModel counts
+  beadsProductCounts.forEach((item) => {
     if (item._id) {
       counts[item._id] = (counts[item._id] || 0) + item.count;
     }

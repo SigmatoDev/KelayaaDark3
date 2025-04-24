@@ -7,6 +7,8 @@ import { round2 } from "../utils";
 
 // ✅ Corrected CartItem with _id
 type CartItem = {
+  materialType: string;
+  pricePerLine: any;
   _id: string;
   name: string;
   slug: string;
@@ -145,7 +147,6 @@ const useCartService = () => {
     couponCode,
     gstDetails,
     personalInfo,
-    
 
     // Add item or increase quantity
     increase: (item: CartItem) => {
@@ -235,12 +236,9 @@ const useCartService = () => {
       cartStore.setState({ totalPriceAfterCheckout: amount });
     },
 
-    
-    
     saveBillingAddress: (billingAddress: ShippingAddress) => {
       cartStore.setState({ billingAddress });
     },
-    
 
     clear: () => {
       cartStore.setState({
@@ -254,6 +252,7 @@ const useCartService = () => {
 export default useCartService;
 
 // ⛏ Internal function to update price
+// ⛏ Internal function to update price
 const updateCart = (items: CartItem[]) => {
   const {
     itemsPrice: newItemsPrice,
@@ -262,9 +261,16 @@ const updateCart = (items: CartItem[]) => {
     totalPrice,
   } = calcPrice(items);
 
+  // Adjust price calculation for Beads products based on materialType
   const originalItemsPrice = round2(
-    items.reduce((acc, item) => acc + item.basePrice * item.qty, 0)
+    items.reduce((acc, item) => {
+      // Use pricePerLine if materialType is 'beads'
+      const price =
+        item.materialType === "Beads" ? item.pricePerLine : item.basePrice;
+      return acc + price * item.qty;
+    }, 0)
   );
+
   const totalCartQuantity = items.reduce((acc, item) => acc + item.qty, 0);
 
   cartStore.setState({
@@ -281,8 +287,14 @@ const updateCart = (items: CartItem[]) => {
 // ⛏ Internal function to calculate cart total
 export const calcPrice = (items: CartItem[]) => {
   const itemsPrice = round2(
-    items.reduce((acc, item) => acc + item.price * item.qty, 0)
+    items.reduce((acc, item) => {
+      // Adjust price for Beads products based on materialType
+      const price =
+        item.materialType === "Beads" ? item.pricePerLine : item.price;
+      return acc + price * item.qty;
+    }, 0)
   );
+
   const shippingPrice = round2(itemsPrice > 100 ? 0 : 100);
   const taxPrice = round2(0.15 * itemsPrice);
   const totalPrice = Math.round(
