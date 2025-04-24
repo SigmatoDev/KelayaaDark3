@@ -1,5 +1,7 @@
 // /app/api/products/update-stock/route.ts
 import dbConnect from "@/lib/dbConnect";
+import BanglesProductModel from "@/lib/models/BanglesProductSchema";
+import BeadsProductModel from "@/lib/models/BeadsProductModel";
 import ProductModel from "@/lib/models/ProductModel";
 import SetsProductModel from "@/lib/models/SetsProductsModel";
 import { NextRequest, NextResponse } from "next/server";
@@ -28,6 +30,25 @@ export async function PATCH(req: NextRequest) {
         { countInStock: String(countInStock) },
         { new: true }
       );
+    }
+
+    // If not found in SetsProductModel, try in BangleProductModel
+    if (!product) {
+      product = await BanglesProductModel.findOneAndUpdate(
+        { productCode },
+        { countInStock: String(countInStock) },
+        { new: true }
+      );
+    }
+
+    // If not found in BangleProductModel, try in BeadsProductModel
+    if (!product) {
+      product = await BeadsProductModel.findOneAndUpdate(
+        { productCode },
+        { countInStock: String(countInStock) },
+        { new: true }
+      );
+      console.log("product", product);
     }
 
     if (!product) {

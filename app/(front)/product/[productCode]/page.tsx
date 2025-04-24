@@ -97,7 +97,8 @@ const ProductPage = async ({ params }: { params: { productCode: string } }) => {
     product.category,
     product.subCategories || [],
     product.materialType,
-    product.productCode
+    product.productCode,
+    product.productType
   );
   console.log("similar", similarProducts);
 

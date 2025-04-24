@@ -32,6 +32,10 @@ import SetPriceBreakupCard from "./setDetailsCard";
 import BangleDetails from "./bangleDetails";
 
 interface Product {
+  subCategories: string;
+  inventory_no_of_line: any;
+  pricePerLine: number;
+  length: boolean;
   items: Item[];
   productType: string;
   size: string;
@@ -153,13 +157,25 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
     const data = await response.json();
     setIsWishlisted(data.status);
   };
+
+  // Beads
+
+  const [selectedLines, setSelectedLines] = useState(1);
+  const [dynamicPrice, setDynamicPrice] = useState(product?.pricePerLine || 0);
+
+  useEffect(() => {
+    if (product?.materialType === "Beads") {
+      setDynamicPrice(product.pricePerLine);
+      setSelectedLines(1);
+    }
+  }, [product]);
+
   return (
     <>
       <div className="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Section - Image Gallery */}
-        {/* Left Section - Image Gallery */}
         <div className="flex flex-col md:flex-row gap-4 md:sticky md:top-24 self-start">
-        {product.images.length > 0 ? (
+          {product.images.length > 0 ? (
             <>
               {/* Thumbnail previews */}
               <div className="flex md:flex-col gap-2">
@@ -255,15 +271,29 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             {product?.name}
           </h1>
           <div className="space-y-1 my-2">
-            <div className="text-[26px] font-bold text-[#bb5683] leading-snug">
-              ₹
-              {product.price
-                ? product.price.toLocaleString("en-IN", {
+            {product?.materialType === "Beads" ? (
+              <>
+                <div className="text-[26px] font-bold text-[#bb5683] leading-snug">
+                  ₹
+                  {dynamicPrice.toLocaleString("en-IN", {
                     minimumFractionDigits: 2,
                     maximumFractionDigits: 2,
-                  })
-                : "N/A"}
-            </div>
+                  })}
+                </div>
+
+                <div className="text-xs text-gray-400">Price Per lines</div>
+              </>
+            ) : (
+              <div className="text-[26px] font-bold text-[#bb5683] leading-snug">
+                ₹
+                {product.price
+                  ? product.price.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })
+                  : "N/A"}
+              </div>
+            )}
 
             <div className="text-xs text-gray-400">
               MRP (exclusive of all taxes)
@@ -284,21 +314,34 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
 
           {/* SKU, Category, Tags */}
           <div className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-2 text-sm items-center">
-            {/* <p className="text-gray-600">SKU</p>
-          <p className="font-semibold">: {product?.productCode}</p> */}
-            <p className="text-gray-600">Category</p>
-            <p className="font-semibold">
-              :{" "}
-              {product?.productType === "Sets" ||
-              product?.productType === "Bangles"
-                ? product?.productType
-                : product?.productCategory}
-            </p>
+            {product?.materialType !== "Beads" && (
+              <>
+                <p className="text-gray-600">Type</p>
+                <p className="font-semibold">
+                  :{" "}
+                  {product?.productType === "Sets" ||
+                  product?.productType === "Bangles"
+                    ? product?.productType
+                    : product?.productCategory}
+                </p>
+              </>
+            )}
+            {product?.materialType !== "Beads" &&
+              product?.productType !== "Sets" &&
+              product?.productType !== "Bangles" && (
+                <>
+                  <p className="text-gray-600">Style</p>
+                  <p className="font-semibold">
+                    : {product?.category || product?.subCategories}
+                  </p>
+                </>
+              )}
+
             {/* <p className="text-gray-600">Tags</p>
           <p className="font-semibold capitalize">
             : {product?.tags?.join(", ")}
           </p> */}
-            {(product?.size.length > 0 || Number(product?.ring_size) > 0) && (
+            {(product?.size?.length > 0 || Number(product?.ring_size) > 0) && (
               <>
                 <p className="text-gray-600">Size</p>
                 <p className="font-semibold">
@@ -309,7 +352,50 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                 </p>
               </>
             )}
+
+            {product?.materialType === "Beads" && product?.length && (
+              <>
+                <p className="text-gray-600">Length</p>
+                <p className="font-semibold">: {product?.length} inches</p>
+              </>
+            )}
+            {product?.materialType === "Beads" && product?.info && (
+              <>
+                <p className="text-gray-600">Info</p>
+                <p className="font-semibold">: {product?.info} </p>
+              </>
+            )}
           </div>
+
+          {/* Line selection
+          {product?.materialType === "Beads" && (
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 my-4">
+              <label
+                htmlFor="lineSelect"
+                className="text-sm font-medium text-gray-700"
+              >
+                Select No. of Lines:
+              </label>
+              <select
+                id="lineSelect"
+                value={selectedLines}
+                onChange={(e) => {
+                  const value = Number(e.target.value);
+                  setSelectedLines(value);
+                  const updatedPrice = value * product.pricePerLine;
+                  setDynamicPrice(updatedPrice);
+                  toast.success("Price updated based on line selection");
+                }}
+                className="text-sm px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition duration-150 ease-in-out bg-white shadow-sm hover:border-gray-400"
+              >
+                {[...Array(product.inventory_no_of_line)].map((_, i) => (
+                  <option key={i + 1} value={i + 1}>
+                    {i + 1}
+                  </option>
+                ))}
+              </select>
+            </div>
+          )} */}
 
           {/* Size & Availability */}
           {product?.materialType === "gold" &&
@@ -344,7 +430,6 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
               <SetPriceBreakupCard product={product} />
             )}
           </div>
-
           {/* Buttons Grid */}
           <div
             className={`grid ${existItem ? "grid-cols-3" : "grid-cols-2"} gap-4 w-full`}
@@ -358,6 +443,8 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
               />
               {isWishlisted ? "REMOVE FROM WISHLIST" : "ADD TO WISHLIST"}
             </button>
+
+            {/*  */}
 
             {product.countInStock !== 0 && (
               <AddToCart

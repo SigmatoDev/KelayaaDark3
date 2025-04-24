@@ -210,41 +210,41 @@ const menuData: Record<string, MenuItem> = {
     subitems: [
       {
         label: "Beads",
-        subcategories: [],
-        // subcategories: [
-        //   { label: "Amethyst" },
-        //   { label: "Aquamarine & Rose Quartz" },
-        //   { label: "Beryl" },
-        //   { label: "Blue Saphire" },
-        //   { label: "Cats Eye" },
-        //   { label: "Coral" },
-        //   { label: "Emerald" },
-        //   { label: "Florite" },
-        //   { label: "Garnet" },
-        //   { label: "Iolite" },
-        //   { label: "Labradorite" },
-        //   { label: "Lemon Topaz" },
-        //   { label: "Moonstone" },
-        //   { label: "Multi Semi Precious" },
-        //   { label: "Multi colored Sapphire" },
-        //   { label: "Onyx" },
-        //   { label: "Opal" },
-        //   { label: "Pearl" },
-        //   { label: "Peridot" },
-        //   { label: "Pink Opal" },
-        //   { label: "Quartz" },
-        //   { label: "Rose quartz" },
-        //   { label: "Ruby" },
-        //   { label: "Ruby Immitation" },
-        //   { label: "Russian Emerald" },
-        //   { label: "Smokey Quarts" },
-        //   { label: "Topaz" },
-        //   { label: "Tourmaline" },
-        //   { label: "Turqoise" },
-        // ],
+
+        subcategories: [
+          { label: "Amethyst" },
+          { label: "Aquamarine & Rose Quartz" },
+          { label: "Beryl" },
+          { label: "Blue Saphire" },
+          { label: "Cats Eye" },
+          { label: "Coral" },
+          { label: "Emerald" },
+          { label: "Florite" },
+          { label: "Garnet" },
+          { label: "Iolite" },
+          { label: "Labradorite" },
+          { label: "Lemon Topaz" },
+          { label: "Moonstone" },
+          { label: "Multi Semi Precious" },
+          { label: "Multi colored Sapphire" },
+          { label: "Onyx" },
+          { label: "Opal" },
+          { label: "Pearl" },
+          { label: "Peridot" },
+          { label: "Pink Opal" },
+          { label: "Quartz" },
+          { label: "Rose quartz" },
+          { label: "Ruby" },
+          { label: "Ruby Immitation" },
+          { label: "Russian Emerald" },
+          { label: "Smokey Quarts" },
+          { label: "Topaz" },
+          { label: "Tourmaline" },
+          { label: "Turqoise" },
+        ],
       },
     ],
-    images: [],
+    images: ["/images/menu/beads-1.JPG", "/images/menu/beads-2.JPG"],
   },
 
   "custom-jewellery": {
@@ -429,9 +429,12 @@ const DesktopHeader = () => {
       const isAllCategory = lowerCategor.startsWith("all ");
       const categoryParam = isAllCategory ? "all" : categor;
 
+      const productCatParam =
+        lowerProductCategory === "beads" ? "all" : productCategory;
+
       router.push(
         `/search?q=all&productCategory=${encodeURIComponent(
-          productCategory
+          productCatParam
         )}&category=${encodeURIComponent(
           categoryParam
         )}&materialType=${hoveredMaterialType}&price=all&rating=all&sort=newest&page=1`
@@ -682,7 +685,8 @@ const DesktopHeader = () => {
                       >
                         {/* Standard Category Layout (for Silver, Gold, etc.) */}
                         {activeMenu !== "custom-jewellery" &&
-                          activeMenu !== "collections" && (
+                          activeMenu !== "collections" &&
+                          activeMenu !== "beads" && (
                             <>
                               {/* Columns 1-4 */}
                               {[0, 2, 4, 6].map((startIdx, colIdx) => (
@@ -857,52 +861,66 @@ const DesktopHeader = () => {
                           </div>
                         )}
 
-                        {/* Beads Category with 4 Columns */}
-                        {/* {activeMenu === "beads" && (
-                          <div className="col-span-5 grid grid-cols-4 gap-6 h-full">
+                        {/* Beads Special Layout */}
+                        {/* Beads Special Layout */}
+                        {activeMenu === "beads" && (
+                          <div className="col-span-5 grid grid-cols-4 gap-6">
+                            {/* Subcategories split into 3 columns, 10 per column */}
                             {(() => {
                               const allSubcategories =
-                                menuData["beads"].subitems[0]?.subcategories ??
-                                [];
-
-                              // Divide subcategories into 4 columns
-                              const columns = [[], [], [], []] as Array<
-                                typeof allSubcategories
-                              >;
+                                menuData[activeMenu]?.subitems?.[0]
+                                  ?.subcategories || [];
+                              const columns = [[], [], []];
 
                               allSubcategories.forEach((item, index) => {
-                                const colIndex = index % 4;
-                                columns[colIndex].push(item);
+                                const columnIndex = Math.floor(index / 10); // Max 10 per column
+                                if (columnIndex < 3) {
+                                  columns[columnIndex].push(item);
+                                }
                               });
 
-                              return columns.map((col, colIdx) => {
-                                return (
-                                  <div
-                                    key={colIdx}
-                                    className="flex flex-col space-y-2"
-                                  >
-                                    {col.map((subItem, subIdx) => (
-                                      <Link
-                                        key={subIdx}
-                                        href="#"
-                                        onClick={(e) => {
-                                          e.preventDefault();
-                                          handleSubClick(
-                                            "Beads",
-                                            subItem.label
-                                          );
-                                        }}
-                                        className="text-gray-800 uppercase hover:text-[#af5772] text-sm font-[500]"
-                                      >
-                                        {subItem.label}
-                                      </Link>
-                                    ))}
-                                  </div>
-                                );
-                              });
+                              return columns.map((columnItems, colIdx) => (
+                                <div
+                                  key={colIdx}
+                                  className="flex flex-col space-y-2"
+                                >
+                                  {columnItems.map((subItem, subIdx) => (
+                                    <Link
+                                      key={subIdx}
+                                      href="#"
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleSubClick("Beads", subItem.label);
+                                      }}
+                                      className="text-gray-600 hover:text-[#af5772] text-sm font-[400] block"
+                                    >
+                                      {subItem.label}
+                                    </Link>
+                                  ))}
+                                </div>
+                              ));
                             })()}
+
+                            {/* Image Column (4th column) */}
+                            <div className="flex flex-col gap-4 h-full">
+                              {menuData[activeMenu].images
+                                .slice(0, 2)
+                                .map((img, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="relative w-full h-full min-h-[200px] rounded-lg overflow-hidden"
+                                  >
+                                    <Image
+                                      src={img}
+                                      alt={`Beads Jewelry ${idx + 1}`}
+                                      fill
+                                      className="object-cover hover:scale-105 transition-transform duration-300"
+                                    />
+                                  </div>
+                                ))}
+                            </div>
                           </div>
-                        )} */}
+                        )}
                       </motion.div>
                     )}
                   </div>

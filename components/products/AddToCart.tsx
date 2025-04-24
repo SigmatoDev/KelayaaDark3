@@ -8,24 +8,24 @@ import useCartService from "@/lib/hooks/useCartStore";
 import { OrderItem } from "@/lib/models/OrderModel";
 
 // API function to update countInStock
-const updateStockByProductCode = async (productCode: string, countInStock: number) => {
-  try {
-    const res = await fetch("/api/products/update-stock", {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ productCode, countInStock }),
-    });
+// const updateStockByProductCode = async (productCode: string, countInStock: number) => {
+//   try {
+//     const res = await fetch("/api/products/update-stock", {
+//       method: "PATCH",
+//       headers: {
+//         "Content-Type": "application/json",
+//       },
+//       body: JSON.stringify({ productCode, countInStock }),
+//     });
 
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Failed to update stock");
-    console.log("✅ Stock updated in backend:", data.product);
-    return data;
-  } catch (error) {
-    console.error("❌ Error updating stock:", error);
-  }
-};
+//     const data = await res.json();
+//     if (!res.ok) throw new Error(data.message || "Failed to update stock");
+//     console.log("✅ Stock updated in backend:", data.product);
+//     return data;
+//   } catch (error) {
+//     console.error("❌ Error updating stock:", error);
+//   }
+// };
 
 const AddToCart = ({ item }: { item: OrderItem }) => {
   const router = useRouter();
@@ -38,7 +38,8 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
   }, [item, items]);
 
   // Parse countInStock safely
-  const parsedCountInStock = parseInt(item.countInStock as unknown as string) || 0;
+  const parsedCountInStock =
+    parseInt(item.countInStock as unknown as string) || 0;
   const currentQty = existItem?.qty || 0;
   const isAtMaxStock = currentQty >= parsedCountInStock;
 
@@ -51,7 +52,7 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
     console.log("➕ Increased item:", item.productCode);
 
     // Update backend stock
-    await updateStockByProductCode(item.productCode, parsedCountInStock - currentQty - 1);
+    // await updateStockByProductCode(item.productCode, parsedCountInStock - currentQty - 1);
   };
 
   const handleDecrease = async () => {
@@ -61,7 +62,7 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
     console.log("➖ Decreased item:", item.productCode);
 
     // Update backend stock
-    await updateStockByProductCode(item.productCode, parsedCountInStock - currentQty + 1);
+    // await updateStockByProductCode(item.productCode, parsedCountInStock - currentQty + 1);
   };
 
   const addToCartHandler = async () => {
@@ -74,7 +75,7 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
     console.log("✅ Added item to cart:", item.productCode);
 
     // Update backend stock
-    await updateStockByProductCode(item.productCode, parsedCountInStock - 1);
+    // await updateStockByProductCode(item.productCode, parsedCountInStock - 1);
   };
 
   return existItem ? (
