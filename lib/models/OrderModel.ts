@@ -5,38 +5,37 @@ const orderSchema = new mongoose.Schema(
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: false,
     },
     items: [
       {
-        product: {
-          type: mongoose.Schema.Types.ObjectId,
-          ref: "Product",
-          required: true,
+        productId: {
+          type: String,
+          required: false,
         },
-        name: { type: String, required: true },
-        slug: { type: String, required: true },
-        qty: { type: Number, required: true },
-        image: { type: String, required: true },
-        price: { type: Number, required: true },
+        name: { type: String, required: false },
+        slug: { type: String, required: false },
+        qty: { type: Number, required: false },
+        image: { type: String, required: false },
+        price: { type: Number, required: false },
       },
     ],
     personalInfo: {
-      email: { type: String, required: true },
-      mobileNumber: { type: String, required: true },
+      email: { type: String, required: false },
+      mobileNumber: { type: String, required: false },
       createAccountAfterCheckout: { type: Boolean, default: false },
     },
     shippingAddress: {
-      address: { type: String, required: true },
+      address: { type: String, required: false },
       landmark: { type: String },
-      city: { type: String, required: true },
-      state: { type: String, required: true },
-      postalCode: { type: String, required: true },
-      country: { type: String, required: true },
+      city: { type: String, required: false },
+      state: { type: String, required: false },
+      postalCode: { type: String, required: false },
+      country: { type: String, required: false },
     },
 
     gstDetails: {
-      hasGST: { type: Boolean, required: true },
+      hasGST: { type: Boolean, required: false },
       companyName: { type: String },
       gstNumber: { type: String },
     },
@@ -52,18 +51,18 @@ const orderSchema = new mongoose.Schema(
       postalCode: { type: String },
     },
 
-    paymentMethod: { type: String, required: true },
+    paymentMethod: { type: String, required: false },
     paymentResult: {
       id: String,
       status: String,
       email_address: String,
     },
-    itemsPrice: { type: Number, required: true },
-    shippingPrice: { type: Number, required: true },
-    taxPrice: { type: Number, required: true },
-    totalPrice: { type: Number, required: true },
-    isPaid: { type: Boolean, required: true, default: false },
-    isDelivered: { type: Boolean, required: true, default: false },
+    itemsPrice: { type: Number, required: false },
+    shippingPrice: { type: Number, required: false },
+    taxPrice: { type: Number, required: false },
+    totalPrice: { type: Number, required: false },
+    isPaid: { type: Boolean, required: false, default: false },
+    isDelivered: { type: Boolean, required: false, default: false },
     paidAt: { type: Date },
     deliveredAt: { type: Date },
     paymentIntentId: { type: String },
@@ -102,6 +101,8 @@ export type Order = {
 };
 
 export type OrderItem = {
+  materialType: string;
+  inventory_no_of_lines: number;
   countInStock: number;
   productCategory: string;
   category: string;

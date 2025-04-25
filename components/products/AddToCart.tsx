@@ -7,33 +7,14 @@ import { ShoppingCartIcon } from "lucide-react";
 import useCartService from "@/lib/hooks/useCartStore";
 import { OrderItem } from "@/lib/models/OrderModel";
 
-// API function to update countInStock
-// const updateStockByProductCode = async (productCode: string, countInStock: number) => {
-//   try {
-//     const res = await fetch("/api/products/update-stock", {
-//       method: "PATCH",
-//       headers: {
-//         "Content-Type": "application/json",
-//       },
-//       body: JSON.stringify({ productCode, countInStock }),
-//     });
-
-//     const data = await res.json();
-//     if (!res.ok) throw new Error(data.message || "Failed to update stock");
-//     console.log("✅ Stock updated in backend:", data.product);
-//     return data;
-//   } catch (error) {
-//     console.error("❌ Error updating stock:", error);
-//   }
-// };
-
 const AddToCart = ({ item }: { item: OrderItem }) => {
   const router = useRouter();
   const { items, increase, decrease } = useCartService();
   const [existItem, setExistItem] = useState<OrderItem | undefined>();
+  const [selectedLines, setSelectedLines] = useState<number>(1); // Default to 1 line
 
   useEffect(() => {
-    const found = items.find((x) => x.slug === item.slug);
+    const found = items.find((x) => x.productCode === item.productCode);
     setExistItem(found);
   }, [item, items]);
 
@@ -50,9 +31,6 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
     }
     increase(item);
     console.log("➕ Increased item:", item.productCode);
-
-    // Update backend stock
-    // await updateStockByProductCode(item.productCode, parsedCountInStock - currentQty - 1);
   };
 
   const handleDecrease = async () => {
@@ -60,9 +38,6 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
 
     decrease(existItem);
     console.log("➖ Decreased item:", item.productCode);
-
-    // Update backend stock
-    // await updateStockByProductCode(item.productCode, parsedCountInStock - currentQty + 1);
   };
 
   const addToCartHandler = async () => {
@@ -71,34 +46,64 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
       return;
     }
 
-    increase(item);
-    console.log("✅ Added item to cart:", item.productCode);
+    // If it's a Beads product, set the quantity to the selected lines
+    if (item.materialType === "Beads") {
+      item.qty = selectedLines; // Update quantity based on selected lines
+    }
 
-    // Update backend stock
-    // await updateStockByProductCode(item.productCode, parsedCountInStock - 1);
+    increase(item); // Add item to cart
+    console.log("✅ Added item to cart:", item.productCode);
+  };
+
+  // Handle Beads lines selection
+  const handleLineSelection = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const lines = Number(event.target.value);
+    setSelectedLines(lines);
+
+    // If the item is in the cart and it's a Beads product, update qty
+    if (existItem && item.materialType === "Beads") {
+      existItem.qty = lines;
+    }
   };
 
   return existItem ? (
-    <div className="w-full flex items-center justify-between space-x-4 bg-[#FFF6F8] shadow-md border border-pink-500">
-      <button
-        className="w-12 h-12 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
-        type="button"
-        onClick={handleDecrease}
-        disabled={currentQty === 0}
-      >
-        -
-      </button>
-
-      <span className="text-lg font-medium text-pink-500">{currentQty}</span>
-
-      <button
-        className="w-12 h-12 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
-        type="button"
-        onClick={handleIncrease}
-        disabled={isAtMaxStock}
-      >
-        +
-      </button>
+    <div className="w-full flex items-center justify-between">
+      {item.materialType === "Beads" ? (
+        <div className="flex items-center space-x-2">
+          <span className="text-xs text-gray-700">Select Lines:</span>
+          <select
+            value={selectedLines}
+            onChange={handleLineSelection}
+            className="px-2 py-1 rounded-md border border-pink-500"
+          >
+            {Array.from({ length: item.inventory_no_of_line }, (_, i) => (
+              <option key={i} value={i + 1}>
+                {i + 1} Line{i + 1 > 1 ? "s" : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+      ) : (
+        <div className="w-full flex items-center justify-between  space-x-4 bg-[#FFF6F8] shadow-md border border-pink-500">
+          <button
+            className="w-12 h-12 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200"
+            onClick={handleDecrease}
+            disabled={currentQty === 0}
+          >
+            -
+          </button>
+          <span className="text-lg font-medium text-pink-500">
+            {currentQty}
+          </span>
+          <button
+            className="w-12 h-12 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200"
+            onClick={handleIncrease}
+            disabled={isAtMaxStock}
+          >
+            +
+          </button>
+        </div>
+      )}
     </div>
   ) : (
     <button
@@ -110,10 +115,16 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
           "linear-gradient(90.25deg, #df6383 36.97%, #FC6767 101.72%)",
       }}
     >
-      <div className="relative flex items-center justify-center">
-        <ShoppingCartIcon className="w-4 h-4 mr-4" />
-        ADD TO CART
-      </div>
+      {item?.materialType === "Beads" ? (
+        <div className="relative flex items-center justify-center">
+          Select Lines
+        </div>
+      ) : (
+        <div className="relative flex items-center justify-center">
+          <ShoppingCartIcon className="w-4 h-4 mr-4" />
+          ADD TO CART
+        </div>
+      )}
     </button>
   );
 };

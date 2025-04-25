@@ -150,29 +150,72 @@ const useCartService = () => {
 
     // Add item or increase quantity
     increase: (item: CartItem) => {
-      const exist = items.find((x) => x.slug === item.slug);
+      console.log("Increasing item:", item);
+
+      const exist = items.find(
+        (x) =>
+          x.productCode === item.productCode &&
+          x.size === item.size &&
+          x.color === item.color
+      );
+
+      console.log("Existing item found:", exist);
+
       const updatedCartItems = exist
         ? items.map((x) =>
-            x.slug === item.slug ? { ...x, qty: x.qty + 1 } : x
+            x.productCode === item.productCode &&
+            x.size === item.size &&
+            x.color === item.color
+              ? { ...x, qty: x.qty + 1 }
+              : x
           )
         : [...items, { ...item, qty: 1, basePrice: item.price }];
+
+      console.log("Updated cart items (increase):", updatedCartItems);
+
       updateCart(updatedCartItems);
     },
 
     // Decrease quantity or remove item
     decrease: (item: CartItem) => {
-      const exist = items.find((x) => x.slug === item.slug);
-      if (!exist) return;
+      console.log("Decreasing item:", item);
+
+      const exist = items.find(
+        (x) =>
+          x.productCode === item.productCode &&
+          x.size === item.size &&
+          x.color === item.color
+      );
+
+      console.log("Existing item found:", exist);
+
+      if (!exist) {
+        console.log("Item not found in cart.");
+        return;
+      }
 
       const updatedCartItems =
         exist.qty === 1
-          ? items.filter((x) => x.slug !== item.slug)
+          ? items.filter(
+              (x) =>
+                !(
+                  x.productCode === item.productCode &&
+                  x.size === item.size &&
+                  x.color === item.color
+                )
+            )
           : items.map((x) =>
-              x.slug === item.slug ? { ...x, qty: x.qty - 1 } : x
+              x.productCode === item.productCode &&
+              x.size === item.size &&
+              x.color === item.color
+                ? { ...x, qty: x.qty - 1 }
+                : x
             );
+
+      console.log("Updated cart items (decrease):", updatedCartItems);
+
       updateCart(updatedCartItems);
     },
-
     applyCoupon: (code: string) => {
       const { itemsPrice } = cartStore.getState();
       let discount = 0;

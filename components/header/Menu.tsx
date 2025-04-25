@@ -76,7 +76,7 @@ const Menu = () => {
                 )}
 
                 <li onClick={handleClick}>
-                  <Link href="/order-history">Order history </Link>
+                  <Link href="/my-orders">Order history </Link>
                 </li>
                 <li onClick={handleClick}>
                   <Link href="/profile">Profile</Link>

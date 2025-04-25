@@ -5,7 +5,9 @@ interface OrderConfirmationProps {
   orderNumber: string;
 }
 
-export default function OrderConfirmation({ orderNumber }: OrderConfirmationProps) {
+export default function OrderConfirmation({
+  orderNumber,
+}: OrderConfirmationProps) {
   const router = useRouter();
 
   return (
@@ -42,7 +44,7 @@ export default function OrderConfirmation({ orderNumber }: OrderConfirmationProp
               Track Order
             </button>
             <button
-              onClick={() => router.push("/custom-order-history")}
+              onClick={() => router.push("/custom-my-orders")}
               className="w-full px-6 py-2 border rounded-lg hover:bg-gray-50"
             >
               View All Orders
@@ -52,4 +54,4 @@ export default function OrderConfirmation({ orderNumber }: OrderConfirmationProp
       </div>
     </div>
   );
-} 
+}

@@ -582,7 +582,7 @@ const DesktopHeader = () => {
                                     >
                                       <History className="w-4 h-4 text-black" />
                                       <Link
-                                        href="/order-history"
+                                        href="/my-orders"
                                         className="text-black ml-2 text-xs"
                                       >
                                         Order History
@@ -606,7 +606,7 @@ const DesktopHeader = () => {
                                     >
                                       <History className="w-4 h-4 text-black" />
                                       <Link
-                                        href="/custom-order-history"
+                                        href="/custom-my-orders"
                                         className="text-black ml-2 text-xs"
                                       >
                                         Custom Orders
