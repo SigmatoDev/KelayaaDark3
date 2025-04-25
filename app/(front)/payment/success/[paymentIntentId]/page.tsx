@@ -4,7 +4,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
 import toast from "react-hot-toast";
-import { GemIcon, SparklesIcon } from "lucide-react"; 
+import { GemIcon, SparklesIcon } from "lucide-react";
 import useCartService from "@/lib/hooks/useCartStore";
 import useSWRMutation from "swr/mutation";
 
@@ -105,7 +105,11 @@ const SuccessPage = () => {
   );
 
   useEffect(() => {
-    if (paymentIntentId && !hasPlacedOrderRef.current && status === "authenticated") {
+    if (
+      paymentIntentId &&
+      !hasPlacedOrderRef.current &&
+      status === "authenticated"
+    ) {
       hasPlacedOrderRef.current = true;
       placeOrder();
     }
@@ -114,13 +118,14 @@ const SuccessPage = () => {
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-amber-50 to-pink-100 px-4">
       <div className="max-w-md w-full bg-white shadow-2xl rounded-2xl p-8 text-center space-y-6 animate-fadeIn">
-
         {isPlacing ? (
           <>
             <div className="flex justify-center items-center">
               <GemIcon className="animate-pulse text-pink-400 w-16 h-16" />
             </div>
-            <h2 className="text-xl font-bold text-gray-700 mt-4 animate-pulse">Verifying Your Precious Order...</h2>
+            <h2 className="text-xl font-bold text-gray-700 mt-4 animate-pulse">
+              Verifying Your Precious Order...
+            </h2>
             <p className="text-sm text-gray-500 animate-fadeIn">
               Our experts are carefully processing your jewellery checkout ✨
             </p>
@@ -128,15 +133,18 @@ const SuccessPage = () => {
         ) : (
           <>
             <SparklesIcon className="text-pink-400 w-16 h-16 mx-auto animate-bounce" />
-            <h2 className="text-3xl font-extrabold text-pink-600 animate-fadeIn">Payment Successful!</h2>
+            <h2 className="text-3xl font-extrabold text-pink-600 animate-fadeIn">
+              Payment Successful!
+            </h2>
             <p className="text-lg text-gray-700 animate-fadeIn">
-              Thank you for trusting us. Your order has been placed with elegance.
+              Thank you for trusting us. Your order has been placed with
+              elegance.
             </p>
 
             <div className="flex flex-col gap-3 mt-6">
               {orderId && (
                 <button
-                  onClick={() => router.push(`/order/${orderId}`)}
+                  onClick={() => router.push(`/my-orders`)}
                   className="w-full py-3 bg-gradient-to-r from-rose-400 to-pink-500 text-white font-semibold rounded-md hover:opacity-90 animate-fadeIn"
                 >
                   View My Order

@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
@@ -6,12 +7,15 @@ import { Card, CardContent } from "@/components/ui/card";
 import Image from "next/image";
 import Link from "next/link";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { FaCheckCircle, FaClock } from "react-icons/fa";
 
 interface Order {
   _id: string;
   orderNumber: string;
   createdAt: string;
   items: Array<{
+    materialType: string;
+    pricePerLine: ReactNode;
     product: string; // Product ID
     name: string;
     slug: string;
@@ -80,7 +84,7 @@ export default function OrderHistory() {
           {orders.map((order) => (
             <Card key={order._id}>
               <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row justify-between gap-6">
+                <div className="flex flex-col justify-between gap-6">
                   {/* Order Info */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-4">
@@ -88,7 +92,7 @@ export default function OrderHistory() {
                         href={`/order/${order.orderNumber}`}
                         className="text-lg font-medium hover:text-primary"
                       >
-                        Order #{order.orderNumber}
+                        Order #{order._id}
                       </Link>
                       <StatusBadge
                         status={
@@ -121,8 +125,16 @@ export default function OrderHistory() {
                           <div>
                             <p className="text-sm font-medium">{item.name}</p>
                             <p className="text-sm text-gray-500">
-                              Qty: {item.qty} × ₹
-                              {item?.price?.toLocaleString("en-IN")}
+                              Qty: {item.qty} ×
+                              {item?.product?.materialType === "Beads"
+                                ? new Intl.NumberFormat("en-IN", {
+                                    style: "currency",
+                                    currency: "INR",
+                                  }).format(item?.product?.pricePerLine)
+                                : new Intl.NumberFormat("en-IN", {
+                                    style: "currency",
+                                    currency: "INR",
+                                  }).format(item?.price)}
                             </p>
                           </div>
                         </div>
@@ -131,7 +143,7 @@ export default function OrderHistory() {
                   </div>
 
                   {/* Order Total and Actions */}
-                  <div className="flex flex-col justify-between items-end">
+                  {/* <div className="flex flex-col justify-between items-end">
                     <div className="text-right">
                       <p className="text-sm font-medium">Total Amount</p>
                       <p className="text-lg font-bold">
@@ -139,12 +151,12 @@ export default function OrderHistory() {
                       </p>
                     </div>
                     <Link
-                      href={`/order/${order.orderNumber}`}
+                      href={`/order/${order._id}`}
                       className="inline-flex items-center justify-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
                     >
                       View Details
                     </Link>
-                  </div>
+                  </div> */}
                 </div>
 
                 {/* Order Status Timeline */}
@@ -153,7 +165,9 @@ export default function OrderHistory() {
                     <div className="flex flex-col items-center">
                       <div
                         className={`w-4 h-4 rounded-full ${order.isPaid ? "bg-green-500" : "bg-gray-300"}`}
-                      />
+                      >
+                        <FaCheckCircle className="text-white" />
+                      </div>
                       <p className="text-sm mt-2">Order Placed</p>
                       {order.paidAt && (
                         <p className="text-xs text-gray-500">
@@ -167,7 +181,9 @@ export default function OrderHistory() {
                     <div className="flex flex-col items-center">
                       <div
                         className={`w-4 h-4 rounded-full ${order.isDelivered ? "bg-green-500" : "bg-gray-300"}`}
-                      />
+                      >
+                        <FaClock className="text-white" />
+                      </div>
                       <p className="text-sm mt-2">Delivered</p>
                       {order.deliveredAt && (
                         <p className="text-xs text-gray-500">

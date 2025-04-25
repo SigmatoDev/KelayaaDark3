@@ -31,20 +31,20 @@ export function UserButton() {
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="sm">
           <User className="h-5 w-5 mr-2" />
-          {session.user?.name || 'Account'}
+          {session.user?.name || "Account"}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>My Account</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        
+
         <Link href="/profile">
           <DropdownMenuItem className="cursor-pointer">
             Profile Settings
           </DropdownMenuItem>
         </Link>
 
-        <Link href="/order-history">
+        <Link href="/my-orders">
           <DropdownMenuItem className="cursor-pointer">
             Order History
           </DropdownMenuItem>
@@ -76,11 +76,11 @@ export function UserButton() {
         <DropdownMenuSeparator />
         <DropdownMenuItem
           className="cursor-pointer text-red-600"
-          onClick={() => signOut({ callbackUrl: '/' })}
+          onClick={() => signOut({ callbackUrl: "/" })}
         >
           Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
   );
-} 
+}

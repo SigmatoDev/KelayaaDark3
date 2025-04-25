@@ -81,231 +81,267 @@ const CartDetails = () => {
       ) : (
         <div className="grid md:grid-cols-4 md:gap-6">
           {/* Product Details Section */}
-          <div className="md:col-span-3 bg-white p-4 shadow-sm bg-[#f5f5f5]">
-            {items.map((item) => (
-              <div
-                key={item.slug}
-                className="grid grid-cols-3 gap-6 items-satrt justify-between border-b p-4 mb-4 bg-white"
-              >
-                <div className="flex">
-                  <Image
-                    src={item.image}
-                    alt={item.name}
-                    width={140}
-                    height={140}
-                    className="rounded-md"
-                  />
-                </div>
+          <div
+            className="md:col-span-3 bg-white p-4 bg-[#f5f5f5] max-h-[400px] overflow-y-auto"
+            style={{
+              scrollbarWidth: "thin",
+              scrollbarColor: "pink transparent", // Adjusting the color for the thumb and track
+            }}
+          >
+            {/* Custom styles for scrollbars */}
+            <style jsx>{`
+              .custom-scrollbar::-webkit-scrollbar {
+                width: 8px; /* Set the width of the scrollbar */
+              }
 
-                <div className="flex flex-col space-y-2">
-                  <h2 className="text-lg font-semibold text-gray-900">
-                    {item.name}
-                  </h2>
-                  <div className="flex space-x-2 text-sm">
-                    {
-                      item?.productCategory === "Rings" ? (
+              .custom-scrollbar::-webkit-scrollbar-track {
+                background: transparent; /* Hide the track */
+              }
+
+              .custom-scrollbar::-webkit-scrollbar-thumb {
+                background-color: pink;
+                border-radius: 10px;
+                border: 2px solid #f5f5f5; /* Border around the thumb */
+              }
+
+              .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+                background-color: #ff80c0; /* Hover effect */
+              }
+
+              /* Remove the scrollbar arrows */
+              .custom-scrollbar::-webkit-scrollbar-button {
+                display: none;
+              }
+
+              /* Optional: Hide scrollbar for a cleaner look */
+              .custom-scrollbar::-webkit-scrollbar {
+                display: none;
+              }
+            `}</style>
+
+            <div className="custom-scrollbar">
+              {items.map((item) => (
+                <div
+                  key={item.slug}
+                  className="grid grid-cols-3 gap-6 items-start justify-between border-b p-4 mb-4 bg-white"
+                >
+                  <div className="flex">
+                    <Image
+                      src={item.image}
+                      alt={item.name}
+                      width={140}
+                      height={140}
+                      className="rounded-md"
+                    />
+                  </div>
+
+                  <div className="flex flex-col space-y-2">
+                    <h2 className="text-lg font-semibold text-gray-900">
+                      {item.name}
+                    </h2>
+                    <div className="flex space-x-2 text-sm">
+                      {item?.productCategory === "Rings" ? (
                         <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded">
-                          Size: {item?.ring_size || 18}{" "}
-                          {/* Assuming "ring_size" is the property */}
+                          Size: {item?.ring_size}
                         </span>
-                      ) : item?.productCategory === "Bangles" ? (
+                      ) : item?.productType === "Bangles" ? (
                         <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded">
-                          Size: {item?.size || 18}{" "}
-                          {/* Assuming "size" is the property for bangles */}
+                          Size: {item?.size}
                         </span>
-                      ) : null // Don't render anything for other categories
-                    }
+                      ) : (
+                        item?.size
+                      )}
+
+                      {item?.materialType === "Beads" ? (
+                        <>
+                          <span className="px-2 py-1 bg-[#f6e4e9] text-pink-500 rounded">
+                            {item?.materialType}
+                          </span>
+                          <span className="px-2 py-1 bg-orange-100 text-yellow-700 rounded">
+                            Selected Line: {item?.qty}
+                          </span>
+                        </>
+                      ) : (
+                        <span className="px-4 py-1 bg-[#f6e4e9] text-pink-500 rounded">
+                          {item?.productCategory || item?.productType}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center border bg-[#FFF6F8] shadow-md border border-pink-500 w-max mt-1">
+                      <button
+                        className="w-12 h-10 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
+                        type="button"
+                        onClick={() => decrease(item)}
+                        disabled={item.qty === 0}
+                      >
+                        -
+                      </button>
+
+                      <span className="text-lg font-medium text-pink-500 mx-4">
+                        {item.qty}
+                      </span>
+
+                      <button
+                        className="w-12 h-10 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
+                        type="button"
+                        onClick={() => increase(item)}
+                        disabled={
+                          item.qty >=
+                          (parseInt(item.countInStock as unknown as string) ||
+                            0)
+                        }
+                      >
+                        +
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex justify-end items-start">
                     {item?.materialType === "Beads" ? (
-                      <>
-                        <span className="px-2 py-1 bg-[#f6e4e9] text-pink-500 rounded">
-                          {item?.materialType}
-                        </span>
-                        <span className="px-2 py-1 bg-orange-100 text-yellow-700 rounded">
-                          Selected Line: {item?.qty || 18}{" "}
-                          {/* Assuming "ring_size" is the property */}
-                        </span>
-                      </>
+                      <span className="text-md font-semibold text-gray-900">
+                        ₹{" "}
+                        {new Intl.NumberFormat("en-IN").format(
+                          Number(item?.pricePerLine?.toFixed(2))
+                        )}
+                      </span>
                     ) : (
-                      <span className="px-4 py-1 bg-[#f6e4e9] text-pink-500 rounded">
-                        {item?.productCategory || item?.productType}
+                      <span className="text-md font-semibold text-gray-900">
+                        ₹{" "}
+                        {new Intl.NumberFormat("en-IN").format(
+                          Number(item?.price?.toFixed(2))
+                        )}
                       </span>
                     )}
                   </div>
-
-                  <div className="flex items-center border bg-[#FFF6F8] shadow-md border border-pink-500 w-max mt-1">
-                    <button
-                      className="w-12 h-10 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
-                      type="button"
-                      onClick={() => decrease(item)}
-                      disabled={item.qty === 0} // Disable if qty is 0
-                    >
-                      -
-                    </button>
-
-                    <span className="text-lg font-medium text-pink-500 mx-4">
-                      {item.qty}
-                    </span>
-
-                    <button
-                      className="w-12 h-10 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
-                      type="button"
-                      onClick={() => increase(item)}
-                      disabled={
-                        item.qty >=
-                        (parseInt(item.countInStock as unknown as string) || 0)
-                      } // Disable if qty reaches max stock
-                    >
-                      +
-                    </button>
-                  </div>
                 </div>
-
-                <div className="flex justify-end items-start">
-                  {item?.materialType === "Beads" ? (
-                    <span className="text-md font-semibold text-gray-900">
-                      ₹{" "}
-                      {new Intl.NumberFormat("en-IN").format(
-                        Number(item?.pricePerLine?.toFixed(2))
-                      )}
-                    </span>
-                  ) : (
-                    <span className="text-md font-semibold text-gray-900">
-                      ₹{" "}
-                      {new Intl.NumberFormat("en-IN").format(
-                        Number(item?.price?.toFixed(2))
-                      )}
-                    </span>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-
           {/* Order Summary Section */}
-          {/* Order Summary Section */}
-          <div className="p-6 bg-gray-50 border border-[#eaeaea] ">
+          <div className="p-6 bg-white shadow-md border border-[#eaeaea] min-h-[200px] flex flex-col">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
               Order Summary
             </h2>
-            <ul className="space-y-4 text-gray-700">
-              <li className="flex justify-between text-sm">
-                <span>Price:</span>
-                <span>₹ {originalItemsPrice?.toFixed(2)}</span>
-              </li>
-              <li className="flex justify-between text-sm">
-                <span>Discount:</span>
-                <span className="text-red-500">
-                  {discountPrice > 0 && "-"} ₹ {discountPrice.toFixed(2)}
-                </span>
-              </li>
-              {couponDiscount > 0 && (
-                <li className="flex justify-between text-sm">
-                  <span>Coupon Discount:</span>
-                  <span className="text-red-500">- ₹ {couponDiscount}</span>
-                </li>
-              )}
-              <li className="flex justify-between text-sm">
-                <span>Shipping:</span>
-                <span className="text-green-600">Free</span>
-              </li>
-              <li className="flex justify-between text-xl font-semibold border-t pt-4">
-                <span>Total:</span>
+
+            {/* Price Summary */}
+            <div className="space-y-2 text-sm text-gray-700">
+              <div className="flex justify-between">
+                <span>SubTotal</span>
                 <span>
                   ₹{" "}
                   {new Intl.NumberFormat("en-IN").format(
-                    Number(originalItemsPrice?.toFixed(2))
+                    items
+                      .map((item) =>
+                        item.materialType === "Beads"
+                          ? item.pricePerLine * item.qty
+                          : item.price * item.qty
+                      )
+                      .reduce((acc, curr) => acc + curr, 0)
+                      .toFixed(2)
                   )}
                 </span>
-              </li>
-            </ul>
+              </div>
+              <div className="flex justify-between">
+                <span>Discount</span>
+                <span className="text-red-500">
+                  - ₹ {discountPrice.toFixed(2)}
+                </span>
+              </div>
+              {couponDiscount > 0 && (
+                <div className="flex justify-between">
+                  <span>Coupon Discount</span>
+                  <span className="text-red-500">- ₹ {couponDiscount}</span>
+                </div>
+              )}
+              <div className="flex justify-between">
+                <span>Shipping</span>
+                <span className="text-green-600">Free</span>
+              </div>
+            </div>
 
-            {/* Price Breakdown Section */}
-            <div className="mt-4">
+            {/* Toggle for Price Breakdown */}
+            <div className="mt-4 border-t pt-3">
               <div
                 className="flex items-center justify-between cursor-pointer"
                 onClick={() => setPriceBreakupVisible(!priceBreakupVisible)}
               >
-                <h3 className="text-sm font-medium text-blue-600">
-                  Price Breakdown
-                </h3>
+                <span className="text-sm font-medium text-blue-600">
+                  View Price Breakdown
+                </span>
                 <svg
-                  className={`w-5 h-5 transform transition-all ${priceBreakupVisible ? "rotate-180" : ""}`}
-                  xmlns="http://www.w3.org/2000/svg"
+                  className={`w-5 h-5 transition-transform duration-300 ${
+                    priceBreakupVisible ? "rotate-180" : ""
+                  }`}
                   fill="none"
-                  viewBox="0 0 24 24"
                   stroke="currentColor"
+                  strokeWidth="2"
+                  viewBox="0 0 24 24"
                 >
                   <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
                     d="M19 9l-7 7-7-7"
                   />
                 </svg>
               </div>
+
               {priceBreakupVisible && (
-                <ul className="mt-2 space-y-2 pl-4 text-xs text-gray-700">
+                <ul className="mt-3 space-y-2 text-xs text-gray-600">
                   {items.map((item, index) => (
-                    <li
-                      key={index}
-                      className="flex justify-between items-center"
-                    >
-                      <span className="flex flex-col">
-                        <span className="text-xs">
-                          {item.name} ({item.productCode})
+                    <li key={index} className="flex justify-between">
+                      <div className="flex flex-col">
+                        <span>{item.name}</span>
+                        <span className="text-[10px] text-gray-400">
+                          Unit: ₹{" "}
+                          {item.materialType === "Beads"
+                            ? item.pricePerLine.toFixed(2)
+                            : item.price?.toFixed(2)}
                         </span>
-                        <span className="text-[10px] text-gray-500">
-                          Unit Price: ₹ {item.price?.toFixed(2)}
-                        </span>
-                      </span>
-                      <span className="text-xs">
-                        ₹ {(item.price * item.qty).toFixed(2)}{" "}
-                        <span className="text-[10px] text-gray-500">
+                      </div>
+                      <span>
+                        ₹{" "}
+                        {item.materialType === "Beads"
+                          ? (item.pricePerLine * item.qty).toFixed(2)
+                          : (item.price * item.qty).toFixed(2)}{" "}
+                        <span className="text-[10px] text-gray-400">
                           (x{item.qty})
                         </span>
                       </span>
                     </li>
                   ))}
-                  <li className="flex justify-between font-semibold text-xs border-t pt-2">
-                    <span>Total Items Price</span>
-                    <span>₹ {originalItemsPrice?.toFixed(2)}</span>
-                  </li>
-                  <li className="flex justify-between text-xs">
-                    <span>Discount</span>
-                    <span className="text-red-500">
-                      - ₹ {discountPrice.toFixed(2)}
-                    </span>
-                  </li>
-                  {couponDiscount > 0 && (
-                    <li className="flex justify-between text-xs">
-                      <span>Coupon Discount</span>
-                      <span className="text-red-500">- ₹ {couponDiscount}</span>
-                    </li>
-                  )}
-                  <li className="flex justify-between text-xs">
-                    <span>Shipping</span>
-                    <span>₹ 0.00</span>
-                  </li>
-                  <li className="flex justify-between font-semibold text-xs text-green-600">
-                    <span>Total:</span>
-                    <span>₹ {originalItemsPrice?.toFixed(2)}</span>
-                  </li>
                 </ul>
               )}
             </div>
 
-            {/* Coupon Code Input */}
-            <div>
-              <div className="relative mt-6 flex gap-2">
-                {couponCode && (
-                  <button
-                    className="ml-2 px-4 py-2 bg-gray-500 text-white font-semibold hover:bg-gray-600 transition"
-                    onClick={handleRemoveCoupon}
-                  >
-                    Remove
-                  </button>
+            {/* Grand Total */}
+            <div className="flex justify-between text-xl font-semibold border-t pt-4 mt-4">
+              <span>Total</span>
+              <span>
+                ₹{" "}
+                {new Intl.NumberFormat("en-IN").format(
+                  items
+                    .map((item) =>
+                      item.materialType === "Beads"
+                        ? item.pricePerLine * item.qty
+                        : item.price * item.qty
+                    )
+                    .reduce((acc, curr) => acc + curr, 0)
+                    .toFixed(2)
                 )}
-              </div>
+              </span>
+            </div>
+
+            {/* Coupon Actions */}
+            <div className="mt-4">
+              {couponCode && (
+                <button
+                  className="px-4 py-1 text-xs bg-gray-500 text-white rounded hover:bg-gray-600"
+                  onClick={handleRemoveCoupon}
+                >
+                  Remove Coupon
+                </button>
+              )}
               {couponDiscount > 0 && (
                 <div className="mt-2 text-green-600 text-[10px] font-medium flex items-center gap-2">
                   <Tag className="w-3 h-3 text-green-500" />
@@ -314,10 +350,14 @@ const CartDetails = () => {
               )}
             </div>
 
+            {/* Push Checkout Button to Bottom */}
+            <div className="mt-auto" />
+
+            {/* Checkout Button */}
             <button
               type="button"
               disabled={checkoutLoading}
-              className={`w-full mt-6 py-3 text-[12px] text-white font-semibold bg-gradient-to-r from-[#Dd91a6] to-red-500 flex items-center justify-center`}
+              className="w-full mt-6 py-3 text-sm font-semibold text-white bg-gradient-to-r from-[#f87ea1] to-pink-500 hover:from-[#f69db6] hover:to-[#ed2e91] transition duration-300 flex justify-center items-center group overflow-hidden relative"
               onClick={handleProceedToCheckOut}
             >
               {checkoutLoading ? (
@@ -345,7 +385,14 @@ const CartDetails = () => {
                   <span>Processing...</span>
                 </div>
               ) : (
-                "PROCEED TO CHECKOUT"
+                <span className="relative">
+                  <span className="block transition-all duration-300 group-hover:-translate-y-1 group-hover:opacity-0">
+                    PROCEED TO CHECKOUT
+                  </span>
+                  <span className="absolute inset-0 block transition-all duration-300 translate-y-3 opacity-0 group-hover:translate-y-0 group-hover:opacity-100">
+                    Let’s Proceed →
+                  </span>
+                </span>
               )}
             </button>
           </div>

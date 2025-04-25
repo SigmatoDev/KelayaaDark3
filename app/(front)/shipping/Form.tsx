@@ -7,7 +7,12 @@ import { signIn, useSession } from "next-auth/react";
 
 import CheckoutSteps from "@/components/checkout/CheckoutSteps";
 import useCartService from "@/lib/hooks/useCartStore";
-import { ShippingAddress, PersonalInfo, BillingDetails, GstDetails } from "@/lib/models/OrderModel";
+import {
+  ShippingAddress,
+  PersonalInfo,
+  BillingDetails,
+  GstDetails,
+} from "@/lib/models/OrderModel";
 import SignInPopup from "@/components/signin/SignIn";
 
 type FormData = {
@@ -26,10 +31,15 @@ const Form = () => {
   const [prefillEmail, setPrefillEmail] = useState("");
   const [mounted, setMounted] = useState(false);
   const isEmailLocked = !!session?.user?.email;
-const isMobileLocked = !!session?.user?.mobileNumber;
-const isNameLocked = !!session?.user?.name;
+  const isMobileLocked = !!session?.user?.mobileNumber;
+  const isNameLocked = !!session?.user?.name;
 
-  const { saveShippingAddress, shippingAddress, savePersonalInfo, saveGSTDetails } = useCartService();
+  const {
+    saveShippingAddress,
+    shippingAddress,
+    savePersonalInfo,
+    saveGSTDetails,
+  } = useCartService();
 
   const {
     register,
@@ -39,7 +49,11 @@ const isNameLocked = !!session?.user?.name;
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     defaultValues: {
-      personalInfo: { email: "", mobileNumber: "", createAccountAfterCheckout: true },
+      personalInfo: {
+        email: "",
+        mobileNumber: "",
+        createAccountAfterCheckout: true,
+      },
       shippingAddress: {
         firstName: "",
         lastName: "",
@@ -64,7 +78,6 @@ const isNameLocked = !!session?.user?.name;
     }
   }, [shippingAddress, setValue]);
 
-
   useEffect(() => {
     if (session?.user) {
       if (session.user.email) {
@@ -78,15 +91,13 @@ const isNameLocked = !!session?.user?.name;
       }
     }
   }, [session, setValue]);
-  
-  
 
   useEffect(() => {
     if (sameAsShipping) {
-      setValue("billingDetails", { 
-        ...watch("shippingAddress"), 
-        landmark: watch("shippingAddress.landmark") || "", 
-        sameAsShipping: true 
+      setValue("billingDetails", {
+        ...watch("shippingAddress"),
+        landmark: watch("shippingAddress.landmark") || "",
+        sameAsShipping: true,
       });
     }
   }, [sameAsShipping, setValue, watch]);
@@ -104,7 +115,6 @@ const isNameLocked = !!session?.user?.name;
             password: form.personalInfo.password,
           }),
         });
-        
 
         const { success, newAccount } = await res.json();
         if (!success) throw new Error("Failed to create or check user.");
@@ -119,13 +129,12 @@ const isNameLocked = !!session?.user?.name;
             password: form.personalInfo.password || "guestpassword",
             redirect: false,
           });
-          
+
           if (result?.ok) {
             // window.location.reload(); // ✅ force page reload after login
           } else {
             alert("Login failed. Please try again manually.");
           }
-          
         }
       }
 
@@ -140,9 +149,9 @@ const isNameLocked = !!session?.user?.name;
       });
       saveShippingAddress(form.shippingAddress);
 
-if (!sameAsShipping) {
-  saveShippingAddress(form.billingDetails); // <-- billing details if user entered different one
-}
+      if (!sameAsShipping) {
+        saveShippingAddress(form.billingDetails); // <-- billing details if user entered different one
+      }
 
       router.push("/payment");
     } catch (error: any) {
@@ -169,55 +178,51 @@ if (!sameAsShipping) {
     <div>
       <CheckoutSteps current={1} />
       <div className="max-w-6xl mx-auto my-8 p-6 bg-white shadow-md rounded-lg relative">
-        <form onSubmit={handleSubmit(formSubmit)} className="grid md:grid-cols-2 gap-6">
+        <form
+          onSubmit={handleSubmit(formSubmit)}
+          className="grid md:grid-cols-2 gap-6"
+        >
           {/* Left - Personal Info */}
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Personal Information</h2>
             <div className="space-y-3">
+              <div>
+                <label className="text-xs font-medium">Full Name</label>
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  disabled={isNameLocked}
+                  {...register("personalInfo.fullName", { required: true })}
+                  className={`input input-bordered w-full text-sm ${isNameLocked ? "bg-gray-100" : ""}`}
+                />
+              </div>
 
-            <div>
-  <label className="text-xs font-medium">Full Name</label>
-  <input
-    type="text"
-    placeholder="Full Name"
-    disabled={isNameLocked}
-    {...register("personalInfo.fullName", { required: true })}
-    className={`input input-bordered w-full text-sm ${isNameLocked ? 'bg-gray-100' : ''}`}
-  />
-</div>
+              <div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
+                <span className="px-3 text-gray-600 text-sm">+91</span>
+                <input
+                  type="text"
+                  maxLength={10}
+                  placeholder="Enter 10 digit number"
+                  disabled={isMobileLocked}
+                  {...register("personalInfo.mobileNumber", {
+                    required: "Mobile number is required",
+                    pattern: {
+                      value: /^[6-9]\d{9}$/,
+                      message: "Enter valid 10 digit Indian mobile number",
+                    },
+                  })}
+                  className={`w-full px-2 py-2 outline-none text-sm ${isMobileLocked ? "bg-gray-100" : ""}`}
+                  inputMode="numeric"
+                />
+              </div>
 
-
-
-
-<div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
-  <span className="px-3 text-gray-600 text-sm">+91</span>
-  <input
-    type="text"
-    maxLength={10}
-    placeholder="Enter 10 digit number"
-    disabled={isMobileLocked}
-    {...register("personalInfo.mobileNumber", {
-      required: "Mobile number is required",
-      pattern: {
-        value: /^[6-9]\d{9}$/,
-        message: "Enter valid 10 digit Indian mobile number",
-      },
-    })}
-    className={`w-full px-2 py-2 outline-none text-sm ${isMobileLocked ? 'bg-gray-100' : ''}`}
-    inputMode="numeric"
-  />
-</div>
-
-
-<input
-  type="email"
-  placeholder="Email Address"
-  disabled={isEmailLocked}
-  {...register("personalInfo.email", { required: true })}
-  className={`input input-bordered w-full text-sm ${isEmailLocked ? 'bg-gray-100' : ''}`}
-/>
-
-
+              <input
+                type="email"
+                placeholder="Email Address"
+                disabled={isEmailLocked}
+                {...register("personalInfo.email", { required: true })}
+                className={`input input-bordered w-full text-sm ${isEmailLocked ? "bg-gray-100" : ""}`}
+              />
 
               {!session && (
                 <div>
@@ -289,7 +294,9 @@ if (!sameAsShipping) {
                 <input
                   type="text"
                   placeholder="Postal Code"
-                  {...register("shippingAddress.postalCode", { required: true })}
+                  {...register("shippingAddress.postalCode", {
+                    required: true,
+                  })}
                   className="input input-bordered w-full text-sm"
                 />
               </div>
@@ -307,75 +314,117 @@ if (!sameAsShipping) {
           </div>
 
           <div className="col-span-2 mt-6">
-  <label className="flex items-center space-x-2 text-sm">
-    <input
-      type="checkbox"
-      checked={sameAsShipping}
-      onChange={(e) => setSameAsShipping(e.target.checked)}
-      className="checkbox checkbox-sm"
-    />
-    <span>Billing address same as shipping address</span>
-  </label>
-</div>
+            <label className="flex items-center space-x-2 text-sm">
+              <input
+                type="checkbox"
+                checked={sameAsShipping}
+                onChange={(e) => setSameAsShipping(e.target.checked)}
+                className="checkbox checkbox-sm"
+              />
+              <span>Billing address same as shipping address</span>
+            </label>
+          </div>
 
-{!sameAsShipping && (
-  <div className="space-y-4 col-span-2 mt-4">
-    <h2 className="text-lg font-semibold">Billing Address</h2>
+          {!sameAsShipping && (
+            <div className="space-y-4 col-span-2 mt-4">
+              <h2 className="text-lg font-semibold">Billing Address</h2>
 
-    <div>
-      <label className="text-xs font-medium">Full Address</label>
-      <textarea
-        placeholder="Billing Address"
-        {...register("billingDetails.address", { required: true })}
-        className="textarea textarea-bordered w-full text-sm"
-        rows={3}
-      />
-    </div>
+              <div>
+                <label className="text-xs font-medium">Full Address</label>
+                <textarea
+                  placeholder="Billing Address"
+                  {...register("billingDetails.address", { required: true })}
+                  className="textarea textarea-bordered w-full text-sm"
+                  rows={3}
+                />
+              </div>
 
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <div>
-        <label className="text-xs font-medium">City</label>
-        <input
-          type="text"
-          placeholder="City"
-          {...register("billingDetails.city", { required: true })}
-          className="input input-bordered w-full text-sm"
-        />
-      </div>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div>
+                  <label className="text-xs font-medium">City</label>
+                  <input
+                    type="text"
+                    placeholder="City"
+                    {...register("billingDetails.city", { required: true })}
+                    className="input input-bordered w-full text-sm"
+                  />
+                </div>
 
-      <div>
-        <label className="text-xs font-medium">State</label>
-        <input
-          type="text"
-          placeholder="State"
-          {...register("billingDetails.state", { required: true })}
-          className="input input-bordered w-full text-sm"
-        />
-      </div>
+                <div>
+                  <label className="text-xs font-medium">State</label>
+                  <input
+                    type="text"
+                    placeholder="State"
+                    {...register("billingDetails.state", { required: true })}
+                    className="input input-bordered w-full text-sm"
+                  />
+                </div>
 
-      <div>
-        <label className="text-xs font-medium">Postal Code</label>
-        <input
-          type="text"
-          placeholder="Postal Code"
-          {...register("billingDetails.postalCode", { required: true })}
-          className="input input-bordered w-full text-sm"
-        />
-      </div>
-    </div>
+                <div>
+                  <label className="text-xs font-medium">Postal Code</label>
+                  <input
+                    type="text"
+                    placeholder="Postal Code"
+                    {...register("billingDetails.postalCode", {
+                      required: true,
+                    })}
+                    className="input input-bordered w-full text-sm"
+                  />
+                </div>
+              </div>
 
-    <div>
-      <label className="text-xs font-medium">Country</label>
-      <input
-        type="text"
-        placeholder="Country"
-        {...register("billingDetails.country", { required: true })}
-        className="input input-bordered w-full text-sm"
-      />
-    </div>
-  </div>
-)}
+              <div>
+                <label className="text-xs font-medium">Country</label>
+                <input
+                  type="text"
+                  placeholder="Country"
+                  {...register("billingDetails.country", { required: true })}
+                  className="input input-bordered w-full text-sm"
+                />
+              </div>
+            </div>
+          )}
+          {/* GST Details */}
+          <div className="space-y-4 col-span-2 mt-4">
+            <h2 className="text-lg font-semibold">GST Details</h2>
 
+            <div className="flex items-center space-x-2">
+              <input
+                type="checkbox"
+                checked={hasGST}
+                onChange={(e) => {
+                  setHasGST(e.target.checked);
+                  setValue("gstDetails.hasGST", e.target.checked);
+                }}
+                className="checkbox checkbox-sm"
+              />
+              <label className="text-xs font-medium">Do you have GST?</label>
+            </div>
+
+            {hasGST && (
+              <div className="space-y-4">
+                <div>
+                  <label className="text-xs font-medium">Company Name</label>
+                  <input
+                    type="text"
+                    placeholder="Company Name"
+                    {...register("gstDetails.companyName")}
+                    className="input input-bordered w-full text-sm"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-medium">GST Number</label>
+                  <input
+                    type="text"
+                    placeholder="GST Number"
+                    {...register("gstDetails.gstNumber")}
+                    className="input input-bordered w-full text-sm"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
 
           <div className="col-span-2">
             <button

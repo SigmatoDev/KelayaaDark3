@@ -94,7 +94,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
   const [showAvailability, setShowAvailability] = useState<boolean>(false);
   const router = useRouter();
   const { items } = useCartService();
-  const existItem = items.find((x) => x.slug === product.slug);
+  const existItem = items.find((x) => x.productCode === product.productCode);
   const { data: session } = useSession();
   const userId = session?.user?._id;
   const [isWishlisted, setIsWishlisted] = useState(false);
@@ -451,8 +451,8 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                 item={{
                   ...convertDocToObj(product),
                   qty: 0,
-                  color: "",
-                  size: "",
+                  // color: "",
+                  // size: "",
                 }}
               />
             )}
