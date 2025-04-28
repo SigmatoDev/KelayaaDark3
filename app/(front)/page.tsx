@@ -33,23 +33,21 @@ export const metadata: Metadata = {
 const HomePage = () => {
   return (
     <>
-
-
-        <>
+      <>
         <MobileCategoryCarousel />
-          <div>
-            <Suspense fallback={<CarouselSkeleton />}>
-              <Carousel />
-            </Suspense>
-          </div>
-          <div className="px-4">
-            {/* <HeroSection /> */}
-            <HeroSectionCustomDesign />
-            <MobileHeroSectionCustomDesign />
-          </div>
-          {/* <CardGrid /> */}
-        </>
-    
+        <div>
+          <Suspense fallback={<CarouselSkeleton />}>
+            <Carousel />
+          </Suspense>
+        </div>
+        <div className="px-4">
+          {/* <HeroSection /> */}
+          <HeroSectionCustomDesign />
+          <MobileHeroSectionCustomDesign />
+        </div>
+        {/* <CardGrid /> */}
+      </>
+
       <div className="w-full mt-0">
         <KelayaFavourites />
       </div>

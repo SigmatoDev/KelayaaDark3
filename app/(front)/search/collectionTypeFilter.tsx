@@ -42,27 +42,60 @@ const CollectionTypeFilter = ({
     const updated = selected.includes(type)
       ? selected.filter((t) => t !== type)
       : [...selected, type];
+
     setSelected(updated);
-  };
 
-  const handleClear = () => setSelected([]);
-
-  useEffect(() => {
     const params: Record<string, string> = {
       q,
       materialType,
-      productCategory,
       price,
       rating,
       sort,
       page,
-      collectionType: selected.length > 0 ? selected.join(",") : "all",
+      collectionType: updated.length > 0 ? updated.join(",") : "all",
+      productCategory: updated.length > 0 ? "collections" : "all", // <-- Key change here
     };
 
     const query = new URLSearchParams(params).toString();
     router.push(`/search?${query}`);
     router.refresh();
-  }, [selected]);
+  };
+
+  const handleClear = () => {
+    setSelected([]);
+
+    const params: Record<string, string> = {
+      q,
+      materialType,
+      productCategory: "all", // <-- Force to 'all'
+      price,
+      rating,
+      sort,
+      page,
+      collectionType: "all",
+    };
+
+    const query = new URLSearchParams(params).toString();
+    router.push(`/search?${query}`);
+    router.refresh();
+  };
+
+  // useEffect(() => {
+  //   const params: Record<string, string> = {
+  //     q,
+  //     materialType,
+  //     productCategory: "collections",
+  //     price,
+  //     rating,
+  //     sort,
+  //     page,
+  //     collectionType: selected.length > 0 ? selected.join(",") : "all",
+  //   };
+
+  //   const query = new URLSearchParams(params).toString();
+  //   router.push(`/search?${query}`);
+  //   router.refresh();
+  // }, [selected]);
 
   const checkboxStyle = (isActive: boolean) =>
     `flex items-center gap-2 cursor-pointer py-2 px-3 rounded transition-all ${
