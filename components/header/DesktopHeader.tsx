@@ -146,8 +146,8 @@ const menuData: Record<string, MenuItem> = {
           { label: "All sets" },
           { label: "Princess" },
           { label: "Chokers" },
-          { label: "Necklace and Earrings" },
-          { label: "Pendant and Earrings" },
+          { label: "Necklace & Earrings" },
+          { label: "Pendant & Earrings" },
         ],
       },
       {
@@ -330,9 +330,17 @@ const DesktopHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [hoveredMaterialType, setHoveredMaterialType] = useState<string>("");
 
+  // const signOutHandler = async () => {
+  //   await signOut({ redirect: false }); // Prevent full page reload
+  //   setMenuOpen(false); // Close menu on logout
+  // };
+
   const signOutHandler = async () => {
-    await signOut({ redirect: false }); // Prevent full page reload
-    setMenuOpen(false); // Close menu on logout
+    setMenuOpen(false); // Close menu first
+    await signOut({
+      redirect: true,
+      callbackUrl: "/",
+    });
   };
 
   const handleClick = () => setMenuOpen(false); // Close menu on link click

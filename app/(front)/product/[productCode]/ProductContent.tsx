@@ -30,6 +30,8 @@ import ProductItem from "@/components/products/ProductItem";
 import SignInPopup from "@/components/signin/SignIn";
 import SetPriceBreakupCard from "./setDetailsCard";
 import BangleDetails from "./bangleDetails";
+import Link from "next/link";
+import ProductDetailsSkeleton from "./productSkeleton";
 
 interface Product {
   subCategories: string;
@@ -158,20 +160,71 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
     setIsWishlisted(data.status);
   };
 
-  // Beads
+  const generateBreadcrumbLink = () => {
+    if (product?.materialType === "Beads") {
+      return `/search?materialType=${encodeURIComponent(product.materialType)}`;
+    }
+    if (
+      (product?.productType === "Sets" || product?.productType === "Bangles") &&
+      product?.materialType === "gold"
+    ) {
+      return `/search?productCategory=${encodeURIComponent(product.productType)}&materialType=gold`;
+    }
+    return `/search?productCategory=${encodeURIComponent(product.productCategory)}`;
+  };
 
-  const [selectedLines, setSelectedLines] = useState(1);
-  const [dynamicPrice, setDynamicPrice] = useState(product?.pricePerLine || 0);
+  const getBreadcrumbLabel = (product: ProductType) => {
+    if (product?.materialType === "Beads") {
+      return product.materialType;
+    }
+    if (
+      (product?.productType === "Sets" || product?.productType === "Bangles") &&
+      product?.materialType === "gold"
+    ) {
+      return product.productType;
+    }
+    return product?.productCategory;
+  };
+
+  const [loading, setLoading] = useState(true); // add a loading state
 
   useEffect(() => {
-    if (product?.materialType === "Beads") {
-      setDynamicPrice(product.pricePerLine);
-      setSelectedLines(1);
-    }
-  }, [product]);
+    // Force 2 second minimum loading
+    setTimeout(() => {
+      setLoading(false);
+    }, 2000); // Delay set to 2 seconds
+  }, []);
+
+  if (loading || !product) {
+    return <ProductDetailsSkeleton />;
+  }
 
   return (
     <>
+      {/* Right Section - Product Details */}
+      {/* Breadcrumb Section */}
+      <div className="bg-pink-100 px-4 py-4 rounded-md text-sm mb-4">
+        <div className="flex flex-wrap items-center space-x-2 text-gray-700">
+          <Link href="/" className="hover:underline hover:text-pink-500">
+            Home
+          </Link>
+          <span>/</span>
+
+          <Link
+            href={generateBreadcrumbLink()}
+            className="hover:underline hover:text-pink-500 capitalize"
+          >
+            {getBreadcrumbLabel(product)}
+          </Link>
+
+          <span>/</span>
+
+          <span className="font-semibold truncate">{product?.name}</span>
+        </div>
+      </div>
+
+      {/* rest of your product details */}
+
       <div className="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Section - Image Gallery */}
         <div className="flex flex-col md:flex-row gap-4 md:sticky md:top-24 self-start">
@@ -275,13 +328,30 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
               <>
                 <div className="text-[26px] font-bold text-[#bb5683] leading-snug">
                   ₹
-                  {dynamicPrice.toLocaleString("en-IN", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })}
+                  {(() => {
+                    // Find the item with the matching productCode and materialType === "Beads"
+                    const beadItem = items.find(
+                      (x) =>
+                        x.productCode === product.productCode &&
+                        x.materialType === "Beads"
+                    );
+
+                    // If a matching item is found, calculate price * qty, otherwise show the pricePerLine
+                    const totalPrice = beadItem
+                      ? product.pricePerLine * beadItem.qty
+                      : product.pricePerLine;
+
+                    // Return the formatted totalPrice
+                    return totalPrice.toLocaleString("en-IN", {
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    });
+                  })()}
                 </div>
 
-                <div className="text-xs text-gray-400">Price Per lines</div>
+                <div className="text-xs text-gray-400">
+                  Price Per Selected lines
+                </div>
               </>
             ) : (
               <div className="text-[26px] font-bold text-[#bb5683] leading-snug">
@@ -336,6 +406,16 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                   </p>
                 </>
               )}
+            {(product?.productType === "Sets" ||
+              product?.productCategory === "Pendants" ||
+              product?.productCategory === "Sets") && (
+              <>
+                <p className="text-red-400 text-xs">*Note</p>
+                <p className="text-red-400 text-xs">
+                  : Chains are not included.
+                </p>
+              </>
+            )}
 
             {/* <p className="text-gray-600">Tags</p>
           <p className="font-semibold capitalize">
@@ -366,36 +446,6 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
               </>
             )}
           </div>
-
-          {/* Line selection
-          {product?.materialType === "Beads" && (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4 my-4">
-              <label
-                htmlFor="lineSelect"
-                className="text-sm font-medium text-gray-700"
-              >
-                Select No. of Lines:
-              </label>
-              <select
-                id="lineSelect"
-                value={selectedLines}
-                onChange={(e) => {
-                  const value = Number(e.target.value);
-                  setSelectedLines(value);
-                  const updatedPrice = value * product.pricePerLine;
-                  setDynamicPrice(updatedPrice);
-                  toast.success("Price updated based on line selection");
-                }}
-                className="text-sm px-4 py-2 rounded-md border border-gray-300 focus:outline-none focus:ring-2 focus:ring-pink-400 focus:border-pink-400 transition duration-150 ease-in-out bg-white shadow-sm hover:border-gray-400"
-              >
-                {[...Array(product.inventory_no_of_line)].map((_, i) => (
-                  <option key={i + 1} value={i + 1}>
-                    {i + 1}
-                  </option>
-                ))}
-              </select>
-            </div>
-          )} */}
 
           {/* Size & Availability */}
           {product?.materialType === "gold" &&
@@ -509,6 +559,29 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                     className="h-12 mx-auto"
                   />
                   <p className="text-[10px] mt-2">IGI Certified</p>
+                </div>
+
+                <div className="text-center">
+                  <img
+                    src="/images/certificates/100certified.webp"
+                    alt="Verified"
+                    className="h-12 mx-auto"
+                  />
+                  <p className="text-[10px] mt-2">100% Certified by Kelayaa</p>
+                </div>
+              </div>
+            </div>
+          )}
+          {product?.materialType === "Beads" && (
+            <div>
+              <div className="flex justify-start gap-8 items-center my-4">
+                <div className="text-center">
+                  <img
+                    src="/images/certificates/gig_certificate.webp"
+                    alt="BIS Logo"
+                    className="h-12 mx-auto"
+                  />
+                  <p className="text-[10px] mt-2">GIG Certified</p>
                 </div>
 
                 <div className="text-center">

@@ -161,15 +161,32 @@ const useCartService = () => {
 
       console.log("Existing item found:", exist);
 
-      const updatedCartItems = exist
-        ? items.map((x) =>
-            x.productCode === item.productCode &&
-            x.size === item.size &&
-            x.color === item.color
-              ? { ...x, qty: x.qty + 1 }
-              : x
-          )
-        : [...items, { ...item, qty: 1, basePrice: item.price }];
+      let updatedCartItems;
+
+      if (exist) {
+        updatedCartItems = items.map((x) =>
+          x.productCode === item.productCode &&
+          x.size === item.size &&
+          x.color === item.color
+            ? {
+                ...x,
+                qty:
+                  item.materialType === "Beads"
+                    ? item.qty // For Beads, set directly
+                    : x.qty + 1, // For normal products, increase by 1
+              }
+            : x
+        );
+      } else {
+        updatedCartItems = [
+          ...items,
+          {
+            ...item,
+            qty: item.materialType === "Beads" ? item.qty : 1,
+            basePrice: item.price,
+          },
+        ];
+      }
 
       console.log("Updated cart items (increase):", updatedCartItems);
 

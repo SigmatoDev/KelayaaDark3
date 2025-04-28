@@ -111,7 +111,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
       </div>
 
       {/* Price and Button */}
-      {/* <div className="flex justify-between items-center mt-4 p-4 bg-pink-50 rounded-md shadow">
+      <div className="flex justify-between items-center mt-4 p-4 bg-pink-50 rounded-md shadow">
         <span className="text-xl font-bold text-gray">
           Total Price: ₹
           {totalPrice
@@ -127,7 +127,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
         >
           View Price Breakup
         </Button>
-      </div> */}
+      </div>
 
       {/* Slide Drawer */}
       <Transition appear show={isOpen} as={Fragment}>
@@ -141,7 +141,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
             leaveFrom="opacity-100 translate-x-0"
             leaveTo="opacity-0 translate-x-full"
           >
-            <div className="fixed inset-0 bg-black bg-opacity-25" />
+            <div className="fixed inset-0 bg-opacity-25" />
           </Transition.Child>
 
           <div className="fixed inset-0 overflow-hidden flex justify-end">
@@ -159,10 +159,10 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
                   Price Breakup Details
                 </Dialog.Title>
                 <div className="space-y-4 text-sm text-gray-800">
-                  <div className="flex justify-between">
+                  {/* <div className="flex justify-between">
                     <span className="font-medium">Metal Type</span>
                     <span>{product.materialType}</span>
-                  </div>
+                  </div> */}
                   <div className="flex justify-between">
                     <span className="font-medium">Gold Weight</span>
                     <span>{grossWeight} g</span>
@@ -195,10 +195,10 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
 
                   <hr />
 
-                  <div className="flex justify-between">
+                  {/* <div className="flex justify-between">
                     <span className="font-medium">Diamond Type</span>
                     <span>{product.diamondType || "VVS"}</span>
-                  </div>
+                  </div> */}
                   <div className="flex justify-between">
                     <span className="font-medium">Diamond Weight</span>
                     <span>{product.carats || 0} ct</span>
@@ -258,7 +258,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
                     </div>
                   ) : null}
 
-                  <div className="border-t pt-4 mt-4 flex justify-between items-center bg-pink-50 rounded-lg px-4 py-2">
+                  <div className="border-t pt-4 mt-6 flex justify-between items-center bg-pink-50 rounded-lg px-4 py-2">
                     <span className="text-lg font-semibold text-[#Dd91a6]">
                       Final Price
                     </span>

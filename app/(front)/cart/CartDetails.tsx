@@ -69,6 +69,15 @@ const CartDetails = () => {
     setTotalPriceAfterCheckout(totalPrice);
   };
 
+  const handleLineSelection = (
+    item: OrderItem,
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const selectedLines = Number(event.target.value);
+    item.qty = selectedLines; // Update the qty of this Beads item
+    increase(item); // Update the cart with the new quantity
+  };
+
   return (
     <div className="mt-4 p-6 bg-white w-[90%] mx-auto">
       <h1 className="mt-4 mb-8 text-2xl text-center font-semibold text-gray-900">
@@ -149,7 +158,7 @@ const CartDetails = () => {
                           Size: {item?.size}
                         </span>
                       ) : (
-                        item?.size
+                        ""
                       )}
 
                       {item?.materialType === "Beads" ? (
@@ -160,6 +169,9 @@ const CartDetails = () => {
                           <span className="px-2 py-1 bg-orange-100 text-yellow-700 rounded">
                             Selected Line: {item?.qty}
                           </span>
+                          <span className="px-2 py-1 bg-orange-100 text-yellow-700 rounded">
+                            {item?.size}
+                          </span>
                         </>
                       ) : (
                         <span className="px-4 py-1 bg-[#f6e4e9] text-pink-500 rounded">
@@ -168,33 +180,57 @@ const CartDetails = () => {
                       )}
                     </div>
 
-                    <div className="flex items-center border bg-[#FFF6F8] shadow-md border border-pink-500 w-max mt-1">
-                      <button
-                        className="w-12 h-10 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
-                        type="button"
-                        onClick={() => decrease(item)}
-                        disabled={item.qty === 0}
-                      >
-                        -
-                      </button>
+                    {item?.materialType === "Beads" ? (
+                      // Beads line selection
+                      <div className="flex items-center space-x-2 mt-4">
+                        <span className="text-xs text-gray-700">
+                          Select Lines:
+                        </span>
+                        <select
+                          value={item.qty}
+                          onChange={(e) => handleLineSelection(item, e)}
+                          className="px-2 py-1 rounded-md border border-pink-500"
+                        >
+                          {Array.from(
+                            { length: item.inventory_no_of_line },
+                            (_, i) => (
+                              <option key={i} value={i + 1}>
+                                {i + 1} Line{i + 1 > 1 ? "s" : ""}
+                              </option>
+                            )
+                          )}
+                        </select>
+                      </div>
+                    ) : (
+                      // Non-Beads item quantity control
+                      <div className="flex items-center border bg-[#FFF6F8] shadow-md border border-pink-500 w-max mt-1">
+                        <button
+                          className="w-12 h-10 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
+                          type="button"
+                          onClick={() => decrease(item)}
+                          disabled={item.qty === 0}
+                        >
+                          -
+                        </button>
 
-                      <span className="text-lg font-medium text-pink-500 mx-4">
-                        {item.qty}
-                      </span>
+                        <span className="text-lg font-medium text-pink-500 mx-4">
+                          {item.qty}
+                        </span>
 
-                      <button
-                        className="w-12 h-10 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
-                        type="button"
-                        onClick={() => increase(item)}
-                        disabled={
-                          item.qty >=
-                          (parseInt(item.countInStock as unknown as string) ||
-                            0)
-                        }
-                      >
-                        +
-                      </button>
-                    </div>
+                        <button
+                          className="w-12 h-10 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200 disabled:opacity-50"
+                          type="button"
+                          onClick={() => increase(item)}
+                          disabled={
+                            item.qty >=
+                            (parseInt(item.countInStock as unknown as string) ||
+                              0)
+                          }
+                        >
+                          +
+                        </button>
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex justify-end items-start">
@@ -266,11 +302,11 @@ const CartDetails = () => {
                 className="flex items-center justify-between cursor-pointer"
                 onClick={() => setPriceBreakupVisible(!priceBreakupVisible)}
               >
-                <span className="text-sm font-medium text-blue-600">
+                <span className="text-sm font-medium text-pink-400">
                   View Price Breakdown
                 </span>
                 <svg
-                  className={`w-5 h-5 transition-transform duration-300 ${
+                  className={`w-5 h-5 transition-transform duration-300 text-gray-400 ${
                     priceBreakupVisible ? "rotate-180" : ""
                   }`}
                   fill="none"

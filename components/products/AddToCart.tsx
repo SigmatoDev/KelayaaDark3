@@ -14,8 +14,12 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
   const [selectedLines, setSelectedLines] = useState<number>(1); // Default to 1 line
 
   useEffect(() => {
+    // Find the existing item in the cart
     const found = items.find((x) => x.productCode === item.productCode);
-    setExistItem(found);
+    if (found) {
+      setExistItem(found);
+      setSelectedLines(found.qty); // Set the quantity to the saved qty from the cart
+    }
   }, [item, items]);
 
   // Parse countInStock safely
@@ -60,9 +64,10 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
     const lines = Number(event.target.value);
     setSelectedLines(lines);
 
-    // If the item is in the cart and it's a Beads product, update qty
+    // Immediately update cart if item exists
     if (existItem && item.materialType === "Beads") {
-      existItem.qty = lines;
+      // Update the cart with the new quantity
+      increase({ ...item, qty: lines });
     }
   };
 
@@ -84,7 +89,7 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
           </select>
         </div>
       ) : (
-        <div className="w-full flex items-center justify-between  space-x-4 bg-[#FFF6F8] shadow-md border border-pink-500">
+        <div className="w-full flex items-center justify-between space-x-4 bg-[#FFF6F8] shadow-md border border-pink-500">
           <button
             className="w-12 h-12 text-pink-500 text-2xl font-semibold flex items-center justify-center hover:bg-pink-600 hover:text-white transition-colors duration-200"
             onClick={handleDecrease}
