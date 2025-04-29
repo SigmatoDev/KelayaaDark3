@@ -45,17 +45,22 @@ export default function LabVsNaturalDiamonds() {
 
       {/* Video Section */}
       <div className="text-center mb-16">
-        <h3 className="text-2xl font-semibold mb-4">Watch CAD Videos</h3>
-        <p className="text-gray-600 mb-6 text-sm md:text-base max-w-2xl mx-auto">
-          Explore the brilliance of both diamonds through CAD design videos to understand light performance, cut precision, and shape differences.
-        </p>
-        <div className="flex justify-center">
-          <div className="bg-black w-[300px] h-[180px] md:w-[500px] md:h-[280px] rounded-xl flex items-center justify-center text-white hover:opacity-90 cursor-pointer">
-            <PlayCircle className="w-10 h-10 text-white" />
-            <span className="ml-3 text-sm">Watch Now</span>
-          </div>
-        </div>
-      </div>
+  <h3 className="text-2xl font-semibold mb-4">Watch CAD Videos</h3>
+  <p className="text-gray-600 mb-6 text-sm md:text-base max-w-2xl mx-auto">
+    Explore the brilliance of both diamonds through CAD design videos to understand light performance, cut precision, and shape differences.
+  </p>
+  <div className="flex justify-center">
+    <video
+      controls
+      className="rounded-xl w-[300px] h-[180px] md:w-[600px] md:h-[340px] bg-black"
+      poster="/default/video-thumbnail.jpg" // optional thumbnail before play
+    >
+      <source src="https://kelayaavideos.s3.ap-south-1.amazonaws.com/lab+vs+natural+diamond.mp4" type="video/mp4" />
+      Your browser does not support the video tag.
+    </video>
+  </div>
+</div>
+
 
       {/* Expert Tips */}
       <div className="bg-pink-50 max-w-5xl mx-auto p-6 rounded-2xl shadow-sm">
