@@ -621,7 +621,16 @@ const getByQuery = cache(
       categoryOnlyFilter = {
         $or: [
           { category: { $regex: new RegExp(`^${category}$`, "i") } },
-          { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
+          {
+            $or: [
+              { subCategories: { $regex: new RegExp(`^${category}$`, "i") } },
+              {
+                subCategories: {
+                  $elemMatch: { $regex: new RegExp(`^${category}$`, "i") },
+                },
+              },
+            ],
+          },
         ],
       };
     }

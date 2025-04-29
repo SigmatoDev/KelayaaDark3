@@ -233,6 +233,19 @@ const useCartService = () => {
 
       updateCart(updatedCartItems);
     },
+
+    removeItem: (item: CartItem) => {
+      const updatedItems = items.filter(
+        (x) =>
+          !(
+            x.productCode === item.productCode &&
+            x.size === item.size &&
+            x.color === item.color
+          )
+      );
+      updateCart(updatedItems);
+    },
+
     applyCoupon: (code: string) => {
       const { itemsPrice } = cartStore.getState();
       let discount = 0;

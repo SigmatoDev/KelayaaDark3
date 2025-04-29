@@ -402,7 +402,11 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                 <>
                   <p className="text-gray-600">Style</p>
                   <p className="font-semibold">
-                    : {product?.category || product?.subCategories}
+                    :{" "}
+                    {product?.category ||
+                      (Array.isArray(product?.subCategories)
+                        ? product.subCategories.join(", ")
+                        : product?.subCategories)}
                   </p>
                 </>
               )}

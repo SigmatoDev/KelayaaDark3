@@ -2,6 +2,7 @@ import { useState, Fragment } from "react";
 import { Dialog, Transition } from "@headlessui/react";
 import { GiCutDiamond, GiGoldBar } from "react-icons/gi";
 import { Button } from "@/components/ui/button";
+import { Plus, X } from "lucide-react";
 
 interface Product {
   productType: string;
@@ -123,8 +124,9 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
         </span>
         <Button
           onClick={openDrawer}
-          className="bg-[#fff] text-black hover:bg-gray"
+          className="bg-[#fff] font-semibold text-[#bb5683] hover:bg-gray"
         >
+          <Plus className="w-4 h-4" />
           View Price Breakup
         </Button>
       </div>
@@ -155,6 +157,15 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
               leaveTo="translate-x-full"
             >
               <Dialog.Panel className="w-full max-w-md bg-white p-6 overflow-y-auto shadow-xl rounded-l-2xl">
+                {/* Close Button */}
+                <button
+                  onClick={closeDrawer}
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 border border-red-500 rounded-sm"
+                  aria-label="Close"
+                >
+                  <X className="w-5 h-5 text-red-500" />
+                </button>
+
                 <Dialog.Title className="text-xl font-bold text-[#Dd91a6] mb-6">
                   Price Breakup Details
                 </Dialog.Title>
