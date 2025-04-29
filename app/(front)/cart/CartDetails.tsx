@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 
 import useLayoutService from "@/lib/hooks/useLayout";
 import useCartService from "@/lib/hooks/useCartStore";
-import { Tag } from "lucide-react";
+import { Tag, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import EmptyCart from "./EmptyCart";
 import { useSession } from "next-auth/react";
@@ -25,6 +25,7 @@ const CartDetails = () => {
     removeCoupon,
     originalItemsPrice,
     setTotalPriceAfterCheckout,
+    removeItem,
   } = useCartService();
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
@@ -249,6 +250,14 @@ const CartDetails = () => {
                         )}
                       </span>
                     )}
+                    <button
+                      onClick={() => removeItem(item)}
+                      className="ml-2 border border-red-400 text-red-400 hover:text-red-500 hover:border-red-500 rounded-sm p-1 bg-white shadow-sm"
+                    >
+                      <Trash2 size={16} />
+                    </button>
+
+                    {/* ❌ Delete Icon */}
                   </div>
                 </div>
               ))}

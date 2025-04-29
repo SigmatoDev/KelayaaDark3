@@ -21,7 +21,7 @@ export type Product = {
   clarity?: string;
   color?: string;
   goldPurity?: string;
-  subCategories?: string;
+  subCategories?: string[];
   productType?: string;
   ring_size?: string;
   quantity?: string;
@@ -60,7 +60,7 @@ const productSchema = new mongoose.Schema<Product>(
     clarity: { type: String },
     color: { type: String },
     goldPurity: { type: String },
-    subCategories: { type: String },
+    subCategories: { type: [String], default: [] },
     productType: { type: String },
     collectionType: { type: String },
     ring_size: {
