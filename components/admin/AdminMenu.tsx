@@ -84,7 +84,7 @@ const AdminMenu = ({ activeItem }: { activeItem: string }) => {
                 className={`block p-2 rounded-md w-full ${
                   isActive
                     ? "bg-gray-700 text-white" // Active item background color
-                    : "hover:bg-gray-800" // Hover state background color
+                    : "hover:bg-gray-300" // Hover state background color
                 }`}
               >
                 <div className="flex items-center">
@@ -110,7 +110,7 @@ const AdminMenu = ({ activeItem }: { activeItem: string }) => {
                           className={`block p-2 rounded-md w-full ${
                             isSubItemActive
                               ? "text-blue-500" // Active sub-item background color
-                              : "hover:bg-gray-800" // Hover state background color
+                              : "hover:bg-gray-300" // Hover state background color
                           }`}
                         >
                           - {subItem.name}

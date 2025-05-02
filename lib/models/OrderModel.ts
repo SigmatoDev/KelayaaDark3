@@ -2,6 +2,13 @@ import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema(
   {
+    orderNumber: { type: String },
+    status: {
+      type: String,
+      enum: ["processing", "completed", "cancelled"],
+      default: "processing",
+    },
+
     user: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -21,6 +28,7 @@ const orderSchema = new mongoose.Schema(
       },
     ],
     personalInfo: {
+      fullName: { type: String, required: false },
       email: { type: String, required: false },
       mobileNumber: { type: String, required: false },
       createAccountAfterCheckout: { type: Boolean, default: false },
@@ -66,11 +74,24 @@ const orderSchema = new mongoose.Schema(
     paidAt: { type: Date },
     deliveredAt: { type: Date },
     paymentIntentId: { type: String },
+    paymentStatus: {
+      type: String,
+      enum: ["pending", "completed", "failed"],
+      default: "pending",
+    },
   },
   {
     timestamps: true,
   }
 );
+
+// ✅ Attach pre-save hook BEFORE compiling model
+orderSchema.pre("save", function (next) {
+  if (!this.orderNumber) {
+    this.orderNumber = `ORDER_${Date.now()}`;
+  }
+  next();
+});
 
 const OrderModel =
   mongoose.models.Order || mongoose.model("Order", orderSchema);
@@ -79,6 +100,9 @@ export default OrderModel;
 
 // Updated TypeScript Types
 export type Order = {
+  status: string;
+  updatedAt: string | number | Date;
+  orderNumber: string;
   _id: string;
   user?: { name: string };
   items: OrderItem[];
@@ -101,6 +125,8 @@ export type Order = {
 };
 
 export type OrderItem = {
+  product: any;
+  _id: string;
   materialType: string;
   inventory_no_of_lines: number;
   countInStock: number;
@@ -144,6 +170,7 @@ export type BillingDetails = ShippingAddress & {
 };
 
 export type PersonalInfo = {
+  fullName: string;
   email: string;
   mobileNumber: string;
   password?: string; // ✅ Added

@@ -49,6 +49,7 @@ type Cart = {
     gstNumber: string;
   };
   personalInfo: {
+    fullName: any;
     mobileNumber: string;
     email: string;
   };

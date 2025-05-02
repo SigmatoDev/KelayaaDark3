@@ -86,6 +86,12 @@ export const GET = auth(async (req: any) => {
         },
       },
     },
+    // ✅ Sort before grouping
+    {
+      $sort: {
+        createdAt: -1,
+      },
+    },
     {
       $group: {
         _id: "$_id",
@@ -105,6 +111,9 @@ export const GET = auth(async (req: any) => {
         paymentIntentId: { $first: "$paymentIntentId" },
         createdAt: { $first: "$createdAt" },
         updatedAt: { $first: "$updatedAt" },
+        orderNumber: { $first: "$orderNumber" },
+        deliveredAt: { $first: "$deliveredAt" },
+        paymentStatus: { $first: "$paymentStatus" },
       },
     },
   ]);
