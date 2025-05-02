@@ -162,7 +162,7 @@ const Dashboard = () => {
           <Line data={ordersData} />
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
+      {/* <div className="grid gap-4 md:grid-cols-2">
         <div>
           <h2 className="py-2 text-xl">Products Report</h2>
           <div className="flex h-80 w-96 items-center justify-center ">
@@ -173,7 +173,7 @@ const Dashboard = () => {
           <h2 className="py-2 text-xl">Users Report</h2>
           <Bar data={usersData} />
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

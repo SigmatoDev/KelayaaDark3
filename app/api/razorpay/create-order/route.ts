@@ -6,13 +6,16 @@ export async function POST(req: Request) {
     const { amount } = await req.json(); // amount in rupees
 
     if (!amount) {
-      return NextResponse.json({ success: false, message: "Amount is required" }, { status: 400 });
+      return NextResponse.json(
+        { success: false, message: "Amount is required" },
+        { status: 400 }
+      );
     }
 
     // Razorpay instance
     const razorpay = new Razorpay({
-      key_id: "rzp_test_tvPxFRf40bmLkn",
-      key_secret: "UPG168c147tfM7rVEJFEJGHk",
+      key_id: process.env.RAZORPAY_KEY_ID,
+      key_secret: process.env.RAZORPAY_KEY_SECRET,
     });
 
     const payment_capture = 1;
@@ -35,6 +38,9 @@ export async function POST(req: Request) {
     });
   } catch (error: any) {
     console.error("Razorpay Create Order Error:", error);
-    return NextResponse.json({ success: false, message: "Razorpay order creation failed" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, message: "Razorpay order creation failed" },
+      { status: 500 }
+    );
   }
 }
