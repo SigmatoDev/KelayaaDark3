@@ -8,14 +8,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { FaCheckCircle, FaClock } from "react-icons/fa";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 
 interface Order {
+  paymentStatus: string;
   _id: string;
   orderNumber: string;
   createdAt: string;
   items: Array<{
     materialType: string;
-    pricePerLine: ReactNode;
+    pricePerLine: number;
     product: string; // Product ID
     name: string;
     slug: string;
@@ -34,15 +37,31 @@ interface Order {
 export default function OrderHistory() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Filtered orders
+  const filteredOrders = orders.filter(
+    (order) =>
+      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.items.some((item) =>
+        item.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
+  );
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const response = await fetch("/api/orders/mine");
         if (!response.ok) throw new Error("Failed to fetch orders");
+
         const data = await response.json();
         console.log("Fetched orders:", data); // Debug log
-        setOrders(data);
+
+        // Proper date sorting (newest first)
+        const sortedOrders = data.sort(
+          (a, b) => new Date(b.createdAt) - new Date(a.createdAt)
+        );
+        setOrders(sortedOrders);
       } catch (error) {
         console.error("Error fetching orders:", error);
       } finally {
@@ -66,7 +85,20 @@ export default function OrderHistory() {
       <Heading title="Order History" description="View and track your orders" />
       <Separator className="my-6" />
 
-      {orders.length === 0 ? (
+      <div className="my-4 flex flex-col sm:flex-row items-center gap-2 w-full sm:max-w-md">
+        <div className="relative w-full">
+          <Input
+            type="text"
+            placeholder="Search by Order Number or Product Name"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pr-10" // add right padding to avoid overlap
+          />
+          <Search className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+        </div>
+      </div>
+
+      {filteredOrders?.length === 0 ? (
         <div className="text-center py-10">
           <h3 className="text-lg font-medium">No orders found</h3>
           <p className="text-gray-500 mt-2">
@@ -81,18 +113,19 @@ export default function OrderHistory() {
         </div>
       ) : (
         <div className="space-y-6">
-          {orders.map((order) => (
+          {filteredOrders?.map((order) => (
             <Card key={order._id}>
               <CardContent className="p-6">
                 <div className="flex flex-col justify-between gap-6">
                   {/* Order Info */}
-                  <div className="space-y-2">
+                  <div className="space-y-2 py-4">
                     <div className="flex items-center gap-4">
                       <Link
-                        href={`/order/${order.orderNumber}`}
+                        // href={`/order/${order.orderNumber}`}
+                        href={``}
                         className="text-lg font-medium hover:text-primary"
                       >
-                        Order #{order._id}
+                        Order #{order?.orderNumber}
                       </Link>
                       <StatusBadge
                         status={
@@ -106,6 +139,12 @@ export default function OrderHistory() {
                     </div>
                     <p className="text-sm text-gray-500">
                       Placed on {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      Payment :{" "}
+                      <StatusBadge
+                        status={order.isPaid ? "completed" : "pending"}
+                      />
                     </p>
                   </div>
 
@@ -182,7 +221,11 @@ export default function OrderHistory() {
                       <div
                         className={`w-4 h-4 rounded-full ${order.isDelivered ? "bg-green-500" : "bg-gray-300"}`}
                       >
-                        <FaClock className="text-white" />
+                        {order.isDelivered === false ? (
+                          <FaClock className="text-white" />
+                        ) : (
+                          <FaCheckCircle className="text-white" />
+                        )}
                       </div>
                       <p className="text-sm mt-2">Delivered</p>
                       {order.deliveredAt && (

@@ -6,10 +6,15 @@ import CheckoutSteps from "@/components/checkout/CheckoutSteps";
 import useCartService from "@/lib/hooks/useCartStore";
 import { loadScript } from "@/lib/loadRazorpay"; // we'll create this small helper below
 import toast from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 const Form = () => {
+  const { data: session } = useSession();
+
   const router = useRouter();
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"Razorpay" | "CashOnDelivery">("Razorpay");
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
+    "Razorpay" | "CashOnDelivery"
+  >("Razorpay");
 
   const {
     savePaymentMethod,
@@ -34,7 +39,9 @@ const Form = () => {
   const handleRazorpayPayment = async () => {
     try {
       // Load Razorpay script
-      const razorpayLoaded = await loadScript("https://checkout.razorpay.com/v1/checkout.js");
+      const razorpayLoaded = await loadScript(
+        "https://checkout.razorpay.com/v1/checkout.js"
+      );
 
       if (!razorpayLoaded) {
         toast.error("Razorpay SDK failed to load. Are you online?");
@@ -56,21 +63,45 @@ const Form = () => {
       const { id: order_id } = data.order;
 
       const options: any = {
-        key: "rzp_test_tvPxFRf40bmLkn", // Add NEXT_PUBLIC_ here
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, // Add NEXT_PUBLIC_ here
         amount: totalPrice * 100,
         currency: "INR",
         name: "Kelayaa Jewellery",
         description: "Thank you for shopping with us",
         order_id,
         handler: async function (response: any) {
-          const paymentIntentId = response.razorpay_payment_id;
-          savePaymentMethod("Razorpay");
-          router.push(`/payment/success/${paymentIntentId}`);
+          console.log("Payment handler triggered:", response); // Debug log to check response data
+
+          const verifyRes = await fetch("/api/checkout/verify-payment", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+
+          const verifyData = await verifyRes.json();
+
+          console.log("Payment verification response:", verifyData); // Debug log to check verification response
+
+          if (verifyData.success) {
+            console.log("Payment verified successfully!"); // Debug log for successful verification
+            savePaymentMethod("Razorpay");
+            router.push(`/payment/success/${verifyData.paymentIntentId}`);
+          } else {
+            console.error("Payment verification failed:", verifyData.message); // Debug log for failure
+            toast.error("Payment verification failed. Please contact support.");
+          }
         },
+
         prefill: {
-          name: "",
-          email: "",
-          contact: "",
+          name: session?.user?.name,
+          email: session?.user?.email,
+          contact: session?.user?.mobileNumber, 
         },
         notes: {
           platform: "Kelayaa",
@@ -82,10 +113,11 @@ const Form = () => {
 
       const paymentObject = new (window as any).Razorpay(options);
       paymentObject.open();
-
     } catch (error: any) {
       console.error("Razorpay error:", error);
-      toast.error(error?.message || "Something went wrong during Razorpay payment.");
+      toast.error(
+        error?.message || "Something went wrong during Razorpay payment."
+      );
     }
   };
 
@@ -117,7 +149,9 @@ const Form = () => {
                   onChange={() => setSelectedPaymentMethod("Razorpay")}
                   className="radio radio-primary"
                 />
-                <span className="font-medium text-sm">Pay Online (Credit/Debit Card, UPI, NetBanking)</span>
+                <span className="font-medium text-sm">
+                  Pay Online (Credit/Debit Card, UPI, NetBanking)
+                </span>
               </label>
 
               <label className="flex items-center gap-2">
@@ -128,7 +162,9 @@ const Form = () => {
                   onChange={() => setSelectedPaymentMethod("CashOnDelivery")}
                   className="radio radio-primary"
                 />
-                <span className="font-medium text-sm">Cash on Delivery (COD)</span>
+                <span className="font-medium text-sm">
+                  Cash on Delivery (COD)
+                </span>
               </label>
             </div>
 
@@ -136,7 +172,9 @@ const Form = () => {
               type="submit"
               className="btn bg-gradient-to-r from-pink-500 to-red-500 text-white w-full font-semibold"
             >
-              {selectedPaymentMethod === "CashOnDelivery" ? "Place Order" : "Pay Now"}
+              {selectedPaymentMethod === "CashOnDelivery"
+                ? "Place Order"
+                : "Pay Now"}
             </button>
 
             <button

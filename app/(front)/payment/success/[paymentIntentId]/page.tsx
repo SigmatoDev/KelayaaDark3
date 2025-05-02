@@ -15,6 +15,7 @@ const SuccessPage = () => {
 
   const paymentIntentId = params?.paymentIntentId as string;
   const [orderId, setOrderId] = useState<string | null>(null);
+  const [paymentResult, setPaymentResult] = useState(null); // Add state to store paymentResult
 
   const {
     paymentMethod,
@@ -31,11 +32,28 @@ const SuccessPage = () => {
 
   const hasPlacedOrderRef = useRef(false);
 
-  const { trigger: placeOrder, isMutating: isPlacing } = useSWRMutation(
+  const [isPlacing, setIsPlacing] = useState(true);
+
+  const fetchPaymentDetails = async (paymentId: string) => {
+    try {
+      const res = await fetch(
+        `/api/razorpay/payment-details?paymentId=${paymentId}`
+      );
+      const data = await res.json();
+      return data?.payment || data;
+    } catch (err) {
+      console.error("Failed to fetch payment details:", err);
+      return null;
+    }
+  };
+
+  const { trigger: placeOrder } = useSWRMutation(
     `/api/orders`,
-    async (url) => {
-      if (!session?.user?._id) {
-        toast.error("User session not found. Please login again.");
+    async (url, { arg }: { arg: { paymentResult: any } }) => {
+      const { paymentResult } = arg;
+
+      if (!session?.user) {
+        toast.error("User session not found.");
         return;
       }
 
@@ -45,15 +63,15 @@ const SuccessPage = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             user: session.user.id,
-            orderNumber: "ORDER_" + Date.now(),
             status: "pending",
             items: items.map((item) => ({
-              product: item._id,
+              productId: item._id,
               name: item.name,
               slug: item.slug,
               image: item.image,
-              price: item.price,
-              qty: item.qty, // ✅ correct field now
+              price:
+                item?.materialType === "Beads" ? item.pricePerLine : item.price,
+              qty: item.qty,
             })),
             itemsPrice,
             taxPrice,
@@ -62,26 +80,19 @@ const SuccessPage = () => {
             shippingAddress,
             billingDetails: {
               sameAsShipping: true,
-              firstName: shippingAddress.firstName,
-              lastName: shippingAddress.lastName,
-              address: shippingAddress.address,
-              landmark: shippingAddress.landmark,
-              country: shippingAddress.country,
-              state: shippingAddress.state,
-              city: shippingAddress.city,
-              postalCode: shippingAddress.postalCode,
+              ...shippingAddress,
             },
             gstDetails: {
-              hasGST: gstDetails.hasGST ?? false, // ✅ Default if not present
+              hasGST: gstDetails.hasGST ?? false,
               companyName: gstDetails.companyName || "",
               gstNumber: gstDetails.gstNumber || "",
             },
             paymentStatus: "completed",
             paymentMethod,
             paymentIntentId,
+            paymentResult,
             personalInfo: {
-              email: personalInfo.email,
-              mobileNumber: personalInfo.mobileNumber,
+              ...personalInfo,
               createAccountAfterCheckout: false,
             },
           }),
@@ -93,27 +104,56 @@ const SuccessPage = () => {
           clear();
           setOrderId(data?.order?._id);
           toast.success("Order placed successfully!");
+          setTimeout(() => {
+            router.push("/");
+          }, 1000);
         } else {
-          console.error("Order Placement Error:", data);
           toast.error(data.message || "Order failed");
         }
-      } catch (err: any) {
-        console.error("API Error:", err.message);
-        toast.error("Something went wrong. Please try again.");
+      } catch (err) {
+        console.error(err);
+        toast.error("Something went wrong.");
+      } finally {
+        setIsPlacing(false);
       }
     }
   );
 
   useEffect(() => {
-    if (
-      paymentIntentId &&
-      !hasPlacedOrderRef.current &&
-      status === "authenticated"
-    ) {
-      hasPlacedOrderRef.current = true;
-      placeOrder();
-    }
-  }, [paymentIntentId, placeOrder, status]);
+    let isMounted = true;
+
+    const verifyAndPlaceOrder = async () => {
+      if (
+        !paymentIntentId ||
+        hasPlacedOrderRef.current ||
+        status !== "authenticated"
+      )
+        return;
+
+      hasPlacedOrderRef.current = true; // Immediately block future calls
+
+      const paymentDetails = await fetchPaymentDetails(paymentIntentId);
+
+      if (paymentDetails?.status === "captured" && paymentDetails.captured) {
+        const paymentResult = {
+          id: paymentDetails.id,
+          status: paymentDetails.status,
+          email_address: paymentDetails.email,
+        };
+
+        await placeOrder({ paymentResult });
+      } else {
+        toast.error("Payment not verified. Please contact support.");
+        if (isMounted) setIsPlacing(false);
+      }
+    };
+
+    verifyAndPlaceOrder();
+
+    return () => {
+      isMounted = false; // cleanup to avoid state updates after unmount
+    };
+  }, [paymentIntentId, status]);
 
   return (
     <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-amber-50 to-pink-100 px-4">
