@@ -69,7 +69,7 @@ export default function OrderHistory() {
             Start shopping to see your orders here!
           </p>
           <Link
-            href="/products"
+            href="/search"
             className="inline-block mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
           >
             Browse Products
