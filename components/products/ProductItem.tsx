@@ -161,7 +161,7 @@ const ProductItem = ({ product }: { product: Product }) => {
       </button>
 
       <div className="card-body p-2 text-left">
-        <Link href={`/product/${product.slug}`}>
+        <Link href={`/product/${product?.productCode}`}>
           <h3 className="line-clamp-1 font-regular text-base text-sm text-[#474747]">
             {product.name || "Product Name Unavailable"}
           </h3>

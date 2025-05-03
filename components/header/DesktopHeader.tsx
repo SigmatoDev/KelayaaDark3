@@ -898,11 +898,11 @@ const DesktopHeader = () => {
                                       href="#"
                                       onClick={(e) => {
                                         e.preventDefault();
-                                        handleSubClick("Beads", subItem.label);
+                                        handleSubClick("Beads", subItem?.label);
                                       }}
                                       className="text-gray-600 hover:text-[#af5772] text-sm font-[400] block"
                                     >
-                                      {subItem.label}
+                                      {subItem?.label}
                                     </Link>
                                   ))}
                                 </div>
