@@ -534,7 +534,7 @@ const DesktopHeader = () => {
                       className="hidden md:flex justify-center items-center space-x-4 uppercase px-1 py-2 relative items-center xl:py-[30px]"
                       onMouseLeave={() => setIsOpen(false)}
                     >
-                      <div className="flex items-center space-x-8">
+                      <div className="flex items-center space-x-2">
                         {Object.keys(menuData).map((key) => {
                           const material =
                             key === "golddiamonds" ? "gold" : key;

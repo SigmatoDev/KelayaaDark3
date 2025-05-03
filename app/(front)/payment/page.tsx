@@ -135,7 +135,7 @@ const Form = () => {
     <div>
       <CheckoutSteps current={2} />
 
-      <div className="card mx-auto my-6 max-w-sm bg-base-300 shadow-lg">
+      <div className="card mx-auto my-6 max-w-sm bg-[#eaeaea] shadow-md">
         <div className="card-body">
           <h1 className="card-title text-center mb-4">Choose Payment Method</h1>
 
@@ -154,7 +154,7 @@ const Form = () => {
                 </span>
               </label>
 
-              <label className="flex items-center gap-2">
+              {/* <label className="flex items-center gap-2">
                 <input
                   type="radio"
                   value="CashOnDelivery"
@@ -165,7 +165,7 @@ const Form = () => {
                 <span className="font-medium text-sm">
                   Cash on Delivery (COD)
                 </span>
-              </label>
+              </label> */}
             </div>
 
             <button

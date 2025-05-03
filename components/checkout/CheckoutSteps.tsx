@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 
 const CheckoutSteps = ({ current = 0 }) => {
   const steps = [
-    "Personal Information and Shipping Address",
+    "Personal Information",
     "Payment Method",
     "Place Order",
   ];
