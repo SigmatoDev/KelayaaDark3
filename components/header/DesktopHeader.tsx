@@ -534,7 +534,7 @@ const DesktopHeader = () => {
                       className="hidden md:flex justify-center items-center space-x-4 uppercase px-1 py-2 relative items-center xl:py-[30px]"
                       onMouseLeave={() => setIsOpen(false)}
                     >
-                      <div className="flex items-center space-x-2">
+                      <div className="flex items-center space-x-1">
                         {Object.keys(menuData).map((key) => {
                           const material =
                             key === "golddiamonds" ? "gold" : key;
@@ -575,7 +575,7 @@ const DesktopHeader = () => {
                               <div className="relative">
                                 <button
                                   onClick={() => setMenuOpen(!menuOpen)}
-                                  className="flex items-center px-3 py-2 text-white bg-black rounded-lg hover:bg-gray-800 transition"
+                                  className="flex items-center px-3 py-2 text-sm text-white bg-black rounded-lg hover:bg-gray-800 transition"
                                 >
                                   <User className="h-4 w-4 mr-1" />{" "}
                                   {session.user.name}
@@ -655,7 +655,7 @@ const DesktopHeader = () => {
                             className="flex flex-col items-center text-center"
                           >
                             <Heart
-                              className={`w-5 h-5 text-white ${pathname === "/" && !isScrolled ? "group-hover:text-white" : ""} hover:text-pink-500 transition`}
+                              className={`w-5 h-5 text-sm text-white ${pathname === "/" && !isScrolled ? "group-hover:text-white" : ""} hover:text-pink-500 transition`}
                             />
                           </Link>
                         ) : (
