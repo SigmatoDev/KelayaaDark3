@@ -8,7 +8,7 @@ import { GiMetalBar, GiPearlNecklace } from "react-icons/gi";
 const categories = [
     { name: "Silver", href: "/search?materialType=silver", icon: <GiMetalBar size={24} /> },
     { name: "Gold & Diamonds", href: "/search?materialType=gold", icon: <FaRing size={24} /> },
-    { name: "Beads", href: "#", icon: <GiPearlNecklace size={24} /> },
+    { name: "Beads", href: "/search?materialType=beads", icon: <GiPearlNecklace size={24} /> },
     { name: "Custom Design", href: "/custom-design", icon: <FaCrown size={24} /> },
     { name: "Collections", href: "/search?productCategory=collections", icon: <FaStar size={24} /> },
   ];
@@ -16,7 +16,7 @@ const categories = [
 
 const MobileCategoryCarousel = () => {
   return (
-    <section className="block md:hidden bg-[#f7e8d0] py-4 overflow-x-auto">
+    <section className="block md:hidden bg-[#fff] py-4 overflow-x-auto">
       <div className="flex space-x-4 px-4">
         {categories.map((category, index) => (
           <Link
