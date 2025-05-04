@@ -478,11 +478,10 @@ const DesktopHeader = () => {
   return (
     <>
       <div
-        className={`xl:fixed top-0 z-30 w-screen ${
-          isScrolled
+        className={`xl:fixed top-0 z-30 w-screen ${isScrolled
             ? "bg-[#000] backdrop-blur-sm"
             : "xl:bg-[#000] xl:backdrop-blur-md bg-black"
-        } transition-all duration-1000 group`}
+          } transition-all duration-1000 group`}
       >
         <header
           className={`text-gray-800 w-full xl:h-[80px] my-0 transition-[margin] xl:flex xl:justify-center items-center duration-1000 ease-in-out ${isScrolled ? " mt-1" : " my-1"}`}
@@ -547,11 +546,10 @@ const DesktopHeader = () => {
                                 e.preventDefault();
                                 handleMainMenuClick(key);
                               }}
-                              className={`w-[140px] text-center text-white ${
-                                pathname === "/" && !isScrolled
+                              className={`w-[140px] text-center text-white ${pathname === "/" && !isScrolled
                                   ? "group-hover:text-white"
                                   : ""
-                              } transition-all duration-300 ease-in-out hover:text-pink-300 text-xs`}
+                                } transition-all duration-300 ease-in-out hover:text-pink-300 text-xs`}
                               onMouseEnter={() => {
                                 setActiveMenu(key);
                                 setIsOpen(true);
@@ -859,7 +857,10 @@ const DesktopHeader = () => {
                                         src={menuData[activeMenu].images[idx]}
                                         alt={`${item.label} collection`}
                                         fill
-                                        className="object-cover hover:scale-105 transition-transform duration-300"
+                                        sizes="(max-width: 500px) 100vw, 200px"
+                                        onClick={() => setIsOpen(false)}
+                                        className="object-cover hover:scale-105 transition-transform duration-300 rounded-md"
+                                        priority={idx === 0} // prioritize first image for LCP
                                       />
                                     </Link>
                                   </div>
