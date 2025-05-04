@@ -840,7 +840,7 @@ const DesktopHeader = () => {
                         {activeMenu === "collections" && (
                           <div className="col-span-5 grid grid-cols-4 gap-6">
                             {menuData[activeMenu].subitems.map((item, idx) => {
-                              const path = `/search?collectionType=${encodeURIComponent(item.label)}`;
+                              const path = `/search?productCategory=collections&collectionType=${encodeURIComponent(item.label)}`;
                               return (
                                 <div key={idx} className="flex flex-col">
                                   <Link
