@@ -16,7 +16,7 @@ const categories = [
 
 const MobileCategoryCarousel = () => {
   return (
-    <section className="block md:hidden bg-[#fff] py-4 overflow-x-auto">
+    <section className="block md:hidden bg-[#f8edd2] py-4 overflow-x-auto">
       <div className="flex space-x-4 px-4">
         {categories.map((category, index) => (
           <Link
@@ -24,7 +24,7 @@ const MobileCategoryCarousel = () => {
             href={category.href}
             className="flex flex-col items-center text-center min-w-[70px]"
           >
-            <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-[#e0c9a0] transition">
+            <div className="w-16 h-16 rounded-full flex items-center justify-center hover:bg-[#e0c9a0] transition">
               {category.icon}
             </div>
             <span className="mt-2 text-xs font-medium text-gray-700">{category.name}</span>

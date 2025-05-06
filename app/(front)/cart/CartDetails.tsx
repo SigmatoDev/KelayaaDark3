@@ -81,7 +81,9 @@ const CartDetails = () => {
   };
 
   return (
-    <div className="mt-4 p-6 bg-white w-[90%] mx-auto">
+    <div className="mt-4 p-4 sm:p-6 bg-white w-full sm:w-[90%] mx-auto rounded-md shadow-sm">
+
+
       <h1 className="mt-4 mb-8 text-2xl text-center font-semibold text-gray-900">
         Shopping Cart
       </h1>
@@ -93,7 +95,7 @@ const CartDetails = () => {
         <div className="grid md:grid-cols-4 md:gap-6">
           {/* Product Details Section */}
           <div
-            className="md:col-span-3 bg-white p-4 bg-[#f5f5f5] max-h-[400px] overflow-y-auto"
+            className="md:col-span-3 bg-white p-1 bg-[#f5f5f5] max-h-[400px] overflow-y-auto"
             style={{
               scrollbarWidth: "thin",
               scrollbarColor: "pink transparent", // Adjusting the color for the thumb and track
@@ -265,7 +267,7 @@ const CartDetails = () => {
             </div>
           </div>
           {/* Order Summary Section */}
-          <div className="p-6 bg-white shadow-md border border-[#eaeaea] min-h-[200px] flex flex-col">
+          <div className="p-3 bg-white shadow-md border border-[#eaeaea] min-h-[200px] flex flex-col">
             <h2 className="text-lg font-semibold text-gray-800 mb-4">
               Order Summary
             </h2>

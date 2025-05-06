@@ -15,5 +15,5 @@ export default function FrontLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <main className="flex-grow pt-[52px] md:pt-[80px]">{children}</main>;
+  return <main className="flex-grow pt-[52px] md:pt-[84px]">{children}</main>;
 }

@@ -9,6 +9,7 @@ import {
   FaWhatsapp,
   FaHeart,
   FaSearchPlus,
+  FaSearchMinus
 } from "react-icons/fa";
 import AddToCart from "@/components/products/AddToCart";
 import { convertDocToObj } from "@/lib/utils";
@@ -103,6 +104,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
   const [isSignInOpen, setIsSignInOpen] = useState(false);
 
   const [isZoomed, setIsZoomed] = useState(false); // Track zoom state
+  const [mainImageLoading, setMainImageLoading] = useState(true);
 
   // Handle the Zoom button click
   const handleZoomClick = () => {
@@ -160,6 +162,12 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
     setIsWishlisted(data.status);
   };
 
+
+  useEffect(() => {
+    setMainImageLoading(true); // Reset loader whenever selected image changes
+  }, [selectedImage]);
+
+
   const generateBreadcrumbLink = () => {
     if (product?.materialType === "Beads") {
       return `/search?materialType=${encodeURIComponent(product.materialType)}`;
@@ -192,12 +200,45 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
     // Force 2 second minimum loading
     setTimeout(() => {
       setLoading(false);
-    }, 2000); // Delay set to 2 seconds
+    }, 300); // Delay set to 2 seconds
   }, []);
 
-  if (loading || !product) {
-    return <ProductDetailsSkeleton />;
-  }
+  // if (loading || !product) {
+  //   return <ProductDetailsSkeleton />;
+  // }
+
+
+
+
+
+  useEffect(() => {
+    if (!selectedImage || typeof window === "undefined") return;
+  
+    const isSlowConnection =
+      navigator.connection &&
+      (navigator.connection.saveData ||
+        ["slow-2g", "2g"].includes(navigator.connection.effectiveType));
+  
+    const isMobile =
+      /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(
+        navigator.userAgent
+      );
+  
+    if (isSlowConnection || isMobile) return; // Skip for mobile or slow connections
+  
+    const index = product.images.findIndex((img) => img === selectedImage);
+    const originalImage = product.image_variants?.[index]?.original;
+  
+    if (originalImage) {
+      const preloadLink = document.createElement("link");
+      preloadLink.rel = "preload";
+      preloadLink.as = "image";
+      preloadLink.href = originalImage;
+      document.head.appendChild(preloadLink);
+    }
+  }, [selectedImage]);
+
+  
 
   return (
     <>
@@ -227,89 +268,114 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
 
       <div className="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Section - Image Gallery */}
-        <div className="flex flex-col md:flex-row gap-4 md:sticky md:top-24 self-start">
-          {product.images.length > 0 ? (
-            <>
-              {/* Thumbnail previews */}
-              <div className="flex md:flex-col gap-2">
-                {product.images.map((img, index) => {
-                  const imageUrl = img.startsWith("http") ? img : `/${img}`;
-                  const isImageAvailable = imageUrl && img !== "";
 
-                  return isImageAvailable ? (
-                    <button
-                      key={index}
-                      onClick={() => setSelectedImage(img)}
-                      className={`p-1 rounded-none ${
-                        selectedImage === img ? "border-2 border-pink-500" : ""
-                      }`}
-                    >
-                      <Image
-                        src={imageUrl}
-                        alt={`Thumbnail ${index + 1}`}
-                        width={60}
-                        height={60}
-                        quality={50}
-                        placeholder="empty"
-                        loading="lazy"
-                        className="object-cover"
-                        onError={(e) =>
-                          ((e.target as HTMLImageElement).style.display =
-                            "none")
-                        }
-                      />
-                    </button>
-                  ) : null;
-                })}
+
+        {/* Left Section - Image Gallery */}
+        {/* Left Section - Image Gallery */}
+        <div className="flex flex-col md:flex-row gap-4 md:sticky md:top-24 self-start">
+          {product.images?.length > 0 ? (
+            <>
+              {/* Thumbnails */}
+              <div className="flex md:flex-col gap-2">
+                {product.images
+                  .map((img, index) => ({ img, index }))
+                  .filter(({ img }) => img && img.startsWith("http"))
+                  .map(({ img, index }) => {
+                    const variant = product.image_variants?.[index] ?? {};
+                    const thumbUrl = variant.image_small || img;
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setIsZoomed(false); // reset zoom mode
+                          setSelectedImage(img);
+                        }}
+                        className={`p-1 rounded-none ${selectedImage === img ? "border-2 border-pink-500" : ""
+                          }`}
+                      >
+                        <Image
+                          src={thumbUrl}
+                          alt={`Thumbnail ${index + 1}`}
+                          width={60}
+                          height={60}
+                          quality={50}
+                          placeholder="blur"
+                          blurDataURL="/images/blur.png"
+                          loading="lazy"
+                          className="object-cover"
+                          onError={(e) =>
+                            ((e.target as HTMLImageElement).style.display = "none")
+                          }
+                        />
+                      </button>
+                    );
+                  })}
               </div>
 
               {/* Main image display */}
               {selectedImage && (
                 <div className="relative w-full max-w-[500px] h-[400px] md:h-[500px] overflow-hidden">
-                  {/* Zoom icon button */}
+                  {/* Zoom icon */}
                   <button
                     onClick={handleZoomClick}
                     className="absolute top-4 right-4 bg-white p-2 rounded-full shadow-md z-10"
+                    title={isZoomed ? "Exit Zoom" : "Zoom Image"}
                   >
-                    <FaSearchPlus className="text-gray-700" />
+                    {isZoomed ? (
+                      <FaSearchMinus className="text-gray-700" />
+                    ) : (
+                      <FaSearchPlus className="text-gray-700" />
+                    )}
                   </button>
 
-                  {/* Main Image with zoom feature */}
-                  {isZoomed ? (
-                    <InnerImageZoom
-                      src={
-                        selectedImage.startsWith("http")
-                          ? selectedImage
-                          : `/${selectedImage}`
-                      }
-                      zoomSrc={
-                        selectedImage.startsWith("http")
-                          ? selectedImage
-                          : `/${selectedImage}`
-                      }
-                      zoomType="click" // Set zoom to click instead of hover
-                      zoomPreload={true}
-                      width={600}
-                      height={600}
-                    />
-                  ) : (
-                    <Image
-                      src={
-                        selectedImage.startsWith("http")
-                          ? selectedImage
-                          : `/${selectedImage}`
-                      }
-                      alt="Main product image"
-                      width={800}
-                      height={800}
-                      quality={75}
-                      placeholder="empty"
-                      className="w-full h-full object-contain transition-transform duration-300 ease-in-out"
-                      onError={(e) =>
-                        ((e.target as HTMLImageElement).style.display = "none")
-                      }
-                    />
-                  )}
+
+                  {/* Main or Zoomed image */}
+                  {(() => {
+                    const index = product.images.findIndex((img) => img === selectedImage);
+                    const variant = product.image_variants?.[index] ?? {};
+                    const mainImage = variant.image_large || selectedImage;
+                    const zoomImage = variant.original || selectedImage;
+
+                    return isZoomed ? (
+                      <InnerImageZoom
+                        src={zoomImage}
+                        zoomSrc={zoomImage}
+                        zoomType="click"
+                        zoomPreload={true}
+                        width={600}
+                        height={600}
+                        // Zooms in 2x instead of 1.5x
+                      />
+                    ) : (
+                      <div className="relative w-full h-full">
+                        {/* Spinner */}
+                        {mainImageLoading && (
+                          <div className="absolute inset-0 z-20 flex items-center justify-center bg-white bg-opacity-40">
+                            <div className="w-8 h-8 border-4 border-pink-500 border-t-transparent rounded-full animate-spin"></div>
+                          </div>
+                        )}
+
+                        <Image
+                          src={mainImage}
+                          alt="Main product image"
+                          width={800}
+                          height={800}
+                          quality={75}
+                          placeholder="blur"
+                          blurDataURL="/images/blur.png"
+                          loading="eager"
+                          priority
+                          onLoad={() => setMainImageLoading(false)}
+                          className="w-full h-full object-contain transition-transform duration-300 ease-in-out"
+                          onError={(e) =>
+                            ((e.target as HTMLImageElement).style.display = "none")
+                          }
+                        />
+                      </div>
+
+                    );
+                  })()}
                 </div>
               )}
             </>
@@ -317,6 +383,8 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             <p>No images found for this product.</p>
           )}
         </div>
+
+
 
         {/* Right Section - Product Details */}
         <div className="flex flex-col gap-4">
@@ -358,9 +426,9 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                 ₹
                 {product.price
                   ? product.price.toLocaleString("en-IN", {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2,
+                  })
                   : "N/A"}
               </div>
             )}
@@ -390,7 +458,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                 <p className="font-semibold">
                   :{" "}
                   {product?.productType === "Sets" ||
-                  product?.productType === "Bangles"
+                    product?.productType === "Bangles"
                     ? product?.productType
                     : product?.productCategory}
                 </p>
@@ -413,13 +481,13 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             {(product?.productType === "Sets" ||
               product?.productCategory === "Pendants" ||
               product?.productCategory === "Sets") && (
-              <>
-                <p className="text-red-400 text-xs">*Note</p>
-                <p className="text-red-400 text-xs">
-                  : Chains are not included.
-                </p>
-              </>
-            )}
+                <>
+                  <p className="text-red-400 text-xs">*Note</p>
+                  <p className="text-red-400 text-xs">
+                    : Chains are not included.
+                  </p>
+                </>
+              )}
 
             {/* <p className="text-gray-600">Tags</p>
           <p className="font-semibold capitalize">
@@ -481,8 +549,8 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             {((product?.materialType === "gold" &&
               product?.productType === "Sets") ||
               product?.productType === "Bangles") && (
-              <SetPriceBreakupCard product={product} />
-            )}
+                <SetPriceBreakupCard product={product} />
+              )}
           </div>
           {/* Buttons Grid */}
           <div
