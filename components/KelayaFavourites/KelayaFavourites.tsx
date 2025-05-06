@@ -54,7 +54,7 @@ export default function KelayaFavourites() {
         loop
         playsInline
         className="absolute inset-0 w-full h-full"
-        style={{ objectFit: 'none', transform: 'scale(1.6)' }}
+        style={{ objectFit: 'none', transform: 'scale(1)' }}
       />
     </div>
   ))}
