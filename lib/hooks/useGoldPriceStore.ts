@@ -1,50 +1,53 @@
-import { create } from 'zustand'
-import axios from 'axios'
+// useGoldPriceStore.ts
+import { create } from "zustand";
+import axios from "axios";
 
-// Define State
+interface GoldPrice {
+  karat: string;
+  price: number;
+  previousPrice: number;
+  percentageChange: number;
+  direction: "up" | "down" | "same";
+}
+
 interface GoldPriceState {
-  goldPrices: { karat: string; price: number }[];
+  goldPrices: GoldPrice[];
   highLow: { highest: number; lowest: number };
   fetchGoldPrices: () => Promise<void>;
 }
 
-// Create Zustand Store
 const useGoldPriceStore = create<GoldPriceState>((set) => ({
   goldPrices: [],
   highLow: { highest: 0, lowest: Infinity },
 
   fetchGoldPrices: async () => {
     try {
-      const now = new Date();
-      const currentHour = now.getHours();
-      console.log(
-        `⏰ Checking time: ${now.toLocaleTimeString()} (Hour: ${currentHour})`
-      );
+      const res = await axios.get<{
+        data: {
+          karat: string;
+          price: number;
+          previousPrice: number;
+          percentageChange: number;
+        }[];
+      }>("/api/gold-price");
 
-      // Fetch only if it's 9 AM, 3 PM, 5 PM, or 9 PM
-      if ([9, 15, 17, 21].includes(currentHour)) {
-        console.log("✅ Fetching gold prices from API...");
+      const pricesWithDirection = res.data.data.map((item) => ({
+        ...item,
+        direction:
+          item.percentageChange > 0
+            ? "up"
+            : item.percentageChange < 0
+              ? "down"
+              : "same",
+      }));
 
-        const res = await axios.get<{
-          data: { karat: string; price: number }[];
-        }>("/api/gold-price");
+      const highest = Math.max(...pricesWithDirection.map((p) => p.price));
+      const lowest = Math.min(...pricesWithDirection.map((p) => p.price));
 
-        console.log("📥 API Response:", res.data);
-
-        const prices = res.data.data;
-        const highest = Math.max(...prices.map((p) => p.price));
-        const lowest = Math.min(...prices.map((p) => p.price));
-
-        console.log(
-          `🔺 Highest Price: ₹${highest}, 🔻 Lowest Price: ₹${lowest}`
-        );
-
-        set({ goldPrices: prices, highLow: { highest, lowest } });
-      } else {
-        console.log(
-          "⏳ Not fetching now. Will fetch at 9 AM, 3 PM, 5 PM, or 9 PM."
-        );
-      }
+      set({
+        goldPrices: pricesWithDirection,
+        highLow: { highest, lowest },
+      });
     } catch (error) {
       console.error("❌ Failed to fetch gold prices:", error);
     }

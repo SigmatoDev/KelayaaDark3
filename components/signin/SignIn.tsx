@@ -11,7 +11,7 @@ interface SignInPopupProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
   prefillEmail?: string; // ✅ added this
-  message?: string; 
+  message?: string;
 }
 
 type Inputs = {
@@ -21,7 +21,12 @@ type Inputs = {
   confirmPassword?: string;
 };
 
-export default function SignInPopup({ isOpen, setIsOpen, prefillEmail, message }: SignInPopupProps) {
+export default function SignInPopup({
+  isOpen,
+  setIsOpen,
+  prefillEmail,
+  message,
+}: SignInPopupProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
@@ -102,14 +107,15 @@ export default function SignInPopup({ isOpen, setIsOpen, prefillEmail, message }
           {isRegistering ? "Create Account" : "Login to Continue"}
         </h2>
 
-        {error && <div className="text-red-500 text-center text-sm mb-4">{error}</div>}
+        {error && (
+          <div className="text-red-500 text-center text-sm mb-4">{error}</div>
+        )}
 
         {message && (
-  <div className="text-sm text-gray-700 mb-4 text-center bg-yellow-100 p-2 rounded">
-    {message}
-  </div>
-)}
-
+          <div className="text-sm text-gray-700 mb-4 text-center bg-yellow-100 p-2 rounded">
+            {message}
+          </div>
+        )}
 
         <form className="space-y-3" onSubmit={handleSubmit(formSubmit)}>
           {isRegistering && (
@@ -152,7 +158,8 @@ export default function SignInPopup({ isOpen, setIsOpen, prefillEmail, message }
                 type="password"
                 {...register("confirmPassword", {
                   required: "Confirm Password is required",
-                  validate: (value) => value === watch("password") || "Passwords do not match",
+                  validate: (value) =>
+                    value === watch("password") || "Passwords do not match",
                 })}
                 placeholder="Confirm password"
                 className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
@@ -165,12 +172,18 @@ export default function SignInPopup({ isOpen, setIsOpen, prefillEmail, message }
             disabled={isSubmitting}
             className="w-full mt-2 py-2 bg-gradient-to-r from-pink-500 to-red-500 text-white font-semibold text-sm rounded-md"
           >
-            {isSubmitting ? "Loading..." : isRegistering ? "Create Account" : "Login"}
+            {isSubmitting
+              ? "Loading..."
+              : isRegistering
+                ? "Create Account"
+                : "Login"}
           </button>
         </form>
 
         <p className="text-center text-gray-600 mt-4 text-xs">
-          {isRegistering ? "Already have an account?" : "Don't have an account?"}{" "}
+          {isRegistering
+            ? "Already have an account?"
+            : "Don't have an account?"}{" "}
           <span
             className="text-pink-500 cursor-pointer font-semibold"
             onClick={() => setIsRegistering(!isRegistering)}

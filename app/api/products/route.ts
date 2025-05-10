@@ -1,6 +1,7 @@
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/dbConnect";
 import BanglesProductModel from "@/lib/models/BanglesProductSchema";
+import BeadsProductModel from "@/lib/models/BeadsProductModel";
 import GoldDiamondProductPricingModel from "@/lib/models/GoldDiamondProductsPricingDetails";
 import GoldPrice from "@/lib/models/GoldPriceSchema";
 import ProductModel from "@/lib/models/ProductModel";
@@ -9,11 +10,12 @@ import SetsProductModel from "@/lib/models/SetsProductsModel";
 export const GET = auth(async (req: any) => {
   await dbConnect();
 
-  // Fetch from all three models
-  const [products, sets, bangles] = await Promise.all([
+  // Fetch from all models
+  const [products, sets, bangles, beads] = await Promise.all([
     ProductModel.find().sort({ createdAt: -1 }),
     SetsProductModel.find().sort({ createdAt: -1 }),
     BanglesProductModel.find().sort({ createdAt: -1 }),
+    BeadsProductModel.find().sort({ createdAt: -1 }),
   ]);
 
   // Merge all into one array
@@ -21,16 +23,18 @@ export const GET = auth(async (req: any) => {
     ...products.map((p) => ({ ...p.toObject(), type: "product" })),
     ...sets.map((s) => ({ ...s.toObject(), type: "set" })),
     ...bangles.map((b) => ({ ...b.toObject(), type: "bangle" })),
+    ...beads.map((b) => ({ ...b.toObject(), type: "bead" })),
   ];
 
-  // Optional: Sort by image presence
-  const sortedProducts = allProducts.sort((a, b) => {
-    const hasImageA = a.image && a.image.startsWith("http");
-    const hasImageB = b.image && b.image.startsWith("http");
-    return Number(hasImageB) - Number(hasImageA);
-  });
+  // Filter: remove products with missing or invalid image field
+  const filteredProducts = allProducts.filter(
+    (item) =>
+      item.image &&
+      typeof item.image === "string" &&
+      item.image.startsWith("http")
+  );
 
-  return Response.json(sortedProducts);
+  return Response.json(filteredProducts);
 }) as any;
 
 // export const GET = auth(async (req: any) => {

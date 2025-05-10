@@ -9,26 +9,17 @@ const AdminLayout = async ({
   children: React.ReactNode;
 }) => {
   const session = await auth();
-  // Uncomment for authentication check
-  // if (!session || !session.user.isAdmin) {
-  //   return (
-  //     <div className='relative flex flex-grow p-4'>
-  //       <div>
-  //         <h1 className='text-2xl'>Unauthorized</h1>
-  //         <p>Admin permission required</p>
-  //       </div>
-  //     </div>
-  //   );
-  // }
 
   return (
-    <div className="relative flex flex-grow">
-      <div className="grid w-full md:grid-cols-5">
-        <div className="bg-base-200 px-2">
-          {/* Import and render the menu component */}
-          <AdminMenu activeItem={activeItem} />
-        </div>
-        <div className="px-[55px] py-8 md:col-span-4">{children}</div>
+    <div className="flex h-screen overflow-hidden">
+      {/* Sidebar - Fixed and scroll independent */}
+      <div className="w-[250px] py-2 bg-gray-900 text-white fixed top-[60px] left-0 h-[calc(100%-60px)] overflow-y-auto z-40">
+        <AdminMenu activeItem={activeItem} />
+      </div>
+
+      {/* Main content - scrollable */}
+      <div className="ml-[250px] flex-1 overflow-y-auto p-2  pt-[60px]">
+        {children}
       </div>
     </div>
   );

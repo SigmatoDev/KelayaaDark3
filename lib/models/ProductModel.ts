@@ -29,7 +29,6 @@ export type Product = {
   isFeatured: boolean;
   goldPrice: number;
   collectionType: string;
-  thumbnail_url: string;
 };
 
 const productSchema = new mongoose.Schema<Product>(
@@ -49,7 +48,6 @@ const productSchema = new mongoose.Schema<Product>(
     productCategory: { type: String },
     image: { type: String, default: "" },
     images: { type: [String], default: [] },
-    thumbnail_url: { type: String, default: [] },
     price: { type: Number, default: 0 },
     description: { type: String },
     countInStock: { type: Number, default: 0 },

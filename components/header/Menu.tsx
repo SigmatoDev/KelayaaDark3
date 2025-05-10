@@ -1,92 +1,105 @@
 "use client";
 
-import { ChevronDown, Moon, ShoppingCart, Sun } from "lucide-react";
+import { ChevronDown, ChevronUp, LogOutIcon, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import { signOut, signIn, useSession } from "next-auth/react";
-
 import useCartService from "@/lib/hooks/useCartStore";
 import useLayoutService from "@/lib/hooks/useLayout";
-
-import { SearchBox } from "./SearchBox";
+import { useState, useEffect, useRef } from "react";
+import {
+  RiDashboard2Line,
+  RiProfileLine,
+  RiShieldUserLine,
+  RiUser2Line,
+} from "react-icons/ri";
 
 const Menu = () => {
   const { items } = useCartService();
   const { data: session } = useSession();
   const { theme, toggleTheme } = useLayoutService();
 
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   const signOutHandler = () => {
-    // signOut({ callbackUrl: "/signin" });
-    signOut({ callbackUrl: "/" });
-    //init();
+    signOut({ callbackUrl: "/admin/signin?callbackUrl=/admin/dashboard" });
   };
 
   const handleClick = () => {
-    (document.activeElement as HTMLElement).blur();
+    (document.activeElement as HTMLElement)?.blur();
   };
+
+  const toggleDropdown = () => {
+    setIsDropdownOpen((prev) => !prev);
+  };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleOutsideClick = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setIsDropdownOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleOutsideClick);
+    return () => {
+      document.removeEventListener("mousedown", handleOutsideClick);
+    };
+  }, []);
 
   return (
     <>
-      <div className="hidden md:block">
-        <SearchBox />
-      </div>
+      <div className="hidden md:block">{/* <SearchBox /> */}</div>
       <ul className="flex gap-2">
-        <li className="flex items-center gap-2 md:gap-4">
-          <label className="swap swap-rotate">
-            {/* this hidden checkbox controls the state */}
-            <input
-              type="checkbox"
-              checked={theme === "light"}
-              onChange={toggleTheme}
-            />
-            <Sun className="swap-on" />
-            <Moon className="swap-off" />
-          </label>
-          {!session?.user?.isAdmin && (
-            <Link
-              href="/cart"
-              className="relative mr-1"
-              aria-label="Shopping Cart"
-            >
-              <ShoppingCart />
-              <span className="absolute -right-4 -top-4">
-                {items.length !== 0 && (
-                  <div className="badge badge-primary px-1.5">
-                    {items.reduce((a, c) => a + c.qty, 0)}
-                  </div>
-                )}
-              </span>
-            </Link>
-          )}
-        </li>
-        {session && session.user ? (
+        {session?.user ? (
           <li>
-            <div className="dropdown dropdown-end dropdown-bottom">
-              <label tabIndex={0} className="btn btn-ghost rounded-btn">
-                {session.user.name}
-                <ChevronDown />
-              </label>
-              <ul
-                tabIndex={0}
-                className="menu dropdown-content z-[1] w-52 rounded-box bg-base-300 p-2 shadow "
+            <div
+              ref={dropdownRef}
+              className="dropdown dropdown-end dropdown-bottom relative"
+            >
+              <button
+                type="button"
+                className="btn btn-ghost bg-gray-700 hover:bg-gray-700 rounded-btn flex items-center gap-2"
+                onClick={toggleDropdown}
               >
-                {session?.user?.isAdmin && (
-                  <li onClick={handleClick}>
-                    <Link href="/admin/dashboard">Admin Dashboard</Link>
+                <span className="w-3 h-3 rounded-full bg-green-500 animate-pulse"></span>
+                {session.user.name}
+                {isDropdownOpen ? <ChevronUp /> : <ChevronDown />}
+              </button>
+              {isDropdownOpen && (
+                <ul
+                  tabIndex={0}
+                  className="menu dropdown-content absolute right-0 z-[1] w-52 rounded-box bg-gray-900 p-2 shadow"
+                >
+                  {session.user.isAdmin && (
+                    <li
+                      onClick={handleClick}
+                      className="hover:bg-gray-400 hover:rounded-md"
+                    >
+                      <Link href="/admin/dashboard">
+                        <RiDashboard2Line /> Dashboard
+                      </Link>
+                    </li>
+                  )}
+                  <li
+                    onClick={handleClick}
+                    className="hover:bg-gray-400 hover:rounded-md"
+                  >
+                    <Link href="/profile">
+                      <RiUser2Line /> Profile
+                    </Link>
                   </li>
-                )}
-
-                <li onClick={handleClick}>
-                  <Link href="/my-orders">Order history </Link>
-                </li>
-                <li onClick={handleClick}>
-                  <Link href="/profile">Profile</Link>
-                </li>
-                <li onClick={handleClick}>
-                  <button type="button" onClick={signOutHandler}>
-                    Sign out
-                  </button>
-                </li>
-              </ul>
+                  <li onClick={handleClick} className="bg-red-500 rounded-md">
+                    <button type="button" onClick={signOutHandler}>
+                      <LogOutIcon className="h-4 w-4" />
+                      Sign out
+                    </button>
+                  </li>
+                </ul>
+              )}
             </div>
           </li>
         ) : (

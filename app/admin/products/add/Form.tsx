@@ -68,7 +68,6 @@ const ProductCreateForm = () => {
       "productCategory",
       "productType",
       "materialType",
-      "price",
       "countInStock",
       "description",
     ];
@@ -99,7 +98,7 @@ const ProductCreateForm = () => {
         "goldPurity",
         // "goldPrice",
         "grossWeight",
-        "pricePerGram",
+        // "pricePerGram",
         "makingCharge",
         "diamondPrice",
         // "diamondTotal",
@@ -164,8 +163,9 @@ const ProductCreateForm = () => {
     }
   };
 
-  const showRingSize = formData.productType === "Ring";
-  const showSize = formData.productType === "Bangle";
+  const showRingSize =
+    formData.productType === "Ring" || formData.productCategory === "Rings";
+  const showSize = formData.productType === "Bangles";
   const isGold = formData.materialType === "gold";
   const isSilver = formData.materialType === "silver";
 
@@ -191,9 +191,11 @@ const ProductCreateForm = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="max-w-full mx-auto p-6 bg-white rounded-lg space-y-6"
+      className="max-w-full mx-auto p-0 bg-white rounded-lg space-y-6"
     >
-      <h2 className="text-2xl font-semibold">Create New Product</h2>
+      <h2 className="text-2xl font-semibold text-gray-500">
+        Create New Product
+      </h2>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <select
@@ -212,7 +214,6 @@ const ProductCreateForm = () => {
           "productCode",
           "productCategory",
           "productType",
-          "price",
           "countInStock",
           "description",
         ].map((field) => (
@@ -222,9 +223,25 @@ const ProductCreateForm = () => {
             value={formData[field] || ""}
             onChange={handleInputChange}
             placeholder={field}
-            className="px-4 py-2 border rounded w-full"
+            className="px-4 py-2 border rounded w-full mb-2"
           />
         ))}
+
+        {/* subCategories as comma-separated input */}
+        <input
+          name="subCategories"
+          value={(formData.subCategories || []).join(", ")}
+          onChange={(e) =>
+            handleInputChange({
+              target: {
+                name: "subCategories",
+                value: e.target.value.split(",").map((s) => s.trim()),
+              },
+            })
+          }
+          placeholder="Sub Categories (comma separated)"
+          className="px-4 py-2 border rounded w-full mb-2"
+        />
 
         {showRingSize && (
           <input
@@ -232,7 +249,7 @@ const ProductCreateForm = () => {
             value={formData.ring_size || ""}
             onChange={handleInputChange}
             placeholder="Ring Size"
-            className="px-4 py-2 border rounded w-full"
+            className="px-4 py-2 border rounded w-full mb-2"
           />
         )}
 
@@ -273,6 +290,15 @@ const ProductCreateForm = () => {
         )}
       </div>
 
+      {/* info as textarea */}
+      <textarea
+        name="info"
+        value={formData.info || ""}
+        onChange={handleInputChange}
+        placeholder="Info"
+        className="px-4 py-2 border rounded w-full mb-2"
+      />
+
       {/* GOLD PRICING SECTION */}
       {isGold && (
         <div className="space-y-4 bg-gray-50 p-4 border rounded-md">
@@ -284,24 +310,35 @@ const ProductCreateForm = () => {
               "clarity",
               "color",
               "goldPurity",
-              // "goldPrice",
               "grossWeight",
-              "pricePerGram",
               "makingCharge",
               "diamondPrice",
-              // "diamondTotal",
-              // "goldTotal",
-              // "totalPrice",
-            ].map((field) => (
-              <input
-                key={field}
-                name={field}
-                value={pricingData[field] || ""}
-                onChange={handlePricingChange}
-                placeholder={field}
-                className="px-4 py-2 border rounded w-full"
-              />
-            ))}
+            ].map((field) =>
+              field === "goldPurity" ? (
+                <select
+                  key={field}
+                  name={field}
+                  value={pricingData[field] || ""}
+                  onChange={handlePricingChange}
+                  className="px-4 py-2 border rounded w-full"
+                >
+                  <option value="">Select Gold Purity</option>
+                  <option value="14K">14K</option>
+                  <option value="18K">18K</option>
+                  <option value="22K">22K</option>
+                  <option value="24K">24K</option>
+                </select>
+              ) : (
+                <input
+                  key={field}
+                  name={field}
+                  value={pricingData[field] || ""}
+                  onChange={handlePricingChange}
+                  placeholder={field}
+                  className="px-4 py-2 border rounded w-full"
+                />
+              )
+            )}
           </div>
         </div>
       )}

@@ -1,14 +1,13 @@
-import AdminLayout from '@/components/admin/AdminLayout';
-
-import Users from './Users';
+import AdminLayout from "@/components/admin/AdminLayout";
+import UsersPage from "./usersPage";
 
 export const metadata = {
-  title: 'Admin Users',
+  title: "Admin Users",
 };
 const AdminUsersPage = () => {
   return (
-    <AdminLayout activeItem='users'>
-      <Users />
+    <AdminLayout activeItem="users">
+      <UsersPage />
     </AdminLayout>
   );
 };

@@ -907,6 +907,14 @@ const getByQuery = cache(
       }
     }
 
+    // Filter out products without a valid image
+    products = products.filter(
+      (product) =>
+        product.image &&
+        typeof product.image === "string" &&
+        product.image.trim().toLowerCase().startsWith("http")
+    );
+
     const countProducts = products.length;
     const paginatedProducts = products.slice(
       PAGE_SIZE * (Number(page) - 1),

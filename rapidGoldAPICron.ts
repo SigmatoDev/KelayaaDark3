@@ -69,7 +69,7 @@ const getGoldPrice = async (city = "Bangalore") => {
     console.log("✅ All prices updated.");
     process.exit(0);
   } catch (err: any) {
-    console.error("❌ Error fetching/updating prices:", err.message);
+    console.error("❌ Error fetching/updating prices:", err);
     process.exit(1);
   }
 };
@@ -81,3 +81,5 @@ cron.schedule("30 3,8,13 * * *", async () => {
   getGoldPrice(cityArg);
   console.log("✅ Scheduled gold price fetch complete.");
 });
+const cityArg = process.argv[2];
+getGoldPrice(cityArg);

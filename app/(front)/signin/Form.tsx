@@ -60,7 +60,7 @@ const Form = () => {
     const result = await signIn("credentials", {
       email,
       password,
-      callbackUrl, // Pass the callback URL to the signIn function
+      callbackUrl: session?.user?.isAdmin ? "/admin/dashboard" : "/", // Pass the callback URL to the signIn function
     });
 
     // Log the result of the signIn call
@@ -76,7 +76,7 @@ const Form = () => {
   return (
     <div className="card mx-auto my-4 max-w-sm bg-base-300">
       <div className="card-body">
-        <h1 className="card-title">Sign in</h1>
+        <h1 className="card-title">Admin Sign in</h1>
         {params?.get("error") && (
           <div className="alert text-error">
             {params.get("error") === "CredentialsSignin"
