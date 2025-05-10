@@ -54,7 +54,7 @@ export default function ReturnPolicy() {
             Personalized, adjusted to fit, customized, engraved products and
             made to order.
           </li>
-          <li>Perishable goods.</li>
+          
           <li>Products purchased from a different country.</li>
         </ul>
       </section>

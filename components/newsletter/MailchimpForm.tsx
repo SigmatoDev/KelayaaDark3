@@ -28,7 +28,8 @@ export default function MailchimpForm() {
 
   return (
     <div className="bg-white p-8 rounded-lg shadow-lg max-w-2xl mx-auto">
-      <h2 className="text-3xl font-bold text-center mb-6">Subscribe</h2>
+      <h2 className="text-2xl font-bold text-center mb-6">Stay Updated with Our Latest Collections</h2>
+
       <form
         action="https://kelayaa.us12.list-manage.com/subscribe/post?u=4171ce39224d802e226dfe2db&amp;id=23ec2aa225&amp;f_id=00b9f3e6f0"
         method="post"
