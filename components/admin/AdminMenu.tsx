@@ -17,31 +17,31 @@ import {
 const menuItems = [
   { name: "Dashboard", href: "/admin/dashboard", icon: Home },
   {
-    name: "Gold Price Update",
-    href: "/admin/gold-price-update",
+    name: "Gold Prices",
+    href: "/admin/gold-prices",
     icon: BadgeIndianRupee,
   },
   {
     name: "Products",
     href: "/admin/products",
     icon: Package,
-    subItems: [
-      // { name: "Categories", href: "/admin/categories" },
-      { name: "Products", href: "/admin/products" },
-    ],
+    //? subItems: [
+    //   // { name: "Categories", href: "/admin/categories" },
+    //   { name: "Products", href: "/admin/products" },
+    // ],
   },
   { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
-  { name: "Custom Orders", href: "/admin/custom-orders", icon: ShoppingBag },
+  { name: "Custom Orders", href: "/admin/all-custom-order", icon: ShoppingBag },
   { name: "Users", href: "/admin/users", icon: Users },
-  { name: "Settings", href: "/admin/settings", icon: Settings },
-  { name: "Help Center", href: "/admin/help-center", icon: HelpCircle },
-  { name: "FAQ", href: "/admin/faq", icon: FileText },
-  { name: "Privacy Policy", href: "/admin/privacy-policy", icon: Shield },
-  {
-    name: "Bulk Image Upload",
-    href: "/admin/bulk-image-upload",
-    icon: UploadIcon,
-  },
+  // { name: "Settings", href: "/admin/settings", icon: Settings },
+  // { name: "Help Center", href: "/admin/help-center", icon: HelpCircle },
+  // { name: "FAQ", href: "/admin/faq", icon: FileText },
+  // { name: "Privacy Policy", href: "/admin/privacy-policy", icon: Shield },
+  // {
+  //   name: "Bulk Image Upload",
+  //   href: "/admin/bulk-image-upload",
+  //   icon: UploadIcon,
+  // },
 ];
 
 const AdminMenu = ({ activeItem }: { activeItem: string }) => {
@@ -49,21 +49,11 @@ const AdminMenu = ({ activeItem }: { activeItem: string }) => {
 
   return (
     <>
-      <div className="my-2 mb-4">
-        <img
-          src="/Kelayaa1.png" // Path to your logo file (transparent background)
-          alt="Silver Shine"
-          className="w-[50%]"
-          style={{
-            filter: "contrast(150%)", // Adjusting contrast and brightness
-          }}
-        />
-      </div>
       <ul className="menu gap-1 w-full">
         {menuItems.map((item) => {
           // Determine if the parent or any of its sub-items is active
-          const isParentActive = item.subItems
-            ? item.subItems.some(
+          const isParentActive = item?.subItems
+            ? item?.subItems.some(
                 (subItem) =>
                   activeItem.toLowerCase() === subItem.name.toLowerCase()
               )
@@ -81,10 +71,10 @@ const AdminMenu = ({ activeItem }: { activeItem: string }) => {
             <li key={item.name} className="w-full">
               <Link
                 href={item.href}
-                className={`block p-2 rounded-md w-full ${
+                className={`block p-2 rounded-md w-full text-gray-400 ${
                   isActive
-                    ? "bg-gray-700 text-white" // Active item background color
-                    : "hover:bg-gray-300" // Hover state background color
+                    ? "bg-gray-700 text-gray-100" // Active item background color
+                    : "hover:bg-gray-700 hover:text-gray-100" // Hover state background color
                 }`}
               >
                 <div className="flex items-center">
@@ -92,9 +82,9 @@ const AdminMenu = ({ activeItem }: { activeItem: string }) => {
                   {item.name}
                 </div>
               </Link>
-              {item.subItems && (
+              {item?.subItems && (
                 <ul className="ml-6 mt-2 space-y-1">
-                  {item.subItems.map((subItem) => {
+                  {item?.subItems.map((subItem) => {
                     // Sub-item active check
                     const isSubItemActive =
                       activeItem.toLowerCase() === subItem.name.toLowerCase();

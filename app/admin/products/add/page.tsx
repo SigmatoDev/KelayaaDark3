@@ -17,55 +17,71 @@ export function generateMetadata({ params }: { params: { id: string } }) {
 
 export default function ProductAddPage() {
   return (
-    <AdminLayout activeItem="products">
-      <h1 className="text-3xl font-semibold text-gray-800 mb-6">
-        Product Management
-      </h1>
+    <div className="space-y-2 p-4 pt-[20px]">
+      <AdminLayout activeItem="products">
+        <h1 className="text-3xl font-semibold text-gray-800 mb-6">
+          Product Management
+        </h1>
 
-      <Form />
+        <Form />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Upload Product Excel File */}
-        <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full max-w-[400px] overflow-hidden">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
-            Upload Silver Products
-          </h2>
-          <p className="text-sm text-gray-500 mb-4">
-            Upload an Excel file containing general product details.
-          </p>
-          <UploadProductExcelFile />
-        </div>
+        {/* <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full max-w-[400px] overflow-hidden">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+              Upload Silver Products
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Upload an Excel file containing general product details.
+            </p>
+            <UploadProductExcelFile />
+          </div>
 
-        {/* Upload Gold Product Excel File */}
-        <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full max-w-[400px] overflow-hidden">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
-            Upload Gold Products
-          </h2>
-          <p className="text-sm text-gray-500 mb-4">
-            Upload an Excel file for gold-based products.
-          </p>
-          <UploadGoldProductExcelFile />
-        </div>
+          <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full max-w-[400px] overflow-hidden">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+              Upload Gold Products
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Upload an Excel file for gold-based products.
+            </p>
+            <UploadGoldProductExcelFile />
+          </div>
 
-        {/* Upload Gold & Diamond Product Pricing Excel File */}
-        <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full max-w-[400px] overflow-hidden">
-          <h2 className="text-xl font-semibold text-gray-700 mb-4">
-            Upload Gold & Diamond Pricing
-          </h2>
-          <p className="text-sm text-gray-500 mb-4">
-            Upload an Excel file with pricing details for gold & diamond
-            products.
-          </p>
-          <UploadGoldDiamondProductPricingExcelFile />
-        </div>
-      </div>
+          <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full max-w-[400px] overflow-hidden">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+              Upload Gold & Diamond Pricing
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Upload an Excel file with pricing details for gold & diamond
+              products.
+            </p>
+            <UploadGoldDiamondProductPricingExcelFile />
+          </div>
 
-      {/* <ExcelUploader /> */}
-      <UploadSetProductExcelFile />
-      <SetPricingUpload />
+          <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full max-w-[400px] overflow-hidden">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+              Upload Sets Product
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Upload an Excel file with pricing details for sets products.
+            </p>
+            <UploadSetProductExcelFile />
+          </div>
+          <div className="bg-white shadow-md rounded-lg p-4 md:p-6 w-full max-w-[400px] overflow-hidden">
+            <h2 className="text-xl font-semibold text-gray-700 mb-4">
+              Upload Beads Product
+            </h2>
+            <p className="text-sm text-gray-500 mb-4">
+              Upload an Excel file with pricing details for beads products.
+            </p>
+            <UploadBeadsProductExcelFile />
+          </div>
+        </div> */}
 
-      {/* beads */}
-      <UploadBeadsProductExcelFile />
-    </AdminLayout>
+        {/* <ExcelUploader /> */}
+        {/* <SetPricingUpload /> */}
+
+        {/* beads */}
+      </AdminLayout>
+    </div>
   );
 }

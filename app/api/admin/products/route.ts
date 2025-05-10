@@ -202,100 +202,94 @@
 //   }
 // }) as any;
 
-import { auth } from "@/lib/auth";
-import dbConnect from "@/lib/dbConnect";
-import GoldDiamondProductPricingModel from "@/lib/models/GoldDiamondProductsPricingDetails";
-import GoldPrice from "@/lib/models/GoldPriceSchema";
-import ProductModel from "@/lib/models/ProductModel";
+// export const GET = auth(async (req: any) => {
+//   if (!req.auth || !req.auth.user?.isAdmin) {
+//     return Response.json({ message: "Unauthorized" }, { status: 401 });
+//   }
 
-export const GET = auth(async (req: any) => {
-  if (!req.auth || !req.auth.user?.isAdmin) {
-    return Response.json({ message: "Unauthorized" }, { status: 401 });
-  }
+//   await dbConnect();
 
-  await dbConnect();
+//   console.log("🔄 Connecting to DB and fetching products...");
+//   const products = await ProductModel.find().sort({ createdAt: -1 });
+//   console.log(`✅ Fetched ${products.length} products.`);
 
-  console.log("🔄 Connecting to DB and fetching products...");
-  const products = await ProductModel.find().sort({ createdAt: -1 });
-  console.log(`✅ Fetched ${products.length} products.`);
+//   console.log("🔄 Fetching latest gold prices...");
+//   const goldPrices = await GoldPrice.find({});
+//   console.log(`✅ Fetched ${goldPrices.length} gold prices.`);
 
-  console.log("🔄 Fetching latest gold prices...");
-  const goldPrices = await GoldPrice.find({});
-  console.log(`✅ Fetched ${goldPrices.length} gold prices.`);
+//   // Filter only gold products whose productCode starts with "KD"
+//   const goldProducts = products.filter(
+//     (p) =>
+//       p.materialType?.toLowerCase() === "gold" &&
+//       p.productCode?.toUpperCase().startsWith("KD")
+//   );
+//   const goldProductCodes = goldProducts.map((p) => p.productCode);
 
-  // Filter only gold products whose productCode starts with "KD"
-  const goldProducts = products.filter(
-    (p) =>
-      p.materialType?.toLowerCase() === "gold" &&
-      p.productCode?.toUpperCase().startsWith("KD")
-  );
-  const goldProductCodes = goldProducts.map((p) => p.productCode);
+//   // Fetch all pricing data for these gold products
+//   const pricingDetailsList = await GoldDiamondProductPricingModel.find({
+//     productCode: { $in: goldProductCodes },
+//   });
 
-  // Fetch all pricing data for these gold products
-  const pricingDetailsList = await GoldDiamondProductPricingModel.find({
-    productCode: { $in: goldProductCodes },
-  });
+//   const pricingDetailsMap = Object.fromEntries(
+//     pricingDetailsList.map((item) => [item.productCode, item])
+//   );
 
-  const pricingDetailsMap = Object.fromEntries(
-    pricingDetailsList.map((item) => [item.productCode, item])
-  );
+//   // Process all products
+//   const updatedProducts = await Promise.all(
+//     products.map(async (product) => {
+//       const isGoldKD =
+//         product.materialType?.toLowerCase() === "gold" &&
+//         product.productCode?.toUpperCase().startsWith("KD");
 
-  // Process all products
-  const updatedProducts = await Promise.all(
-    products.map(async (product) => {
-      const isGoldKD =
-        product.materialType?.toLowerCase() === "gold" &&
-        product.productCode?.toUpperCase().startsWith("KD");
+//       if (!isGoldKD) {
+//         return product.toObject(); // No processing for non-gold or KS series
+//       }
 
-      if (!isGoldKD) {
-        return product.toObject(); // No processing for non-gold or KS series
-      }
+//       const pricingDetails = pricingDetailsMap[product.productCode];
+//       if (!pricingDetails) {
+//         return product.toObject(); // No pricing info found
+//       }
 
-      const pricingDetails = pricingDetailsMap[product.productCode];
-      if (!pricingDetails) {
-        return product.toObject(); // No pricing info found
-      }
+//       const goldPriceData = goldPrices.find(
+//         (g) => g.goldPurity === product.goldPurity
+//       );
+//       const goldPrice = goldPriceData
+//         ? goldPriceData.price
+//         : pricingDetails.goldPrice;
 
-      const goldPriceData = goldPrices.find(
-        (g) => g.karat === product.goldPurity
-      );
-      const goldPrice = goldPriceData
-        ? goldPriceData.price
-        : pricingDetails.goldPrice;
+//       const finalPrice =
+//         pricingDetails.grossWeight * goldPrice +
+//         pricingDetails.makingCharge +
+//         pricingDetails.diamondTotal;
 
-      const finalPrice =
-        pricingDetails.grossWeight * goldPrice +
-        pricingDetails.makingCharge +
-        pricingDetails.diamondTotal;
+//       await ProductModel.findByIdAndUpdate(product._id, {
+//         price_per_gram: pricingDetails.pricePerGram,
+//         goldPrice,
+//         weight: pricingDetails.grossWeight,
+//         totalPrice: finalPrice,
+//         ring_size: pricingDetails?.ringSize,
+//         size: pricingDetails?.size,
+//       });
 
-      await ProductModel.findByIdAndUpdate(product._id, {
-        price_per_gram: pricingDetails.pricePerGram,
-        goldPrice,
-        weight: pricingDetails.grossWeight,
-        totalPrice: finalPrice,
-        ring_size: pricingDetails?.ringSize,
-        size: pricingDetails?.size,
-      });
+//       return {
+//         ...product.toObject(),
+//         pricePerGram: pricingDetails.pricePerGram,
+//         goldPrice,
+//         grossWeight: pricingDetails.grossWeight,
+//         totalPrice: finalPrice,
+//       };
+//     })
+//   );
 
-      return {
-        ...product.toObject(),
-        pricePerGram: pricingDetails.pricePerGram,
-        goldPrice,
-        grossWeight: pricingDetails.grossWeight,
-        totalPrice: finalPrice,
-      };
-    })
-  );
+//   // const sortedProducts = updatedProducts.sort((a, b) => {
+//   //   const hasImageA = a.image && a.image.startsWith("http");
+//   //   const hasImageB = b.image && b.image.startsWith("http");
+//   //   return Number(hasImageB) - Number(hasImageA);
+//   // });
 
-  // const sortedProducts = updatedProducts.sort((a, b) => {
-  //   const hasImageA = a.image && a.image.startsWith("http");
-  //   const hasImageB = b.image && b.image.startsWith("http");
-  //   return Number(hasImageB) - Number(hasImageA);
-  // });
-
-  console.log("✅ Final sorted products list ready to be sent.");
-  return Response.json(updatedProducts);
-}) as any;
+//   console.log("✅ Final sorted products list ready to be sent.");
+//   return Response.json(updatedProducts);
+// }) as any;
 
 // export const POST = auth(async (req: any) => {
 //   if (!req.auth || !req.auth.user?.isAdmin) {
@@ -365,6 +359,74 @@ export const GET = auth(async (req: any) => {
 //   }
 // }) as any;
 
+import { auth } from "@/lib/auth";
+import dbConnect from "@/lib/dbConnect";
+import BanglesProductModel from "@/lib/models/BanglesProductSchema";
+import BeadsProductModel from "@/lib/models/BeadsProductModel";
+import GoldDiamondProductPricingModel from "@/lib/models/GoldDiamondProductsPricingDetails";
+import GoldPrice from "@/lib/models/GoldPriceSchema";
+import ProductModel from "@/lib/models/ProductModel";
+import SetsProductModel from "@/lib/models/SetsProductsModel";
+
+export const GET = auth(async (req: any) => {
+  if (!req.auth || !req.auth.user?.isAdmin) {
+    return Response.json({ message: "Unauthorized" }, { status: 401 });
+  }
+  await dbConnect();
+
+  // Fetch from all three models
+  const [products, sets, bangles, beads] = await Promise.all([
+    ProductModel.find().sort({ createdAt: -1 }),
+    SetsProductModel.find().sort({ createdAt: -1 }),
+    BanglesProductModel.find().sort({ createdAt: -1 }),
+    BeadsProductModel.find().sort({ createdAt: -1 }),
+  ]);
+
+  // Merge all into one array
+  const allProducts = [
+    ...products.map((p) => ({ ...p.toObject(), type: "product" })),
+    ...sets.map((s) => ({ ...s.toObject(), type: "set" })),
+    ...bangles.map((b) => ({ ...b.toObject(), type: "bangle" })),
+    ...beads.map((b) => ({ ...b.toObject(), type: "bead" })),
+  ];
+
+  // Optional: Sort by image presence
+  const sortedProducts = allProducts.sort((a, b) => {
+    const hasImageA = a.image && a.image.startsWith("http");
+    const hasImageB = b.image && b.image.startsWith("http");
+    return Number(hasImageB) - Number(hasImageA);
+  });
+
+  return Response.json(sortedProducts);
+}) as any;
+
+// Utility to safely parse numbers
+const cleanNumber = (val: any) =>
+  typeof val === "string"
+    ? Number(val.replace(/[^0-9.]/g, "").trim())
+    : Number(val || 0);
+
+// Function to calculate price components with GST
+const calculateTotals = (pricing: any, goldRate: number) => {
+  const diamondTotal = cleanNumber(pricing.diamondPrice) * pricing?.carats;
+  const goldTotal = goldRate * cleanNumber(pricing.grossWeight);
+  const makingCharges = cleanNumber(pricing.makingCharge);
+  const baseTotal = diamondTotal + goldTotal + makingCharges;
+  const gst = 3;
+  const gstAmount = (baseTotal * gst) / 100;
+  const totalPriceWithGst = baseTotal + gstAmount;
+
+  return {
+    diamondTotal,
+    goldTotal,
+    makingCharges,
+    totalPrice: totalPriceWithGst,
+    baseTotal,
+    gst,
+    gstAmount,
+  };
+};
+
 export const POST = auth(async (req: any) => {
   if (!req.auth || !req.auth.user?.isAdmin) {
     return Response.json({ message: "Unauthorized" }, { status: 401 });
@@ -382,7 +444,6 @@ export const POST = auth(async (req: any) => {
       );
     }
 
-    console.log("products", parsedBody.products);
     const createdProducts = [];
 
     for (const productData of parsedBody.products) {
@@ -391,56 +452,93 @@ export const POST = auth(async (req: any) => {
 
       const isGold = (materialType || "").toLowerCase() === "gold";
 
-      if (isGold && !pricingDetails) {
+      if (isGold && !pricingDetails?.goldPurity) {
+        return Response.json(
+          { message: `Gold goldPurity is required for ${productCode}` },
+          { status: 400 }
+        );
+      }
+
+      let goldRate = 0;
+
+      if (isGold) {
+        const goldPriceDoc = await GoldPrice.findOne({
+          karat: pricingDetails.goldPurity,
+        });
+
+        if (!goldPriceDoc) {
+          return Response.json(
+            {
+              message: `No gold price found for goldPurity ${pricingDetails.goldPurity}`,
+            },
+            { status: 400 }
+          );
+        }
+
+        goldRate = goldPriceDoc.price;
+      }
+
+      const {
+        diamondTotal,
+        goldTotal,
+        makingCharges,
+        totalPrice,
+        baseTotal,
+        gst,
+        gstAmount,
+      } = calculateTotals(pricingDetails || {}, goldRate);
+
+      if (isNaN(totalPrice)) {
         return Response.json(
           {
-            message: `Pricing details required for gold product ${productCode}`,
+            message: `Invalid price values for product ${productCode}`,
           },
           { status: 400 }
         );
       }
+
+      const images = Array.isArray(productData.images)
+        ? productData.images
+        : productData.image
+          ? productData.image.split(",").map((img: string) => img.trim())
+          : [];
 
       const product = new ProductModel({
         name,
         productCode,
         materialType,
         ...rest,
+        weight: pricingDetails?.grossWeight,
+        price_per_gram: isGold ? goldRate : pricingDetails?.pricePerGram,
         slug: name?.toLowerCase().replace(/\s+/g, "-"),
         countInStock: Number(productData.countInStock) || 0,
-        price: Number(productData.price) || 0,
-        images: Array.isArray(productData.images)
-          ? productData.images
-          : productData.image
-            ? productData.image.split(",").map((img: string) => img.trim())
-            : [],
+        price: isGold
+          ? totalPrice
+          : pricingDetails?.pricePerGram * pricingDetails?.grossWeight || 0,
+        images,
       });
 
-      product.image = product.images?.[0] || "";
+      product.image = images?.[0] || "";
 
       const savedProduct = await product.save();
+      createdProducts.push(savedProduct);
 
       if (isGold) {
-        const pricing = pricingDetails;
-
-        const diamondTotal = Number(pricing.diamondPrice || 0);
-        const goldTotal =
-          Number(pricing.pricePerGram || 0) * Number(pricing.grossWeight || 0);
-        const makingCharges = Number(pricing.makingCharges || 0);
-        const totalPrice = diamondTotal + goldTotal + makingCharges;
-
         const pricingDoc = new GoldDiamondProductPricingModel({
-          ...pricing,
+          ...pricingDetails,
           productCode,
           productName: name,
           diamondTotal,
           goldTotal,
+          makingCharges,
+          gst,
+          gstAmount,
           totalPrice,
+          goldRate,
         });
 
         await pricingDoc.save();
       }
-
-      createdProducts.push(savedProduct);
     }
 
     return Response.json(

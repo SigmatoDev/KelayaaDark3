@@ -9,6 +9,7 @@ const PricingSchema = new mongoose.Schema(
     makingCharges: Number,
     diamondTotal: Number,
     goldTotal: Number,
+    gst: Number,
     totalPrice: Number,
   },
   { _id: false }

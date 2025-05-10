@@ -48,8 +48,8 @@ const OrderDetails = ({ orderId }: IOrderDetails) => {
   if (error) return error.message;
   if (!data)
     return (
-      <div className="flex justify-center items-center h-64">
-        <span className="loading loading-spinner loading-lg text-primary"></span>
+      <div className="flex items-center justify-center h-64">
+        <div className="w-10 h-10 border-4 border-blue-500 border-dotted rounded-full animate-spin"></div>
       </div>
     );
 

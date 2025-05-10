@@ -101,7 +101,7 @@ const menuData: Record<string, MenuItem> = {
           { label: "All Bracelets" },
           { label: "Tennis" },
           { label: "Minimalist" },
-          { label: "Semi-Precious stones" },
+          { label: "Precious Stones" },
         ],
       },
       {
@@ -119,8 +119,8 @@ const menuData: Record<string, MenuItem> = {
         label: "Toe Rings",
         subcategories: [
           { label: "All Toe Rings" },
-          { label: "Semi Precious Stones" },
-          { label: "Silver" },
+          // { label: "Semi Precious Stones" },
+          // { label: "Silver" },
         ],
       },
       {
@@ -456,17 +456,16 @@ const DesktopHeader = () => {
     return (
       <header>
         <nav>
-          <div className="navbar justify-between bg-base-300">
-            <div>
-              <label htmlFor="my-drawer" className="btn btn-square btn-ghost">
-                <AlignJustify />
-              </label>
-              <Link
-                href="/"
-                className="ml-2 text-base font-semibold sm:ml-4 sm:text-lg"
-              >
-                Kelayaa
-              </Link>
+          <div className="navbar fixed top-0 z-50 justify-between bg-gray-800 text-white">
+            <div className="h-[40px] w-[300px]">
+              <img
+                src="/Kelayaa1.png"
+                alt="Kelayaa Logo"
+                className="w-[50%]"
+                style={{
+                  filter: "contrast(150%)",
+                }}
+              />
             </div>
             <Menu />
           </div>
@@ -478,10 +477,11 @@ const DesktopHeader = () => {
   return (
     <>
       <div
-        className={`xl:fixed top-0 z-30 w-screen ${isScrolled
+        className={`xl:fixed top-0 z-30 w-screen ${
+          isScrolled
             ? "bg-[#000] backdrop-blur-sm"
             : "xl:bg-[#000] xl:backdrop-blur-md bg-black"
-          } transition-all duration-1000 group`}
+        } transition-all duration-1000 group`}
       >
         <header
           className={`text-gray-800 w-full xl:h-[80px] my-0 transition-[margin] xl:flex xl:justify-center items-center duration-1000 ease-in-out ${isScrolled ? " mt-1" : " my-1"}`}
@@ -546,10 +546,11 @@ const DesktopHeader = () => {
                                 e.preventDefault();
                                 handleMainMenuClick(key);
                               }}
-                              className={`w-[140px] text-center text-white ${pathname === "/" && !isScrolled
+                              className={`w-[140px] text-center text-white ${
+                                pathname === "/" && !isScrolled
                                   ? "group-hover:text-white"
                                   : ""
-                                } transition-all duration-300 ease-in-out hover:text-pink-300 text-xs`}
+                              } transition-all duration-300 ease-in-out hover:text-pink-300 text-xs`}
                               onMouseEnter={() => {
                                 setActiveMenu(key);
                                 setIsOpen(true);

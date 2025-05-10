@@ -1,27 +1,109 @@
 "use client";
+
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import { Product } from "@/lib/models/ProductModel"; // Adjust to your model
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
+  ColumnDef,
+  useReactTable,
+  getCoreRowModel,
+  getPaginationRowModel,
+  getSortedRowModel,
+  flexRender,
+  SortingState,
+  getFilteredRowModel,
+} from "@tanstack/react-table";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
+import toast from "react-hot-toast";
+import {
   OctagonAlertIcon,
   PencilIcon,
   PlusIcon,
   Trash2Icon,
 } from "lucide-react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState } from "react";
-import toast from "react-hot-toast";
 import useSWR from "swr";
 import useSWRMutation from "swr/mutation";
+import { useRouter } from "next/navigation";
+// Fallback image component
+const ImageWithFallback = ({ src, alt }: { src: string; alt: string }) => {
+  const [error, setError] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [imageSrc, setImageSrc] = useState<string>("");
 
-import { Product } from "@/lib/models/ProductModel";
+  const handleImageClick = () => {
+    if (src) {
+      setImageSrc(src); // Set the clicked image source
+      setIsModalOpen(true); // Open the modal
+    }
+  };
 
+  if (error || !src) {
+    return (
+      <div
+        className="w-10 h-10 bg-gray-100 rounded-md flex items-center justify-center cursor-pointer"
+        onClick={handleImageClick}
+      >
+        <span className="text-xs text-gray-500">No image</span>
+      </div>
+    );
+  }
+
+  return (
+    <div className="relative w-10 h-10">
+      <Image
+        src={src}
+        alt={alt}
+        fill
+        className="object-cover rounded-md cursor-pointer"
+        sizes="40px"
+        onError={() => setError(true)}
+        onClick={handleImageClick}
+      />
+      {/* Modal for image preview */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="relative bg-white p-6 rounded-md">
+            {/* Close Button in top-right corner of the modal */}
+            <button
+              className="absolute top-0 right-1 text-red-500 text-2xl"
+              onClick={() => setIsModalOpen(false)}
+            >
+              ×
+            </button>
+            <Image
+              src={imageSrc}
+              alt="Preview Image"
+              width={500}
+              height={500}
+              className="object-contain"
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 export default function Products() {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [productsPerPage, setProductsPerPage] = useState(10); // Default value set to 10
-  const { data: products, error, mutate } = useSWR(`/api/admin/products`);
+  const {
+    data: sortedProducts,
+    error,
+    isLoading,
+    mutate,
+  } = useSWR<Product[]>(`/api/admin/products`);
   const router = useRouter();
-
+  const [sorting, setSorting] = useState<SortingState>([]);
+  const [globalFilter, setGlobalFilter] = useState("");
   const [selectedProductId, setSelectedProductId] = useState<string | null>(
     null
   );
@@ -50,10 +132,6 @@ export default function Products() {
     }
   );
 
-  const navigateToAddProduct = () => {
-    router.push("/admin/products/add");
-  };
-
   const openDeleteModal = (productId: string) => {
     setSelectedProductId(productId);
     setIsModalOpen(true);
@@ -64,6 +142,10 @@ export default function Products() {
       deleteProducts({ productIds: [selectedProductId] });
     }
     setIsModalOpen(false);
+  };
+
+  const navigateToAddProduct = () => {
+    router.push("/admin/products/add");
   };
 
   const handleCheckboxChange = (productId: string) => {
@@ -83,190 +165,257 @@ export default function Products() {
     setSelectedProducts([]); // Clear selection after deletion
   };
 
-  const totalProducts = products?.length || 0;
-  const totalPages = Math.ceil(totalProducts / productsPerPage);
+  const columns = useMemo<ColumnDef<Product>[]>(
+    () => [
+      {
+        id: "select", // Adding the checkbox column
+        header: () => (
+          <input
+            type="checkbox"
+            onChange={(e) =>
+              setSelectedProducts(
+                e.target.checked
+                  ? sortedProducts.map((p: Product) => p._id)
+                  : []
+              )
+            }
+            checked={
+              selectedProducts.length === sortedProducts?.length &&
+              sortedProducts?.length > 0
+            }
+          />
+        ),
+        cell: ({ row }) => (
+          <input
+            type="checkbox"
+            onChange={(e) => {
+              const selectedId = row.original._id;
+              if (e.target.checked) {
+                setSelectedProducts((prev) => [...prev, selectedId]);
+              } else {
+                setSelectedProducts((prev) =>
+                  prev.filter((id) => id !== selectedId)
+                );
+              }
+            }}
+            checked={selectedProducts.includes(row?.original._id)}
+          />
+        ),
+      },
+      {
+        header: "Sl.No.",
+        cell: ({ row }) => row?.index + 1,
+      },
+      {
+        accessorKey: "name",
+        header: "PRODUCT_NAME",
+      },
+      {
+        accessorKey: "productCode",
+        header: "PRODUCT_CODE",
+      },
+      {
+        accessorKey: "productCategory",
+        header: "CATEGORY",
+      },
+      {
+        accessorKey: "subCategories",
+        header: "Type",
+        cell: ({ row }) =>
+          `${row?.original?.subCategories?.length === 0 ? row?.original?.category : row?.original?.subCategories || "-"}`,
+      },
+      {
+        accessorKey: "weight",
+        header: "Weight(grms.)",
+      },
+      {
+        accessorKey: "price_per_gram",
+        header: "Price/gram",
+      },
+      {
+        accessorKey: "price",
+        header: "PRICE",
+        cell: ({ row }) => `₹${row?.original.price.toLocaleString("en-IN")}`,
+      },
+      {
+        accessorKey: "image",
+        header: "Image",
+        cell: ({ row }) => (
+          <ImageWithFallback src={row?.original?.image} alt="Image" />
+        ),
+      },
+      {
+        accessorKey: "countInStock",
+        header: "Stocks Available",
+      },
+      {
+        accessorKey: "createdAt",
+        header: () => <div className="cursor-pointer">CREATED_DATE</div>,
+        cell: ({ row }) =>
+          new Date(row?.original.createdAt).toLocaleDateString("en-IN"),
+      },
+      {
+        accessorKey: "countInStock",
+        header: "AVAILABILITY",
+        cell: ({ row }) => (
+          <span
+            className={`inline-flex items-center gap-1 rounded-md px-3 py-1 text-xs font-medium ${
+              row?.original?.countInStock > 0
+                ? "bg-green-100 text-green-800"
+                : "bg-red-100 text-red-800"
+            }`}
+          >
+            {row?.original?.countInStock > 0 ? "In Stock" : "Out of Stock"}
+          </span>
+        ),
+      },
+      {
+        header: "ACTION",
+        cell: ({ row }) => (
+          <>
+            <Link
+              href={`/admin/products/${row?.original?._id}`}
+              className="btn btn-ghost btn-sm"
+            >
+              <PencilIcon className="h-4 w-5 text-blue-500" />
+            </Link>
+            &nbsp;
+            <button
+              onClick={() => openDeleteModal(row?.original?._id!)}
+              className="btn btn-ghost btn-sm"
+            >
+              <Trash2Icon className="h-4 w-5 text-red-600" />
+            </button>
+          </>
+        ),
+      },
+    ],
+    [selectedProducts, sortedProducts]
+  );
 
-  // Calculate the starting and ending index for pagination
-  const startIndex = (currentPage - 1) * productsPerPage;
-  const endIndex = startIndex + productsPerPage;
+  const table = useReactTable({
+    data: sortedProducts || [],
+    columns,
+    state: {
+      sorting,
+      globalFilter,
+    },
+    onSortingChange: setSorting,
+    onGlobalFilterChange: setGlobalFilter,
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+  });
 
-  // Slice the products to display only the current page's products
-  const productsToDisplay = products?.slice(startIndex, endIndex);
-
-  if (error) return "An error has occurred.";
-  if (!products) return "Loading...";
+  if (error) return <div className="text-red-600">Error loading products</div>;
+  if (isLoading)
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-10 h-10 border-4 border-blue-500 border-dotted rounded-full animate-spin"></div>
+      </div>
+    );
 
   return (
-    <div>
+    <div className="py-2 space-y-2 p-4 pt-[25px]">
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl">Products</h1>
+        <h1 className="text-2xl font-semibold mb-4">
+          Products ({sortedProducts?.length || 0})
+        </h1>
         <div className="flex space-x-2">
           <button
             onClick={navigateToAddProduct}
-            className="btn btn-primary btn-sm"
+            className="btn bg-gray-700 text-gray-200 hover:bg-gray-800 btn-sm"
           >
             <PlusIcon className="h-4 w-5" /> Add New Product
           </button>
           <button
             onClick={deleteSelectedProducts}
-            className="btn btn-error btn-sm"
+            className="btn bg-red-600 text-white btn-sm"
           >
             <Trash2Icon className="h-4 w-5" /> Delete Selected
           </button>
         </div>
       </div>
+      <Input
+        placeholder="Search product by name..."
+        value={globalFilter}
+        onChange={(e) => setGlobalFilter(e.target.value)}
+        className="max-w-sm mb-4"
+      />
 
-      <div className="overflow-x-auto mt-4">
-        <table className="table table-zebra border border-gray-600">
-          <thead className="text-orange-500">
-            <tr>
-              <th className="border border-gray-600">
-                <input
-                  type="checkbox"
-                  onChange={(e) =>
-                    setSelectedProducts(
-                      e.target.checked
-                        ? products.map((p: Product) => p._id)
-                        : []
-                    )
-                  }
-                  checked={
-                    selectedProducts.length === products.length &&
-                    products.length > 0
-                  }
-                />
-              </th>
-              <th className="border border-gray-600">Sl.No.</th>
-              <th className="border border-gray-600">Product Category</th>
-              <th className="border border-gray-600">Name</th>
-              <th className="border border-gray-600">Product Code</th>
-              <th className="border border-gray-600">Weight (Grms)</th>
-              <th className="border border-gray-600">Price/gram</th>
-              <th className="border border-gray-600">Price</th>
-              <th className="border border-gray-600">Info</th>
-              <th className="border border-gray-600">Category</th>
-              <th className="border border-gray-600">Slug</th>
-              <th className="border border-gray-600">Image</th>
-              {/* <th className="border border-gray-600">Stocks Available</th> */}
-              <th className="border border-gray-600">Actions</th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {productsToDisplay.map((product: Product, index: number) => (
-              <tr key={product._id}>
-                <td className="border border-gray-600">
-                  <input
-                    type="checkbox"
-                    checked={selectedProducts.includes(product._id!)} // Add "!"
-                    onChange={() => handleCheckboxChange(product._id!)} // Add "!"
-                  />
-                </td>
-                <td className="border border-gray-600">
-                  {startIndex + index + 1}
-                </td>
-                <td className="border border-gray-600">
-                  {product?.productCategory}
-                </td>
-                <td className="border border-gray-600">{product?.name}</td>
-                <td className="border border-gray-600">
-                  {product?.productCode}
-                </td>
-                <td className="border border-gray-600">{product?.weight}</td>
-                <td className="border border-gray-600">
-                  {product?.price_per_gram}
-                </td>
-                <td className="border border-gray-600">
-                  ₹{product?.price.toFixed(2)}
-                </td>
-                <td className="border border-gray-600">{product?.info}</td>
-                <td className="border border-gray-600">
-                  {product?.category || "-"}
-                </td>
-                <td className="border border-gray-600">{product?.slug}</td>
-                <td className="border border-gray-600">
-                  {product?.image ? (
-                    <a
-                      href={product.image}
-                      target="_blank"
-                      className="text-blue-500 hover:underline"
-                    >
-                      View Image
-                    </a>
-                  ) : (
-                    "-"
-                  )}
-                </td>
-                {/* <td className="border border-gray-600 text-green-500 text-center">
-                  {product?.countInStock}
-                </td> */}
-                <td className="border border-gray-600">
-                  <Link
-                    href={`/admin/products/${product._id}`}
-                    className="btn btn-ghost btn-sm"
+      <div className="overflow-x-auto rounded-md border">
+        <Table className="min-w-[1200px]">
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className="whitespace-nowrap text-xs"
                   >
-                    <PencilIcon className="h-4 w-5 text-blue-500" />
-                  </Link>
-                  &nbsp;
-                  <button
-                    onClick={() => openDeleteModal(product._id!)}
-                    className="btn btn-ghost btn-sm"
-                  >
-                    <Trash2Icon className="h-4 w-5 text-red-600" />
-                  </button>
-                </td>
-              </tr>
+                    {header.isPlaceholder
+                      ? null
+                      : flexRender(
+                          header.column.columnDef.header,
+                          header.getContext()
+                        )}
+                  </TableHead>
+                ))}
+              </TableRow>
             ))}
-          </tbody>
-        </table>
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row?.id}
+                  data-state={row?.getIsSelected() && "selected"}
+                >
+                  {row?.getVisibleCells().map((cell) => (
+                    <TableCell
+                      key={cell.id}
+                      className="align-top max-w-[300px]"
+                    >
+                      {flexRender(
+                        cell.column.columnDef.cell,
+                        cell.getContext()
+                      )}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  No results.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
       </div>
 
-      {/* Pagination */}
-      <div className="mt-4 flex justify-between items-center">
-        <button
-          onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
-          className="btn btn-sm"
-          disabled={currentPage === 1}
+      <div className="flex items-center justify-between mt-4">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.previousPage()}
+          disabled={!table.getCanPreviousPage()}
         >
-          <ChevronLeftIcon className="h-4 w-4 mr-2" /> Previous
-        </button>
-        <span>
-          Page {currentPage} of {totalPages}
-        </span>
-        <span>
-          Total : <span className="text-orange-500">{products?.length}</span>
-        </span>
-
-        {/* Dropdown for selecting number of items per page */}
-        <div className=" flex justify-between items-center">
-          <label htmlFor="itemsPerPage" className="mr-2">
-            Items per page:
-          </label>
-          <select
-            id="itemsPerPage"
-            className="select select-bordered select-sm"
-            value={productsPerPage}
-            onChange={(e) => {
-              setProductsPerPage(Number(e.target.value));
-              setCurrentPage(1); // Reset to page 1 when per-page value changes
-            }}
-          >
-            <option value={10}>10</option>
-            <option value={20}>20</option>
-            <option value={30}>30</option>
-            <option value={50}>50</option>
-          </select>
-        </div>
-
-        <button
-          onClick={() =>
-            setCurrentPage((prev) => Math.min(prev + 1, totalPages))
-          }
-          className="btn btn-sm text-orange-400"
-          disabled={currentPage === totalPages}
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => table.nextPage()}
+          disabled={!table.getCanNextPage()}
         >
-          Next <ChevronRightIcon className="h-4 w-4 mr-2" />
-        </button>
+          Next
+        </Button>
       </div>
 
       {isModalOpen && (

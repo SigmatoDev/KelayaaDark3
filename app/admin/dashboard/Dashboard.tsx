@@ -16,8 +16,27 @@ import {
 import Link from "next/link";
 import { Bar, Doughnut, Line } from "react-chartjs-2";
 import useSWR from "swr";
-
 import { formatNumber } from "@/lib/utils";
+import ChartDataLabels from "chartjs-plugin-datalabels";
+import {
+  ArrowTrendingDownIcon,
+  ArrowTrendingUpIcon,
+  CubeIcon,
+  CurrencyRupeeIcon,
+} from "@heroicons/react/20/solid";
+import { IndianRupeeIcon, ShoppingCartIcon, UsersIcon } from "lucide-react";
+
+function getLast7Days() {
+  const days: string[] = [];
+  const today = new Date();
+  for (let i = 6; i >= 0; i--) {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    const formatted = date.toISOString().split("T")[0]; // YYYY-MM-DD
+    days.push(formatted);
+  }
+  return days;
+}
 
 ChartJS.register(
   CategoryScale,
@@ -29,7 +48,8 @@ ChartJS.register(
   Filler,
   Legend,
   BarElement,
-  ArcElement
+  ArcElement,
+  ChartDataLabels
 );
 
 export const options = {
@@ -44,73 +64,84 @@ export const options = {
 const Dashboard = () => {
   const { data: summary, error } = useSWR(`/api/admin/summary`);
 
-  console.log(summary);
+  if (error) return <div className="text-red-600">Error: {error.message}</div>;
+  if (!summary)
+    return (
+      <div className="flex items-center justify-center h-64">
+        <div className="w-10 h-10 border-4 border-blue-500 border-dotted rounded-full animate-spin"></div>
+      </div>
+    );
 
-  if (error) return error.message;
-  if (!summary) return "Loading...";
+  const last7Days = getLast7Days();
+
+  const salesMap = new Map(
+    summary.salesData.map((x: { _id: string; totalSales: number }) => [
+      x._id,
+      x.totalSales,
+    ])
+  );
+
+  const ordersMap = new Map(
+    summary.salesData.map((x: { _id: string; totalOrders: number }) => [
+      x._id,
+      x.totalOrders,
+    ])
+  );
 
   const salesData = {
-    labels: summary.salesData.map((x: { _id: string }) => x._id),
+    labels: last7Days,
     datasets: [
       {
         fill: true,
         label: "Sales",
-        data: summary.salesData.map(
-          (x: { totalSales: number }) => x.totalSales
-        ),
-        borderColor: "rgb(53, 162, 235)",
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
+        data: last7Days.map((date) => salesMap.get(date) || 0),
+        borderColor: "#3B82F6",
+        backgroundColor: "rgba(59, 130, 246, 0.4)",
       },
     ],
   };
+
   const ordersData = {
-    labels: summary.salesData.map((x: { _id: string }) => x._id),
+    labels: last7Days,
     datasets: [
       {
         fill: true,
         label: "Orders",
-        data: summary.salesData.map(
-          (x: { totalOrders: number }) => x.totalOrders
-        ),
-        borderColor: "rgb(53, 162, 235)",
-        backgroundColor: "rgba(53, 162, 235, 0.5)",
+        data: last7Days.map((date) => ordersMap.get(date) || 0),
+        borderColor: "#10B981",
+        backgroundColor: "rgba(16, 185, 129, 0.4)",
       },
     ],
   };
+
+  const labels = summary.productsData.map((x: any) => x._id);
+  const data = summary.productsData.map((x: any) => x.totalProducts);
+
   const productsData = {
-    labels: summary.productsData.map((x: { _id: string }) => x._id), // 2022/01 2022/03
+    labels,
     datasets: [
       {
-        label: "Category",
-        data: summary.productsData.map(
-          (x: { totalProducts: number }) => x.totalProducts
-        ),
+        label: "Products",
+        data,
         backgroundColor: [
-          "rgba(255, 99, 132, 0.2)",
-          "rgba(54, 162, 235, 0.2)",
-          "rgba(255, 206, 86, 0.2)",
-          "rgba(75, 192, 192, 0.2)",
-          "rgba(153, 102, 255, 0.2)",
-          "rgba(255, 159, 64, 0.2)",
-        ],
-        borderColor: [
-          "rgba(255, 99, 132, 1)",
-          "rgba(54, 162, 235, 1)",
-          "rgba(255, 206, 86, 1)",
-          "rgba(75, 192, 192, 1)",
-          "rgba(153, 102, 255, 1)",
-          "rgba(255, 159, 64, 1)",
+          "#F87171",
+          "#60A5FA",
+          "#FBBF24",
+          "#34D399",
+          "#A78BFA",
+          "#F472B6",
         ],
       },
     ],
   };
+
   const usersData = {
-    labels: summary.usersData.map((x: { _id: string }) => x._id), // 2022/01 2022/03
+    labels: summary.usersData.map((x: { _id: string }) => x._id),
     datasets: [
       {
         label: "Users",
-        borderColor: "rgb(53, 162, 235)",
-        backgroundColor: "rgba(75, 136, 177, 0.5)",
+        borderColor: "#6366F1",
+        backgroundColor: "rgba(99, 102, 241, 0.4)",
         data: summary.usersData.map(
           (x: { totalUsers: number }) => x.totalUsers
         ),
@@ -118,62 +149,192 @@ const Dashboard = () => {
     ],
   };
 
+  const doughnutOptions = {
+    plugins: {
+      legend: {
+        position: "top" as const,
+      },
+      datalabels: {
+        color: "#111",
+        font: {
+          weight: "bold",
+        },
+        formatter: (value: number, ctx: any) => {
+          return ` ${value}`;
+        },
+      },
+    },
+  };
+
+  // Sales Growth Calculation
+  const calculateGrowth = (
+    currentMonthSales: number,
+    lastMonthSales: number
+  ) => {
+    console.log("Current Month Sales:", currentMonthSales);
+    console.log("Last Month Sales:", lastMonthSales);
+
+    if (!lastMonthSales) return 0; // Avoid division by zero
+
+    const growth =
+      ((currentMonthSales - lastMonthSales) / lastMonthSales) * 100;
+    console.log("Calculated Growth Percentage:", growth);
+    return growth;
+  };
+
+  const currentMonthSales =
+    summary.salesData[summary.salesData.length - 1]?.totalSales || 0;
+  const lastMonthSales =
+    summary.salesData[summary.salesData.length - 2]?.totalSales || 0;
+
+  const growthPercentage = calculateGrowth(currentMonthSales, lastMonthSales);
+
+  // Orders Growth Calculation
+  const calculateOrderGrowth = (
+    currentMonthOrders: number,
+    lastMonthOrders: number
+  ) => {
+    console.log("Current Month Orders:", currentMonthOrders);
+    console.log("Last Month Orders:", lastMonthOrders);
+
+    if (!lastMonthOrders) return 0; // Avoid division by zero
+
+    const growth =
+      ((currentMonthOrders - lastMonthOrders) / lastMonthOrders) * 100;
+    console.log("Calculated Order Growth Percentage:", growth);
+    return growth;
+  };
+
+  const currentMonthOrders =
+    summary.salesData[summary.salesData.length - 1]?.totalOrders || 0;
+  const lastMonthOrders =
+    summary.salesData[summary.salesData.length - 2]?.totalOrders || 0;
+
+  const orderGrowthPercentage = calculateOrderGrowth(
+    currentMonthOrders,
+    lastMonthOrders
+  );
+
   return (
-    <div>
-      <div className="stats stats-vertical inline-grid shadow-md md:stats-horizontal md:flex">
-        <div className="stat">
-          <div className="stat-title">Sales</div>
-          <div className="stat-value ">
-            ₹{formatNumber(summary.ordersPrice)}
+    <div className="p-6 space-y-8">
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          {
+            title: "Sales",
+            value: `₹${formatNumber(summary.ordersPrice)}`,
+            link: "/admin/orders",
+            icon: <IndianRupeeIcon className="h-8 w-8 text-blue-600" />,
+          },
+          {
+            title: "Orders",
+            value: summary.ordersCount,
+            link: "/admin/orders",
+            icon: <ShoppingCartIcon className="h-8 w-8 text-green-600" />,
+          },
+          {
+            title: "Products",
+            value: summary.productsCount,
+            link: "/admin/products",
+            icon: <CubeIcon className="h-8 w-8 text-yellow-600" />,
+          },
+          {
+            title: "Users",
+            value: summary.usersCount,
+            link: "/admin/users",
+            icon: <UsersIcon className="h-8 w-8 text-purple-600" />,
+          },
+        ].map((stat, index) => (
+          <div
+            key={index}
+            className="bg-white shadow-lg rounded-xl p-5 border border-gray-100 flex items-center space-x-4 hover:shadow-xl transition-all duration-300"
+          >
+            <div className="flex-shrink-0">{stat.icon}</div>
+            <div className="flex-1">
+              <div className="text-sm text-gray-500">{stat.title}</div>
+              <div className="text-2xl font-semibold mt-1">{stat.value}</div>
+            </div>
           </div>
-          <div className="stat-desc">
-            <Link href="/admin/orders">View sales</Link>
+        ))}
+      </div>
+
+      {/* Sales Growth Section */}
+      <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-100">
+        <h2 className="text-lg font-semibold mb-4">Month-on-Month Growth</h2>
+        <div className="flex flex-col md:flex-row gap-6">
+          {/* Sales Growth */}
+          <div className="flex-1 border rounded-xl p-4">
+            <h3 className="text-md font-medium mb-2">Sales Growth</h3>
+            <div className="flex items-center space-x-2">
+              <div className="text-2xl font-semibold">
+                {growthPercentage.toFixed(2)}%
+              </div>
+              {growthPercentage !== 0 && (
+                <div
+                  className={`h-6 w-6 ${
+                    growthPercentage > 0 ? "text-green-500" : "text-red-500"
+                  }`}
+                >
+                  {growthPercentage > 0 ? (
+                    <ArrowTrendingUpIcon className="h-6 w-6" />
+                  ) : (
+                    <ArrowTrendingDownIcon className="h-6 w-6" />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-        <div className="stat">
-          <div className="stat-title"> Orders</div>
-          <div className="stat-value ">{summary.ordersCount}</div>
-          <div className="stat-desc">
-            <Link href="/admin/orders">View orders</Link>
-          </div>
-        </div>
-        <div className="stat">
-          <div className="stat-title">Products</div>
-          <div className="stat-value ">{summary.productsCount}</div>
-          <div className="stat-desc">
-            <Link href="/admin/products">View products</Link>
-          </div>
-        </div>
-        <div className="stat">
-          <div className="stat-title">Users</div>
-          <div className="stat-value ">{summary.usersCount}</div>
-          <div className="stat-desc">
-            <Link href="/admin/users">View users</Link>
+
+          {/* Orders Growth */}
+          <div className="flex-1 border rounded-xl p-4">
+            <h3 className="text-md font-medium mb-2">Orders Growth</h3>
+            <div className="flex items-center space-x-2">
+              <div className="text-2xl font-semibold">
+                {orderGrowthPercentage.toFixed(2)}%
+              </div>
+              {orderGrowthPercentage !== 0 && (
+                <div
+                  className={`h-6 w-6 ${
+                    orderGrowthPercentage > 0
+                      ? "text-green-500"
+                      : "text-red-500"
+                  }`}
+                >
+                  {orderGrowthPercentage > 0 ? (
+                    <ArrowTrendingUpIcon className="h-6 w-6" />
+                  ) : (
+                    <ArrowTrendingDownIcon className="h-6 w-6" />
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <h2 className="py-2 text-xl">Sales Report</h2>
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-100">
+          <h2 className="text-lg font-semibold mb-3">Sales Report</h2>
           <Line data={salesData} />
         </div>
-        <div>
-          <h2 className="py-2 text-xl">Orders Report</h2>
+        <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-100">
+          <h2 className="text-lg font-semibold mb-3">Orders Report</h2>
           <Line data={ordersData} />
         </div>
       </div>
-      {/* <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <h2 className="py-2 text-xl">Products Report</h2>
-          <div className="flex h-80 w-96 items-center justify-center ">
-            <Doughnut data={productsData} />
+
+      <div className="grid gap-6 md:grid-cols-2">
+        <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-100">
+          <h2 className="text-lg font-semibold mb-3">Products Report</h2>
+          <div className="flex items-center justify-center h-80">
+            <Doughnut data={productsData} options={doughnutOptions} />
           </div>
         </div>
-        <div>
-          <h2 className="py-2 text-xl">Users Report</h2>
+
+        <div className="bg-white p-5 rounded-2xl shadow-md border border-gray-100">
+          <h2 className="text-lg font-semibold mb-3">Users Report</h2>
           <Bar data={usersData} />
         </div>
-      </div> */}
+      </div>
     </div>
   );
 };

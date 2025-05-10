@@ -20,6 +20,7 @@ const productSchema = new mongoose.Schema(
     goldTotal: Number,
     totalPrice: Number,
     size: String,
+    gst: Number,
   },
   { timestamps: true }
 );

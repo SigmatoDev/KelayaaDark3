@@ -1,15 +1,15 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
-import { ValidationRule, useForm } from 'react-hook-form';
-import toast from 'react-hot-toast';
-import useSWR from 'swr';
-import useSWRMutation from 'swr/mutation';
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import { ValidationRule, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
+import useSWR from "swr";
+import useSWRMutation from "swr/mutation";
 
-import { Product } from '@/lib/models/ProductModel';
-import { formatId } from '@/lib/utils';
+import { Product } from "@/lib/models/ProductModel";
+import { formatId } from "@/lib/utils";
 
 export default function ProductEditForm({ productId }: { productId: string }) {
   const { data: product, error } = useSWR(`/api/admin/products/${productId}`);
@@ -18,18 +18,18 @@ export default function ProductEditForm({ productId }: { productId: string }) {
     `/api/admin/products/${productId}`,
     async (url, { arg }) => {
       const res = await fetch(`${url}`, {
-        method: 'PUT',
+        method: "PUT",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(arg),
       });
       const data = await res.json();
       if (!res.ok) return toast.error(data.message);
 
-      toast.success('Product updated successfully');
-      router.push('/admin/products');
-    },
+      toast.success("Product updated successfully");
+      router.push("/admin/products");
+    }
   );
 
   const {
@@ -44,45 +44,45 @@ export default function ProductEditForm({ productId }: { productId: string }) {
   const [additionalFields, setAdditionalFields] = useState<string[]>([]);
 
   const productTypes: string[] = [
-    'Pendants',
-    'Rings',
-    'Earrings',
-    'Bangles',
-    'Bracelets',
-    'Sets',
-    'Toe Rings',
-    'Necklaces',
-    'Chain',
+    "Pendants",
+    "Rings",
+    "Earrings",
+    "Bangles",
+    "Bracelets",
+    "Sets",
+    "Toe Rings",
+    "Necklaces",
+    "Chain",
   ];
 
   const categoryTypes: string[] = [
-    'Turquoise',
-    'Silver',
-    'Enamel',
-    'Coral',
-    'Moon Stone',
-    'Semi-Precious Stones',
-    'Amathyst',
-    'Garnet',
-    'Agate',
-    'Onyx',
-    'Agate and Semi Precious Stones',
-    'Synthetic Stones',
-    'Crystal',
-    'Rose Quartz',
-    'Pearl',
-    'Topaz',
-    'AD',
-    'Ox-Silver',
-    'Lapis Lazuli',
-    'Ox-Silver (Beads)',
+    "Turquoise",
+    "Silver",
+    "Enamel",
+    "Coral",
+    "Moon Stone",
+    "Semi-Precious Stones",
+    "Amathyst",
+    "Garnet",
+    "Agate",
+    "Onyx",
+    "Agate and Semi Precious Stones",
+    "Synthetic Stones",
+    "Crystal",
+    "Rose Quartz",
+    "Pearl",
+    "Topaz",
+    "AD",
+    "Ox-Silver",
+    "Lapis Lazuli",
+    "Ox-Silver (Beads)",
   ];
 
   const ringCategoryTypes: string[] = [
-    'Cocktail Ring',
-    'Cocktail Rings',
-    'Silver',
-    'Minimalist',
+    "Cocktail Ring",
+    "Cocktail Rings",
+    "Silver",
+    "Minimalist",
   ];
 
   // const categoryMapping: { [key: string]: string[] } = {
@@ -93,17 +93,17 @@ export default function ProductEditForm({ productId }: { productId: string }) {
 
   const categoryMapping = useMemo(
     () => ({
-      Men: ['Ring', 'Earring', 'Bracelet'],
-      Women: ['Necklace', 'Earring', 'Bangle', 'Ring'],
-      Children: ['Ring', 'Pendant', 'Charm'],
+      Men: ["Ring", "Earring", "Bracelet"],
+      Women: ["Necklace", "Earring", "Bangle", "Ring"],
+      Children: ["Ring", "Pendant", "Charm"],
     }),
     []
   );
-  
+
   type CategoryType = keyof typeof categoryMapping;
 
-  const selectedCategory = watch('category')as CategoryType;
-  const selectedProductCategory = watch('productCategory');
+  const selectedCategory = watch("category") as CategoryType;
+  const selectedProductCategory = watch("productCategory");
 
   // useEffect(() => {
   //   if (!product) return;
@@ -137,36 +137,35 @@ export default function ProductEditForm({ productId }: { productId: string }) {
   //   }
   // }, [selectedProductCategory, categoryMapping]);
 
-
   useEffect(() => {
     if (!product) return;
-    setValue('name', product.name);
-    setValue('productCode', product.productCode);
-    setValue('weight', product.weight);
-    setValue('price_per_gram', product.price_per_gram);
-    setValue('info', product.info);
-    setValue('slug', product.slug);
-    setValue('price', product.price);
-    setValue('image', product.image);
-    setValue('category', product.category);
-    setValue('productCategory', product.productCategory);
-    setValue('description', product.description);
+    setValue("name", product.name);
+    setValue("productCode", product.productCode);
+    setValue("weight", product.weight);
+    setValue("price_per_gram", product.price_per_gram);
+    setValue("info", product.info);
+    setValue("slug", product.slug);
+    setValue("price", product.price);
+    setValue("image", product.image);
+    setValue("category", product.category);
+    setValue("productCategory", product.productCategory);
+    setValue("description", product.description);
     if (product.category) {
-      setSubcategories(categoryMapping[product.category as keyof typeof categoryMapping] || []);
-
+      setSubcategories(
+        categoryMapping[product.category as keyof typeof categoryMapping] || []
+      );
     }
   }, [product, setValue]); // ✅ Removed `categoryMapping` from dependencies
-  
 
   useEffect(() => {
     if (selectedCategory) {
       setSubcategories(categoryMapping[selectedCategory as CategoryType] || []);
     }
   }, [selectedCategory, categoryMapping]); // Added categoryMapping
-  
+
   useEffect(() => {
-    if (selectedProductCategory === 'Ring') {
-      setAdditionalFields(['ringSize', 'grossWeight', 'goldWeight']);
+    if (selectedProductCategory === "Ring") {
+      setAdditionalFields(["ringSize", "grossWeight", "goldWeight"]);
     } else {
       setAdditionalFields([]);
     }
@@ -183,45 +182,44 @@ export default function ProductEditForm({ productId }: { productId: string }) {
   //   }
   // }, [watch('weight'), watch('price_per_gram'), setValue]);
 
-  const weight = watch('weight');
-  const pricePerGram = watch('price_per_gram');
-  
+  const weight = watch("weight");
+  const pricePerGram = watch("price_per_gram");
+
   useEffect(() => {
     const calculatedPrice = Number(weight || 0) * Number(pricePerGram || 0);
-  
+
     if (!isNaN(calculatedPrice)) {
-      setValue('price', Number(calculatedPrice.toFixed(2)));
+      setValue("price", Number(calculatedPrice.toFixed(2)));
     }
   }, [weight, pricePerGram, setValue]);
-  
 
   const formSubmit = async (formData: any) => {
     await updateProduct(formData);
   };
 
   const uploadHandler = async (e: any) => {
-    const toastId = toast.loading('Uploading image...');
+    const toastId = toast.loading("Uploading image...");
     try {
-      const resSign = await fetch('/api/cloudinary-sign', {
-        method: 'POST',
+      const resSign = await fetch("/api/cloudinary-sign", {
+        method: "POST",
       });
       const { signature, timestamp } = await resSign.json();
       const file = e.target.files[0];
       const formData = new FormData();
-      formData.append('file', file);
-      formData.append('signature', signature);
-      formData.append('timestamp', timestamp);
-      formData.append('api_key', process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!);
+      formData.append("file", file);
+      formData.append("signature", signature);
+      formData.append("timestamp", timestamp);
+      formData.append("api_key", process.env.NEXT_PUBLIC_CLOUDINARY_API_KEY!);
       const res = await fetch(
         `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/upload`,
         {
-          method: 'POST',
+          method: "POST",
           body: formData,
-        },
+        }
       );
       const data = await res.json();
-      setValue('image', data.secure_url);
-      toast.success('File uploaded successfully', {
+      setValue("image", data.secure_url);
+      toast.success("File uploaded successfully", {
         id: toastId,
       });
     } catch (err: any) {
@@ -233,16 +231,16 @@ export default function ProductEditForm({ productId }: { productId: string }) {
 
   if (error) return error.message;
 
-  if (!product) return 'Loading...';
+  if (!product) return "Loading...";
 
   const FormInput = ({
     id,
     name,
     required,
     pattern,
-    type = 'text',
+    type = "text",
     options,
-    className = '',
+    className = "",
   }: {
     id: keyof Product;
     name: string;
@@ -252,11 +250,11 @@ export default function ProductEditForm({ productId }: { productId: string }) {
     options?: { label: string; value: string }[];
     className?: string; // Add this line
   }) => (
-    <div className='mb-1'>
-      <label className='label' htmlFor={id}>
+    <div className="mb-1">
+      <label className="label" htmlFor={id}>
         {name}
       </label>
-      <div className='w-full'>
+      <div className="w-full">
         {options ? (
           <select
             {...register(id, {
@@ -264,7 +262,7 @@ export default function ProductEditForm({ productId }: { productId: string }) {
             })}
             className={`select select-bordered w-full ${className}`}
           >
-            <option value=''>Select {name}</option>
+            <option value="">Select {name}</option>
             {options.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -283,43 +281,43 @@ export default function ProductEditForm({ productId }: { productId: string }) {
           />
         )}
         {errors[id]?.message && (
-          <div className='text-error'>{errors[id]?.message}</div>
+          <div className="text-error">{errors[id]?.message}</div>
         )}
       </div>
     </div>
   );
 
   return (
-    <div>
-      <h1 className='my-4 py-1 text-2xl text-orange-500'>
+    <div className="space-y-2 p-4 pt-[20px]">
+      <h1 className="my-4 py-1 text-2xl text-orange-500">
         Edit Product {formatId(productId)}
       </h1>
       <form
         onSubmit={handleSubmit(formSubmit)}
-        className='grid grid-cols-1 gap-2 sm:grid-cols-2'
+        className="grid grid-cols-1 gap-2 sm:grid-cols-2"
       >
         <FormInput
-          name='Product Category'
-          id='productCategory'
+          name="Product Category"
+          id="productCategory"
           required
           options={productTypes.map((type) => ({
             label: type,
             value: type,
           }))}
         />
-        <FormInput name='Name' id='name' required />
-        <FormInput name='ProductCode' id='productCode' required />
-        <FormInput name='Weight (Grms)' id='weight' required />
-        <FormInput name='Price/gram' id='price_per_gram' required />
+        <FormInput name="Name" id="name" required />
+        <FormInput name="ProductCode" id="productCode" required />
+        <FormInput name="Weight (Grms)" id="weight" required />
+        <FormInput name="Price/gram" id="price_per_gram" required />
         <FormInput
-          name='Price'
-          id='price'
+          name="Price"
+          id="price"
           required
-          className='w-f input input-bordered  text-red-500'
+          className="w-f input input-bordered  text-red-500"
         />
         <FormInput
-          name='Info'
-          id='info'
+          name="Info"
+          id="info"
           required
           options={categoryTypes.map((type) => ({
             label: type,
@@ -327,10 +325,10 @@ export default function ProductEditForm({ productId }: { productId: string }) {
           }))}
         />
 
-        {selectedProductCategory === 'Rings' && (
+        {selectedProductCategory === "Rings" && (
           <FormInput
-            name='Category'
-            id='category'
+            name="Category"
+            id="category"
             required
             options={ringCategoryTypes.map((type) => ({
               label: type,
@@ -338,34 +336,34 @@ export default function ProductEditForm({ productId }: { productId: string }) {
             }))}
           />
         )}
-        <FormInput name='Slug' id='slug' required />
-        <FormInput name='Image' id='image' />
-        <FormInput name='Description' id='description' required />
+        <FormInput name="Slug" id="slug" required />
+        <FormInput name="Image" id="image" />
+        <FormInput name="Description" id="description" required />
 
-        <div className='mb-6'>
-          <label className='label' htmlFor='imageFile'>
+        <div className="mb-6">
+          <label className="label" htmlFor="imageFile">
             Upload Image
           </label>
           <input
-            type='file'
-            className='file-input w-full'
-            id='imageFile'
+            type="file"
+            className="file-input w-full"
+            id="imageFile"
             onChange={uploadHandler}
           />
         </div>
 
-        <div className='col-span-2 my-3 flex gap-4 '>
+        <div className="col-span-2 my-3 flex gap-4 ">
           <button
-            type='submit'
+            type="submit"
             disabled={isUpdating}
-            className='btn btn-primary flex-1'
+            className="btn btn-primary flex-1"
           >
-            {isUpdating && <span className='loading loading-spinner'></span>}
+            {isUpdating && <span className="loading loading-spinner"></span>}
             Update
           </button>
           <Link
-            className='btn flex-1 bg-red-600 text-white'
-            href='/admin/products'
+            className="btn flex-1 bg-red-600 text-white"
+            href="/admin/products"
           >
             Cancel
           </Link>
