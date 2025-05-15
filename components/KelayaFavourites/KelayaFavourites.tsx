@@ -26,6 +26,10 @@ const favourites: FavouriteItem[] = [
     videoSrc: "https://kelayaavideos.s3.ap-south-1.amazonaws.com/fav5a.mp4",
     poster: "/favourites/fav4.jpg",
   },
+  {
+    videoSrc: "https://kelayaavideos.s3.ap-south-1.amazonaws.com/fav5a.mp4",
+    poster: "/favourites/fav4.jpg",
+  },
 ];
 
 export default function KelayaFavourites() {

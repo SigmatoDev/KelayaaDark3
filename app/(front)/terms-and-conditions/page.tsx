@@ -61,8 +61,18 @@ export default function TermsOfUse() {
         </p>
       </section>
 
+
       <section className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">7. Governing Law</h2>
+        <h2 className="text-xl font-semibold mb-2">
+          7. Shipping Policy
+        </h2>
+        <p>
+        Products are delivered within 3 to 5 days. If any product is currently unavailable, the delivery may take up to 14 to 21 days.
+        </p>
+      </section>
+
+      <section className="mb-6">
+        <h2 className="text-xl font-semibold mb-2">8. Governing Law</h2>
         <p>
           These terms are governed by the laws of India, and any disputes shall
           be resolved in the courts of Bangalore, Karnataka.
@@ -70,7 +80,7 @@ export default function TermsOfUse() {
       </section>
 
       <section className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">8. Changes to Terms</h2>
+        <h2 className="text-xl font-semibold mb-2">9. Changes to Terms</h2>
         <p>
           We may update these terms from time to time. Your continued use of the
           website constitutes acceptance of the revised terms.
@@ -78,7 +88,7 @@ export default function TermsOfUse() {
       </section>
 
       <section className="mb-6">
-        <h2 className="text-xl font-semibold mb-2">9. Contact Information</h2>
+        <h2 className="text-xl font-semibold mb-2">10. Contact Information</h2>
         <p>
           If you have any questions regarding these Terms of Use, you may
           contact us at <strong>support@kelayaa.com</strong>.
