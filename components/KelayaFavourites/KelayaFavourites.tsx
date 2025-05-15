@@ -58,8 +58,11 @@ export default function KelayaFavourites() {
     <Link
     key={index}
     href={item.link}
-      className="relative mx-auto w-full max-w-[320px] sm:max-w-none h-[300px] sm:h-[320px] lg:h-[380px] xl:h-[400px] overflow-hidden rounded-2xl shadow-lg"
-    >
+    className="relative mx-auto w-full max-w-[320px] sm:max-w-none 
+    aspect-[9/16] sm:aspect-auto 
+    h-auto sm:h-[250px] md:h-[320px] lg:h-[380px] xl:h-[400px] 
+    overflow-hidden rounded-2xl shadow-lg"
+        >
 <div className="absolute inset-0 bg-[#EC4999]/5" />
       <video
   ref={(ref) => {
