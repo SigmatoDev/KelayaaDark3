@@ -19,7 +19,7 @@ export default function ProductShips() {
   ];
 
   return (
-    <div className="bg-gray-100 xl:h-[317px] py-10 md:py-14 mt-10 xl:mt-20">
+    <div className="bg-white xl:h-[317px] py-5 md:py-14 mt-10 xl:mt-6">
       <div className="w-full h-full flex items-center justify-center">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 text-center mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {features.map((feature, index) => (

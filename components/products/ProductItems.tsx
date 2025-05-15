@@ -9,7 +9,7 @@ const ProductItems = async () => {
   const latestProducts = await productService.getLatest();
   console.log("latestProducts", latestProducts);
   return (
-    <div className="px-2 mt-20">
+    <div className="px-4 mt-6 sm:mt-10 mx-auto max-w-7xl">
       {/* <h2 className="text-2xl text-center  font-semibold">
         EXPLORE OUR PRODUCTS
       </h2> */}

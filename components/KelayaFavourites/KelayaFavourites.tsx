@@ -7,28 +7,38 @@ interface FavouriteItem {
   videoSrc: string;
   poster: string;
   title?: string;
+  link: string;
+  start?: number; // in seconds
+  end?: number;   // in seconds
 }
 
 const favourites: FavouriteItem[] = [
   {
-    videoSrc: "https://kelayaavideos.s3.ap-south-1.amazonaws.com/fav1a.mp4",
+    videoSrc: "https://kelayaavideos.s3.ap-south-1.amazonaws.com/fav1b.mp4",
     poster: "/favourites/fav1.jpg",
+    start: 5,
+    end: 10,
+    link: "/search?materialType=beads"
   },
   {
     videoSrc: "https://kelayaavideos.s3.ap-south-1.amazonaws.com/fav2a.mp4",
     poster: "/favourites/fav2.jpg",
+    link: "/search?materialType=gold"
   },
   {
     videoSrc: "https://kelayaavideos.s3.ap-south-1.amazonaws.com/fav4a.mp4",
     poster: "/favourites/fav3.jpg",
+    link: "/search?materialType=silver&productCategory=Earrings"
   },
   {
     videoSrc: "https://kelayaavideos.s3.ap-south-1.amazonaws.com/fav5a.mp4",
     poster: "/favourites/fav4.jpg",
+    link: "/search?materialType=gold&productCategory=Earrings"
   },
   {
-    videoSrc: "https://kelayaavideos.s3.ap-south-1.amazonaws.com/fav5a.mp4",
+    videoSrc: "https://kelayaavideos.s3.ap-south-1.amazonaws.com/fav9.mp4",
     poster: "/favourites/fav4.jpg",
+    link: "/search?materialType=silver&productCategory=Sets"
   },
 ];
 
@@ -43,24 +53,48 @@ export default function KelayaFavourites() {
       </h2>
       <p className="text-center mb-8 text-gray-400 font-light text-sm">Stories in Motion. Favourites Forever.</p>
 
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-8">
-  {favourites.map((item, index) => (
-    <div
-      key={index}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8">
+      {favourites.map((item, index) => (
+    <Link
+    key={index}
+    href={item.link}
       className="relative mx-auto w-full max-w-[320px] sm:max-w-none h-[300px] sm:h-[320px] lg:h-[380px] xl:h-[400px] overflow-hidden rounded-2xl shadow-lg"
     >
-      <div className="absolute inset-0 bg-[#EC4999]/5" />
+<div className="absolute inset-0 bg-[#EC4999]/5" />
       <video
-        src={item.videoSrc}
-        poster={item.poster}
-        autoPlay
-        muted
-        loop
-        playsInline
-        className="absolute inset-0 w-full h-full"
-        style={{ objectFit: 'none', transform: 'scale(1)' }}
-      />
-    </div>
+  ref={(ref) => {
+    if (ref && item.start !== undefined && item.end !== undefined) {
+      ref.currentTime = item.start;
+
+      const handleTimeUpdate = () => {
+        if (ref.currentTime >= item.end!) {
+          ref.currentTime = item.start!;
+        }
+      };
+
+      ref.addEventListener("timeupdate", handleTimeUpdate);
+
+      // Cleanup on unmount
+      return () => {
+        ref.removeEventListener("timeupdate", handleTimeUpdate);
+      };
+    }
+  }}
+  src={item.videoSrc}
+  poster={item.poster}
+  autoPlay
+  muted
+  loop={true} // we control looping manually
+  playsInline
+  className="absolute inset-0 w-full h-full"
+  style={{ objectFit: "cover", transform: "scale(1)" }}
+/>
+
+</Link>
+
+
+
+
   ))}
 </div>
 
