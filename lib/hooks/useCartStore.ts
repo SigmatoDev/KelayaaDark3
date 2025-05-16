@@ -98,6 +98,7 @@ const initialState: Cart = {
   personalInfo: {
     mobileNumber: "",
     email: "",
+    fullName: "",
   },
 };
 
@@ -369,8 +370,10 @@ export const calcPrice = (items: CartItem[]) => {
     }, 0)
   );
 
-  const shippingPrice = round2(itemsPrice > 100 ? 0 : 100);
-  const taxPrice = round2(0.15 * itemsPrice);
+  const shippingPrice = 0;
+  // round2(itemsPrice > 100 ? 0 : 100);
+  const taxPrice = 0;
+  // round2(0.15 * itemsPrice);
   const totalPrice = Math.round(
     itemsPrice +
       shippingPrice +
