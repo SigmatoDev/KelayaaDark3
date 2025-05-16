@@ -180,29 +180,34 @@ const Carousel = () => {
               </CarouselItem>
             ))}
 
-            {/* Centered / Left-aligned Text */}
-            <div className="absolute z-30 top-[25%] md:top-[50%] left-4 md:left-1/2 transform md:-translate-x-1/2 flex flex-col items-start md:items-center space-y-2 md:space-y-6 text-left md:text-center px-4">
-              <h2 className="text-white text-base md:text-5xl font-semibold leading-snug md:leading-tight">
-                Celebrate Every Moment with <br className="hidden md:block" /> Pure, Elegant Gold
-              </h2>
-              <p className="text-white text-[11px] md:text-xl mt-1 md:mt-2">
-                Crafted with Love, Worn with Pride, Timelessly Beautiful.
-              </p>
-              <div className="flex flex-wrap justify-start md:justify-center gap-2 md:gap-4 mt-3 md:mt-4">
-                <a
-                  href="/search"
-                  className="px-3 py-1.5 border border-white bg-white text-black hover:bg-transparent hover:text-white transition rounded-md text-xs md:text-base"
-                >
-                  Shop the Collection
-                </a>
-                <a
-                  href="/custom-design"
-                  className="px-3 py-1.5 border border-white text-white hover:bg-white hover:text-black transition rounded-md text-xs md:text-base"
-                >
-                  Get Custom Designs
-                </a>
-              </div>
-            </div>
+           {/* Centered / Left-aligned Text */}
+           <div className="absolute z-30 top-[25%] md:top-[50%] left-4 md:left-1/2 transform md:-translate-x-1/2 flex flex-col items-start md:items-center text-left md:text-center px-4 max-w-[65vw] md:max-w-none">
+  <h2 className="text-white text-lg sm:text-xl md:text-5xl font-semibold leading-snug md:leading-tight">
+    Celebrate Every Moment with <br className="hidden md:block" /> Pure, Elegant Gold
+  </h2>
+
+  {/* Hidden on mobile, visible from sm breakpoint onward */}
+  <p className="hidden sm:block text-white text-base md:text-xl mt-2">
+    Crafted with Love, Worn with Pride, Timelessly Beautiful.
+  </p>
+
+  <div className="flex flex-col md:flex-row justify-start md:justify-center gap-2 md:gap-4 mt-4 w-full">
+    <a
+      href="/search"
+      className="w-full md:w-auto px-4 py-2 border border-white bg-white text-black hover:bg-transparent hover:text-white transition rounded-md text-sm md:text-base text-center"
+    >
+      Shop the Collection
+    </a>
+    <a
+      href="/custom-design"
+      className="w-full md:w-auto px-4 py-2 border border-white text-white hover:bg-white hover:text-black transition rounded-md text-sm md:text-base text-center"
+    >
+      Get Custom Designs
+    </a>
+  </div>
+</div>
+
+
           </CarouselContent>
 
           {/* Left Arrow — hidden on mobile */}
