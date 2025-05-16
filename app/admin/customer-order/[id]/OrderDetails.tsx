@@ -171,7 +171,7 @@ const OrderDetails = ({ orderId }: IOrderDetails) => {
               <div className="flex items-center">
                 <span className="font-medium">Payment ID:</span>
                 <span className="text-gray-500 ml-2 font-semibold">
-                  {data?.paymentIntentId || "N/A"}
+                  {data?.paymentResult?.transactionId || "N/A"}
                 </span>
               </div>
             </div>

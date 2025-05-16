@@ -61,9 +61,8 @@ const orderSchema = new mongoose.Schema(
 
     paymentMethod: { type: String, required: false },
     paymentResult: {
-      id: String,
       status: String,
-      email_address: String,
+      transactionId: String,
     },
     itemsPrice: { type: Number, required: false },
     shippingPrice: { type: Number, required: false },

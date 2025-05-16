@@ -166,7 +166,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
                   <X className="w-5 h-5 text-red-500" />
                 </button>
 
-                <Dialog.Title className="text-xl font-bold text-[#Dd91a6] mb-6">
+                <Dialog.Title className="text-xl font-bold text-[#e26e8f] mb-6">
                   Price Breakup Details
                 </Dialog.Title>
                 <div className="space-y-4 text-sm text-gray-800">
@@ -270,10 +270,10 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
                   ) : null}
 
                   <div className="border-t pt-4 mt-6 flex justify-between items-center bg-pink-50 rounded-lg px-4 py-2">
-                    <span className="text-lg font-semibold text-[#Dd91a6]">
+                    <span className="text-lg font-semibold text-[#e26e8f]">
                       Final Price
                     </span>
-                    <span className="text-lg font-bold text-[#Dd91a6]">
+                    <span className="text-lg font-bold text-[#e26e8f]">
                       ₹
                       {totalPrice
                         ? totalPrice.toLocaleString("en-IN", {
