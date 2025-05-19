@@ -7,7 +7,7 @@ import useCartService from "@/lib/hooks/useCartStore";
 import { loadScript } from "@/lib/loadRazorpay";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
-import { initiatePayment } from "@/app/actions/initiatePayment";
+import { initiatePayment } from "@/app/actions/initiatePyament";
 
 const Form = () => {
   const { data: session } = useSession();
@@ -94,21 +94,10 @@ const Form = () => {
 
   const handlePhonePePayment = async () => {
     try {
-      const res = await fetch("/api/phonepe/initiatePayment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          amount: totalPrice,
-        }),
-      });
-      const result = await res.json();
-      console.log("result", result);
-      if (result.success) {
-        window.location.href = result.redirectUrl;
-      } else {
-        alert("Payment failed");
+      const result = await initiatePayment(totalPrice);
+      if (result) {
+        router.push(result.redirectUrl); // Redirect to status check page
       }
-
       savePaymentMethod("PhonePe");
     } catch (error) {
       console.error("Error processing payment:", error);

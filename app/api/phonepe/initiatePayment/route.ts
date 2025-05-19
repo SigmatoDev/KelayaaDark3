@@ -2,10 +2,25 @@ import { NextRequest, NextResponse } from "next/server";
 import crypto from "crypto";
 import { v4 as uuidv4 } from "uuid";
 
-const MERCHANT_ID = process.env.MERCHANT_ID!;
-const SALT_KEY = process.env.SALT_KEY!;
-const SALT_INDEX = process.env.SALT_INDEX!;
-const PHONEPE_PROD_URL = "https://api.phonepe.com/apis/hermes/pg/v3/pay";
+const isProduction = process.env.NODE_ENV === "production";
+
+const MERCHANT_ID = isProduction
+  ? process.env.PHONEPE_MERCHANT_ID!
+  : process.env.PHONEPE_MERCHANT_ID_TEST!;
+
+const SALT_KEY = isProduction
+  ? process.env.PHONEPE_SALT_KEY!
+  : process.env.PHONEPE_SALT_KEY_TEST!;
+
+const SALT_INDEX = isProduction
+  ? process.env.PHONEPE_SALT_INDEX!
+  : process.env.PHONEPE_SALT_INDEX_TEST!;
+
+const PHONEPE_PROD_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
+const PHONEPE_PREPROD_URL =
+  "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay";
+
+const PHONEPE_URL = isProduction ? PHONEPE_PROD_URL : PHONEPE_PREPROD_URL;
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,19 +48,19 @@ export async function POST(req: NextRequest) {
       merchantId: MERCHANT_ID,
       merchantTransactionId: transactionId,
       merchantUserId: `MUID-${userId}`,
-      amount: amount, // Convert to paisa
+      amount: amount * 100, // Convert to paisa
       redirectUrl: `https://kelayaa.com/status/${transactionId}`,
       redirectMode: "REDIRECT",
       callbackUrl: `https://kelayaa.com/status/${transactionId}`,
       paymentInstrument: { type: "PAY_PAGE" },
     };
 
-    console.log("Step 5: Payload to send:", payload);
+    console.log("Step 5: Payload to send:", payload, SALT_KEY);
 
     const base64Payload = Buffer.from(JSON.stringify(payload)).toString(
       "base64"
     );
-    const stringToHash = `${base64Payload}/pg/v3/pay${SALT_KEY}`;
+    const stringToHash = `${base64Payload}/pg/v1/pay${SALT_KEY}`;
     const sha256Hash = crypto
       .createHash("sha256")
       .update(stringToHash)
@@ -53,7 +68,7 @@ export async function POST(req: NextRequest) {
     const checksum = `${sha256Hash}###${SALT_INDEX}`;
     console.log("Step 6: Generated checksum:", checksum);
 
-    const response = await fetch(PHONEPE_PROD_URL, {
+    const response = await fetch(PHONEPE_URL, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
