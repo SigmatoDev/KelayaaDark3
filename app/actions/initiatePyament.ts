@@ -1,4 +1,5 @@
 // actions/initiatePayment.ts
+"use server";
 import { v4 as uuidv4 } from "uuid";
 import sha256 from "crypto-js/sha256";
 import axios from "axios";
