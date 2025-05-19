@@ -1,20 +1,19 @@
 // actions/initiatePayment.ts
-"use server";
 import { v4 as uuidv4 } from "uuid";
 import sha256 from "crypto-js/sha256";
 import axios from "axios";
 
 export async function initiatePayment(data: number) {
-  const transactionId = "Tr-" + uuidv4().toString().slice(-6);
+  const transactionId = "Tr-" + uuidv4().toString().slice(-6); // You can customize this to use product ID or order ID.
 
   const payload = {
-    merchantId: process.env.MERCHANT_ID!,
+    merchantId: "M22ZZ74QR572I",
     merchantTransactionId: transactionId,
     merchantUserId: "MUID-" + uuidv4().toString().slice(-6),
-    amount: 100 * data, // Convert to smallest currency unit
-    redirectUrl: `${process.env.BASE_URL}/status/${transactionId}`,
+    amount: 100 * data, // Convert amount to paise
+    redirectUrl: `https://kelayaa.com/status/${transactionId}`,
     redirectMode: "REDIRECT",
-    callbackUrl: `${process.env.BASE_URL}/status/${transactionId}`,
+    callbackUrl: `https://kelayaa.com/status/${transactionId}`,
     paymentInstrument: {
       type: "PAY_PAGE",
     },
@@ -23,12 +22,13 @@ export async function initiatePayment(data: number) {
   const dataPayload = JSON.stringify(payload);
   const dataBase64 = Buffer.from(dataPayload).toString("base64");
 
-  const fullURL = dataBase64 + "/pg/v1/pay" + process.env.SALT_KEY;
+  const fullURL =
+    dataBase64 + "/pg/v1/pay" + "d264e78c-7592-4bcf-b30f-428794189af";
   const dataSha256 = sha256(fullURL).toString();
 
-  const checksum = `${dataSha256}###${process.env.SALT_INDEX}`;
+  const checksum = dataSha256 + "###" + "1";
 
-  const PAY_API_URL = `${process.env.PHONEPE_HOST_URL}/pg/v1/pay`;
+  const PAY_API_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
 
   try {
     const response = await axios.post(
@@ -47,7 +47,7 @@ export async function initiatePayment(data: number) {
       redirectUrl: response.data.data.instrumentResponse.redirectInfo.url,
       transactionId: transactionId,
     };
-  } catch (error: any) {
+  } catch (error) {
     console.error(
       "Error in initiatePayment:",
       error.response?.data || error.message
