@@ -47,8 +47,15 @@ export async function initiatePayment(amount: number) {
       }
     );
 
+    console.log("Final URL:", `${phonePeHost}/pg/v1/pay`);
+    console.log("Headers:", {
+      "X-VERIFY": checksum,
+      "X-CALLBACK-URL": `${baseUrl}/status/${transactionId}`,
+    });
+
     const redirectUrl =
       response.data?.data?.instrumentResponse?.redirectInfo?.url;
+    console.log("redirectUrl URL:", redirectUrl);
 
     if (!redirectUrl) throw new Error("Invalid PhonePe response");
 
