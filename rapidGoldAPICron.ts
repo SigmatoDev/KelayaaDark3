@@ -7,7 +7,7 @@ dotenv.config();
 
 const API_KEY = process.env.RAPID_API_KEY;
 const API_HOST = "indian-gold-and-silver-price.p.rapidapi.com";
-
+const API_ENDPOINT_GOLD_PRODUCT = process.env.PRICE_UPDATE_API_URL;
 const getGoldPrice = async (city = "Bangalore") => {
   const API_URL = `https://${API_HOST}/gold?city=${city}`;
 
@@ -76,10 +76,24 @@ const getGoldPrice = async (city = "Bangalore") => {
 
 // Run at 9AM, 2PM, and 7PM IST (3:30, 8:30, 13:30 UTC)
 cron.schedule("30 3,8,13 * * *", async () => {
-  const city = "Bangalore";
-  const cityArg = process.argv[2];
-  getGoldPrice(cityArg);
+  const cityArg = process.argv[2] || "Bangalore";
+  await getGoldPrice(cityArg);
   console.log("✅ Scheduled gold price fetch complete.");
+
+  if (!API_ENDPOINT_GOLD_PRODUCT) {
+    console.error(
+      "❌ API_ENDPOINT_GOLD_PRODUCT is not defined in environment variables."
+    );
+    return;
+  }
+
+  try {
+    const response = await axios.get(API_ENDPOINT_GOLD_PRODUCT);
+    console.log("✅ API call success:", response.data);
+  } catch (error) {
+    console.error("❌ Failed to call PRICE_UPDATE_API_URL:", error);
+  }
 });
-const cityArg = process.argv[2];
-getGoldPrice(cityArg);
+
+// const cityArg = process.argv[2];
+// getGoldPrice(cityArg);
