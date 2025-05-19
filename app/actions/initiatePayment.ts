@@ -33,6 +33,12 @@ export async function initiatePayment(amount: number) {
   const stringToHash = dataBase64 + "/pg/v1/pay" + saltKey;
   const checksum = sha256(stringToHash).toString() + "###" + saltIndex;
 
+  console.log("Final URL:", `${phonePeHost}/pg/v1/pay`);
+  console.log("Headers:", {
+    "X-VERIFY": checksum,
+    "X-CALLBACK-URL": `${baseUrl}/status/${transactionId}`,
+  });
+
   try {
     const response = await axios.post(
       `${phonePeHost}/pg/v1/pay`,
@@ -46,12 +52,6 @@ export async function initiatePayment(amount: number) {
         },
       }
     );
-
-    console.log("Final URL:", `${phonePeHost}/pg/v1/pay`);
-    console.log("Headers:", {
-      "X-VERIFY": checksum,
-      "X-CALLBACK-URL": `${baseUrl}/status/${transactionId}`,
-    });
 
     const redirectUrl =
       response.data?.data?.instrumentResponse?.redirectInfo?.url;
