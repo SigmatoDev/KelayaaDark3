@@ -10,7 +10,7 @@ import toast from "react-hot-toast";
 interface SignInPopupProps {
   isOpen: boolean;
   setIsOpen: (open: boolean) => void;
-  prefillEmail?: string; // ✅ added this
+  prefillEmail?: string;
   message?: string;
 }
 
@@ -39,7 +39,6 @@ export default function SignInPopup({
     formState: { errors, isSubmitting },
   } = useForm<Inputs>();
 
-  // Autofill email when popup opens
   useEffect(() => {
     if (prefillEmail) {
       setValue("email", prefillEmail);
@@ -84,7 +83,7 @@ export default function SignInPopup({
       } else {
         toast.success("Login successful!");
         setIsOpen(false);
-        router.refresh(); // ✅ refresh to update session
+        router.refresh();
       }
     } catch (err: any) {
       toast.error(err.message || "Something went wrong");
@@ -123,7 +122,9 @@ export default function SignInPopup({
               <label className="text-xs font-medium">Full Name</label>
               <input
                 type="text"
-                {...register("fullName", { required: "Full name is required" })}
+                {...register("fullName", {
+                  required: "Full name is required",
+                })}
                 placeholder="John Doe"
                 className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
               />
@@ -137,7 +138,7 @@ export default function SignInPopup({
               {...register("email", { required: "Email is required" })}
               placeholder="Email address"
               className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
-              readOnly={!!prefillEmail} // ✅ Lock input if prefilled
+              readOnly={!!prefillEmail}
             />
           </div>
 
@@ -149,6 +150,20 @@ export default function SignInPopup({
               placeholder="Password"
               className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
             />
+            {!isRegistering && (
+              <div className="text-right mt-1">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setIsOpen(false);
+                    router.push("/forgot-password");
+                  }}
+                  className="text-xs text-pink-500 hover:underline"
+                >
+                  Forgot Password?
+                </button>
+              </div>
+            )}
           </div>
 
           {isRegistering && (
