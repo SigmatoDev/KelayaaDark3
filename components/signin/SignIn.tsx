@@ -30,7 +30,7 @@ export default function SignInPopup({
   message,
 }: SignInPopupProps) {
   const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null); // General error (not field specific)
   const [isRegistering, setIsRegistering] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -74,7 +74,12 @@ export default function SignInPopup({
 
       if (isRegistering) {
         if (password !== confirmPassword) {
+          // Show toast and also set form error below confirmPassword input
           toast.error("Passwords do not match!");
+          setFormError("confirmPassword", {
+            type: "manual",
+            message: "Passwords do not match",
+          });
           return;
         }
 
@@ -108,6 +113,7 @@ export default function SignInPopup({
         return;
       }
 
+      // LOGIN FLOW
       const res = await signIn("credentials", {
         email,
         password,
@@ -115,7 +121,11 @@ export default function SignInPopup({
       });
 
       if (res?.error) {
-        setError("Invalid email or password");
+        // Show error below email field for better UX
+        setFormError("email", {
+          type: "manual",
+          message: "Invalid email or password",
+        });
         toast.error("Invalid email or password");
       } else {
         toast.success("Login successful!");
@@ -123,6 +133,8 @@ export default function SignInPopup({
         router.refresh();
       }
     } catch (err: any) {
+      // General unexpected errors
+      setError(err.message || "Something went wrong");
       toast.error(err.message || "Something went wrong");
     }
   };
@@ -160,6 +172,7 @@ export default function SignInPopup({
                 <input
                   id="fullName"
                   type="text"
+                  aria-invalid={!!errors.fullName}
                   {...register("fullName", {
                     required: "Full name is required",
                   })}
@@ -179,6 +192,7 @@ export default function SignInPopup({
                 <input
                   id="mobileNumber"
                   type="tel"
+                  aria-invalid={!!errors.mobileNumber}
                   {...register("mobileNumber", {
                     required: "Mobile number is required",
                     pattern: {
@@ -188,10 +202,11 @@ export default function SignInPopup({
                   })}
                   className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
                 />
-                {errors.mobileNumber && (
-                  <p className="text-red-500 text-xs mt-1">
-                    {errors.mobileNumber.message}
-                  </p>
+                {/* Show any general error message (not linked to a field) */}
+                {error && (
+                  <div className="text-red-600 text-xs mb-3">
+                    {error}
+                  </div>
                 )}
               </div>
             </>
@@ -204,6 +219,7 @@ export default function SignInPopup({
             <input
               id="email"
               type="email"
+              aria-invalid={!!errors.email}
               {...register("email", { required: "Email is required" })}
               placeholder="Email address"
               className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
@@ -224,6 +240,7 @@ export default function SignInPopup({
               <input
                 id="password"
                 type={showPassword ? "text" : "password"}
+                aria-invalid={!!errors.password}
                 {...register("password", {
                   required: "Password is required",
                   ...(isRegistering && {
@@ -270,6 +287,7 @@ export default function SignInPopup({
                 <input
                   id="confirmPassword"
                   type={showConfirmPassword ? "text" : "password"}
+                  aria-invalid={!!errors.confirmPassword}
                   {...register("confirmPassword", {
                     required: "Confirm Password is required",
                     validate: (value) =>
