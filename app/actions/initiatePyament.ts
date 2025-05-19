@@ -3,30 +3,21 @@ import { v4 as uuidv4 } from "uuid";
 import sha256 from "crypto-js/sha256";
 import axios from "axios";
 
-export async function initiatePayment(data: number) {
-  const transactionId = "Tr-" + uuidv4().toString().slice(-6);
-  const merchantUserId = "MUID-" + uuidv4().toString().slice(-6);
-  const amountInPaise = 100 * data;
+export async function initiatePayment(amount: number) {
+  const transactionId = "Tr-" + uuidv4().slice(-6);
+  const merchantUserId = "MUID-" + uuidv4().slice(-6);
+  const amountInPaise = amount * 100;
 
-  const baseUrl = process.env.BASE_URL;
-  const merchantId = process.env.MERCHANT_ID;
-  const saltKey = process.env.SALT_KEY;
-  const saltIndex = process.env.SALT_INDEX;
-  const phonePeHost = process.env.PHONEPE_HOST_URL;
-
-  // 🔍 Log all env variables (safely, avoid in production)
-  console.log("====== ENVIRONMENT VARIABLES ======");
-  console.log("BASE_URL:", baseUrl);
-  console.log("MERCHANT_ID:", merchantId);
-  console.log("SALT_KEY:", saltKey ? "[SET]" : "[MISSING]");
-  console.log("SALT_INDEX:", saltIndex);
-  console.log("PHONEPE_HOST_URL:", phonePeHost);
-  console.log("===================================");
+  const baseUrl = process.env.BASE_URL!;
+  const merchantId = process.env.MERCHANT_ID!;
+  const saltKey = process.env.SALT_KEY!;
+  const saltIndex = process.env.SALT_INDEX!;
+  const phonePeHost = process.env.PHONEPE_HOST_URL!;
 
   const payload = {
-    merchantId: merchantId,
+    merchantId,
     merchantTransactionId: transactionId,
-    merchantUserId: merchantUserId,
+    merchantUserId,
     amount: amountInPaise,
     redirectUrl: `${baseUrl}/status/${transactionId}`,
     redirectMode: "REDIRECT",
@@ -36,45 +27,34 @@ export async function initiatePayment(data: number) {
     },
   };
 
-  console.log("🔧 Payment Payload:", payload);
-
   const dataPayload = JSON.stringify(payload);
   const dataBase64 = Buffer.from(dataPayload).toString("base64");
 
-  const fullURL = dataBase64 + "/pg/v1/pay" + saltKey;
-  const dataSha256 = sha256(fullURL).toString();
-  const checksum = dataSha256 + "###" + saltIndex;
-
-  const PAY_API_URL = `${phonePeHost}/pg/v1/pay`;
-
-  console.log("🔐 Base64 Payload:", dataBase64);
-  console.log("🔐 Checksum:", checksum);
-  console.log("🔗 Final Pay URL:", PAY_API_URL);
+  const stringToHash = dataBase64 + "/pg/v1/pay" + saltKey;
+  const checksum = sha256(stringToHash).toString() + "###" + saltIndex;
 
   try {
     const response = await axios.post(
-      PAY_API_URL,
+      `${phonePeHost}/pg/v1/pay`,
       { request: dataBase64 },
       {
         headers: {
-          accept: "application/json",
           "Content-Type": "application/json",
           "X-VERIFY": checksum,
+          "X-CALLBACK-URL": `${baseUrl}/status/${transactionId}`, // optional but recommended
+          accept: "application/json",
         },
       }
     );
 
-    console.log("✅ PhonePe API Response:", response.data);
+    const redirectUrl =
+      response.data?.data?.instrumentResponse?.redirectInfo?.url;
 
-    return {
-      redirectUrl: response.data.data.instrumentResponse.redirectInfo.url,
-      transactionId,
-    };
+    if (!redirectUrl) throw new Error("Invalid PhonePe response");
+
+    return { redirectUrl, transactionId };
   } catch (error: any) {
-    console.error(
-      "❌ Error in initiatePayment:",
-      error.response?.data || error.message
-    );
+    console.error("❌ initiatePayment Error:", error.response?.data || error);
     throw new Error("Payment initiation failed");
   }
 }
