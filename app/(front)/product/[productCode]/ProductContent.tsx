@@ -472,7 +472,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             )}
 
             <div className="text-xs text-gray-400">
-              MRP (enclusive of all taxes)
+              MRP (inclusive of all taxes)
             </div>
           </div>
 
