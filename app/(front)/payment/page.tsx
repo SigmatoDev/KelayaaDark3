@@ -94,10 +94,14 @@ const Form = () => {
 
   const handlePhonePePayment = async () => {
     try {
-      const result = await initiatePayment(totalPrice);
-      if (result) {
-        router.push(result.redirectUrl); // Redirect to status check page
-      }
+      const res = await fetch("/api/phonepe/initiatePayment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: totalPrice }),
+      });
+      const data = await res.json();
+      console.log(data);
+
       savePaymentMethod("PhonePe");
     } catch (error) {
       console.error("Error processing payment:", error);
