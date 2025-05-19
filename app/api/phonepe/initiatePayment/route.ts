@@ -1,4 +1,4 @@
-import { initiatePayment } from "@/app/actions/initiatePyament";
+import { initiatePayment } from "@/app/actions/initiatePayment";
 import { NextRequest, NextResponse } from "next/server";
 
 export const POST = async (request: NextRequest) => {

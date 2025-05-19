@@ -7,7 +7,7 @@ import useCartService from "@/lib/hooks/useCartStore";
 import { loadScript } from "@/lib/loadRazorpay";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
-import { initiatePayment } from "@/app/actions/initiatePyament";
+import { initiatePayment } from "@/app/actions/initiatePayment";
 
 const Form = () => {
   const { data: session } = useSession();
