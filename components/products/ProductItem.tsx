@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { Heart } from "lucide-react";
 import toast from "react-hot-toast";
 import SignInPopup from "../signin/SignIn";
+import axios from "axios";
 
 const FALLBACK_IMAGE = "/images/noimage.webp";
 
@@ -54,12 +55,14 @@ const ProductItem = ({ product }: { product: Product }) => {
 
       const fetchWishlistStatus = async () => {
         try {
-          const res = await fetch(`/api/wishlist?userId=${userId}`);
-          const data = await res.json();
+          const res = await axios.get(`/api/wishlist?userId=${userId}`);
+          const data = res?.data;
+          console.log("ress", res);
 
-          const isInWishlist = data.products.some(
+          const isInWishlist = data?.products.some(
             (item: Product) => item._id === product._id
           );
+          console.log("isInWishlist", isInWishlist);
 
           setIsWishlisted(isInWishlist);
         } catch (error) {

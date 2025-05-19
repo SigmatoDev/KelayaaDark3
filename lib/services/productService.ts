@@ -47,16 +47,14 @@ const getLatest = cache(async () => {
   await dbConnect();
 
   // ✅ 2. Fetch Latest Products from ProductModel
-  const regularProducts = await ProductModel.find({})
-    .sort({ _id: -1 }) // Latest first
-    .lean();
+  const regularProducts = await ProductModel.find({}).sort({ _id: -1 }).lean();
 
   // ✅ 3. Fetch Gold Sets from SetsProductModel
   const goldSetProducts = await SetsProductModel.find({
     productType: { $regex: /^sets$/i },
     materialType: { $regex: /^gold$/i },
   })
-    .sort({ _id: -1 }) // Latest first
+    .sort({ _id: -1 })
     .lean();
 
   // ✅ 4. Fetch Gold Bangles from BanglesProductModel
@@ -64,22 +62,28 @@ const getLatest = cache(async () => {
     productType: { $regex: /^bangles$/i },
     materialType: { $regex: /^gold$/i },
   })
-    .sort({ _id: -1 }) // Latest first
+    .sort({ _id: -1 })
     .lean();
 
-  // ✅ 5. Combine All Product Types (Regular, Gold Sets, Gold Bangles)
+  // ✅ 5. Combine All Product Types
   const combinedProducts = [
     ...regularProducts,
     ...goldSetProducts,
     ...goldBanglesProducts,
   ];
 
-  console.log("combinedProducts", combinedProducts.length);
+  console.log("Total combined products:", combinedProducts.length);
 
-  // ✅ 6. Shuffle the Products
-  const shuffledProducts = shuffleArray(combinedProducts);
+  // ✅ 6. Filter out products with missing/invalid image field
+  const filteredProducts = combinedProducts.filter(
+    (product) =>
+      typeof product.image === "string" && product.image.startsWith("http")
+  );
 
-  // ✅ 7. Return Top 8 Latest Products
+  // ✅ 7. Shuffle the valid products
+  const shuffledProducts = shuffleArray(filteredProducts);
+
+  // ✅ 8. Return Top 8 Latest Valid Products
   return shuffledProducts.slice(0, 8) as unknown as Product[];
 });
 
@@ -163,6 +167,7 @@ interface GoldDiamondPricing {
   diamondTotal: number;
   goldTotal: number;
   totalPrice: number;
+  gst: number;
 }
 
 // Extended Product Interface with Optional Pricing
@@ -226,6 +231,7 @@ const getByProductCode = cache(
           diamondTotal,
           goldTotal,
           totalPrice,
+          gst,
         } = pricing;
 
         return {
@@ -239,6 +245,7 @@ const getByProductCode = cache(
             diamondTotal,
             goldTotal,
             totalPrice,
+            gst,
           },
         };
       }
