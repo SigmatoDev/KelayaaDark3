@@ -1,22 +1,63 @@
-import { initiatePayment } from "@/app/actions/initiatePayment";
 import { NextRequest, NextResponse } from "next/server";
+import crypto from "crypto";
 
-export const POST = async (request: NextRequest) => {
+const MERCHANT_ID = process.env.PHONEPE_MERCHANT_ID!;
+const SALT_KEY = process.env.PHONEPE_SALT_KEY!;
+const SALT_INDEX = process.env.PHONEPE_SALT_INDEX!;
+const PHONEPE_PROD_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
+
+export async function POST(req: NextRequest) {
   try {
-    const body = await request.json();
-    const amount = Number(body.amount);
-    console.log("amount", amount, typeof amount);
-    if (isNaN(amount) || amount <= 0) {
-      return NextResponse.json({ error: "Invalid amount" }, { status: 400 });
+    const { amount, transactionId, userId } = await req.json();
+
+    const payload = {
+      merchantId: MERCHANT_ID,
+      merchantTransactionId: transactionId,
+      merchantUserId: `MUID-${userId}`,
+      amount: amount * 100, // amount in paisa
+      redirectUrl: `https://kelayaa.com/status/${transactionId}`,
+      redirectMode: "REDIRECT",
+      callbackUrl: `https://kelayaa.com/status/${transactionId}`,
+      paymentInstrument: {
+        type: "PAY_PAGE",
+      },
+    };
+
+    const base64Payload = Buffer.from(JSON.stringify(payload)).toString(
+      "base64"
+    );
+    const stringToHash = `${base64Payload}/pg/v1/pay${SALT_KEY}`;
+    const checksum =
+      crypto.createHash("sha256").update(stringToHash).digest("hex") +
+      `###${SALT_INDEX}`;
+
+    const response = await fetch(PHONEPE_PROD_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        accept: "application/json",
+        "X-VERIFY": checksum,
+        "X-CALLBACK-URL": `https://kelayaa.com/status/${transactionId}`,
+      },
+      body: JSON.stringify({ request: base64Payload }),
+    });
+
+    const data = await response.json();
+
+    if (response.status !== 200 || data.success === false) {
+      console.error("PhonePe Error:", data);
+      return NextResponse.json(
+        { error: "Payment initiation failed", detail: data },
+        { status: 500 }
+      );
     }
 
-    const result = await initiatePayment(amount);
-    return NextResponse.json(result, { status: 200 });
+    return NextResponse.json({
+      success: true,
+      redirectUrl: data.data.instrumentResponse.redirectInfo.url,
+    });
   } catch (error) {
-    console.error("Error in POST /api/phonepe/initiatePayment:", error);
-    return NextResponse.json(
-      { error: "Payment initiation failed" },
-      { status: 500 }
-    );
+    console.error("Error in initiatePayment:", error);
+    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-};
+}
