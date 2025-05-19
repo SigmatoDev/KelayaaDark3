@@ -61,7 +61,7 @@ export async function initiatePayment(amount: number) {
 
     return { redirectUrl, transactionId };
   } catch (error: any) {
-    console.error("❌ initiatePayment Error:", error.response?.data || error);
+    console.error("❌ initiatePayment Error:", error);
     throw new Error("Payment initiation failed");
   }
 }
