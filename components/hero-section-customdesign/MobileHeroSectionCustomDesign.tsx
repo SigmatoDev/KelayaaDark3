@@ -67,7 +67,7 @@ const MobileHeroSectionCustomDesign = () => {
             />
           </motion.div>
           <motion.div
-            className="absolute bottom-0 right-0 w-[160px] h-[160px] flex justify-center items-center z-10"
+            className="bottom-0 right-0 w-[200px] h-[240px] flex justify-center items-center z-10"
             variants={{
               initial: { y: 0, scale: 1 },
               hover: { y: -20, scale: 1.1 },

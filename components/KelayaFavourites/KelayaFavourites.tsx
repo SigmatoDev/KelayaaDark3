@@ -2,6 +2,7 @@
 
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 interface FavouriteItem {
   videoSrc: string;
@@ -43,6 +44,25 @@ const favourites: FavouriteItem[] = [
 ];
 
 export default function KelayaFavourites() {
+
+  const [windowWidth, setWindowWidth] = useState<number>(typeof window !== 'undefined' ? window.innerWidth : 0);
+  const [visibleItems, setVisibleItems] = useState<FavouriteItem[]>([]);
+  useEffect(() => {
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth);
+    };
+
+    // Set initial visible items
+    if (windowWidth < 768) {
+      setVisibleItems(favourites.slice(0, 4));
+    } else {
+      setVisibleItems(favourites);
+    }
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [windowWidth]);
+  
   return (
     <section className="max-w-7xl mx-auto px-4 mt-14">
      <h2 className="text-[22px] md:text-[36px] text-center font-normal  uppercase text-[#474747]">
@@ -54,7 +74,7 @@ export default function KelayaFavourites() {
       <p className="text-center mb-8 text-gray-400 font-light text-sm">Stories in Motion. Favourites Forever.</p>
 
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 gap-4 md:gap-8">
-      {favourites.map((item, index) => (
+      {visibleItems.map((item, index) => (
     <Link
     key={index}
     href={item.link}
@@ -101,15 +121,16 @@ export default function KelayaFavourites() {
   ))}
 </div>
 
-      <div className="flex justify-end items-center mt-6 md:mt-8 px-0 md:px-4">
-      <Link
-        href="https://www.instagram.com/kelayaajewellery/"
-        className="group inline-flex items-center gap-2 text-black font-medium text-sm border-b border-transparent hover:border-black transition-all duration-300"
-      >
-        Visit our Instagram Channel for more stories
-        <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
-      </Link>
-    </div>
+<div className="flex justify-center md:justify-end items-center mt-6 md:mt-8 px-0 md:px-4">
+  <Link
+    href="https://www.instagram.com/kelayaajewellery/"
+    className="group inline-flex items-center gap-2 text-black font-medium text-sm border-b border-transparent hover:border-black transition-all duration-300"
+  >
+    Visit our Instagram Channel for more stories
+    <ArrowRight className="w-4 h-4 transition-transform duration-300 group-hover:translate-x-1" />
+  </Link>
+</div>
+
     </section>
   );
 }

@@ -44,8 +44,8 @@ export default function RingDetails({ product }: { product: ProductType }) {
         {product?.materialType === "gold" && (
           <div className="flex-1 px-4 py-2">
             <p className="text-xs text-gray-500 mb-1">Diamond</p>
-            <div className="flex items-center justify-center h-5">
-              <p className="font-semibold text-[0.7rem]">
+            <div className="flex items-center justify-center h-auto sm:h-5">
+            <p className="font-semibold text-[0.7rem]">
                 {product?.gemCut || "FG-SI"}
               </p>
             </div>

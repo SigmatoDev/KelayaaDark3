@@ -21,8 +21,8 @@ export default function BangleDetails({ product }: { product: ProductType }) {
         {/* Size */}
         <div className="flex-1 px-4 py-2">
           <p className="text-xs text-gray-500 mb-1">Size</p>
-          <div className="flex items-center justify-center h-5">
-            <p className="font-semibold text-sm">
+          <div className="flex items-center justify-center h-auto sm:h-5">
+          <p className="font-semibold text-sm">
               {product?.size}
               {product?.size && typeof product?.size === "number"
                 ? " (57.8 mm)"
@@ -32,7 +32,7 @@ export default function BangleDetails({ product }: { product: ProductType }) {
         </div>
 
         {/* Metal */}
-        <div className="flex-1 px-4 py-2">
+        <div className="flex-1 px-2 sm:px-4 py-2">
           <p className="text-xs text-gray-500 mb-1">Metal</p>
           <div className="flex items-center justify-center h-5">
             <p className="font-semibold text-sm">
@@ -43,10 +43,10 @@ export default function BangleDetails({ product }: { product: ProductType }) {
 
         {/* Diamond */}
         {product?.materialType === "gold" && (
-          <div className="flex-1 px-4 py-2">
+          <div className="flex-1 px-2 sm:px-4 py-2">
             <p className="text-xs text-gray-500 mb-1">Diamond</p>
-            <div className="flex items-center justify-center h-5">
-              <p className="font-semibold text-[0.7rem]">
+            <div className="flex items-center justify-center h-auto sm:h-5">
+            <p className="font-semibold text-[0.7rem]">
                 {product?.items[0]?.gemCut || "-"}
               </p>
             </div>
@@ -56,8 +56,8 @@ export default function BangleDetails({ product }: { product: ProductType }) {
         {/* CUSTOMISE Button */}
         <div
           onClick={() => router.push("/custom-design")}
-          className="flex items-center justify-center bg-yellow-400 px-6 cursor-pointer hover:bg-yellow-500 text-sm font-bold text-black"
-        >
+          className="flex items-center justify-center bg-yellow-400 px-2 cursor-pointer hover:bg-yellow-500 text-xs sm:text-sm font-bold text-black"
+          >
           CUSTOMISE
         </div>
       </div>

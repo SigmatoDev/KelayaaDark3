@@ -40,7 +40,7 @@ const MobileHeader = () => {
         </button>
 
         {/* Logo */}
-        <div className="flex-1 flex justify-center">
+        <div className="flex-1 flex pl-4">
           <Link href="/">
             <img
               src="/Kelayaa - logo.webp"
