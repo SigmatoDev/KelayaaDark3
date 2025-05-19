@@ -3,22 +3,26 @@ import dotenv from "dotenv";
 import dbConnect from "./lib/dbConnect";
 import GoldPrice from "./lib/models/GoldPriceSchema";
 import cron from "node-cron";
+
 dotenv.config();
 
-const API_KEY = process.env.RAPID_API_KEY;
+const API_KEY = process.env.RAPID_API_KEY!;
 const API_HOST = "indian-gold-and-silver-price.p.rapidapi.com";
-const API_ENDPOINT_GOLD_PRODUCT = process.env.PRICE_UPDATE_API_URL;
-const getGoldPrice = async (city = "Bangalore") => {
-  const API_URL = `https://${API_HOST}/gold?city=${city}`;
+const API_ENDPOINT_GOLD_PRODUCT = process.env.PRICE_UPDATE_API_URL!;
 
+const getGoldPrice = async (city = "Bangalore") => {
   try {
     await dbConnect();
 
-    console.log(`📦 Fetching gold prices for city: ${city}...`);
+    console.log(
+      `📦 Fetching gold prices for city: ${city} at ${new Date().toLocaleString()}...`
+    );
+
+    const API_URL = `https://${API_HOST}/gold?city=${city}`;
 
     const response = await axios.get(API_URL, {
       headers: {
-        "X-RapidAPI-Key": API_KEY!,
+        "X-RapidAPI-Key": API_KEY,
         "X-RapidAPI-Host": API_HOST,
       },
     });
@@ -62,38 +66,52 @@ const getGoldPrice = async (city = "Bangalore") => {
       );
 
       console.log(
-        `✅ ${karat} updated: ₹${price} (Prev: ₹${previousPrice}, Change: ${percentageChange?.toFixed(2)}%)`
+        `✅ ${karat} updated: ₹${price.toFixed(2)} (Prev: ₹${previousPrice?.toFixed(2) ?? "N/A"}, Change: ${percentageChange?.toFixed(2) ?? "N/A"}%)`
       );
     }
 
     console.log("✅ All prices updated.");
-    process.exit(0);
-  } catch (err: any) {
-    console.error("❌ Error fetching/updating prices:", err);
-    process.exit(1);
+
+    // Call external API after updating prices
+    if (!API_ENDPOINT_GOLD_PRODUCT) {
+      console.error(
+        "❌ PRICE_UPDATE_API_URL is not defined in environment variables."
+      );
+      return;
+    }
+
+    try {
+      const apiResponse = await axios.get(API_ENDPOINT_GOLD_PRODUCT);
+      console.log("✅ API call success:", apiResponse.data);
+    } catch (apiErr) {
+      if (apiErr instanceof Error) {
+        console.error(
+          "❌ Failed to call PRICE_UPDATE_API_URL:",
+          apiErr.message
+        );
+      } else {
+        console.error("❌ Failed to call PRICE_UPDATE_API_URL:", apiErr);
+      }
+    }
+  } catch (err) {
+    if (err instanceof Error) {
+      console.error("❌ Error fetching/updating prices:", err.message);
+    } else {
+      console.error("❌ Error fetching/updating prices:", err);
+    }
   }
 };
 
-// Run at 9AM, 2PM, and 7PM IST (3:30, 8:30, 13:30 UTC)
-cron.schedule("30 3,8,13 * * *", async () => {
-  const cityArg = process.argv[2] || "Bangalore";
-  await getGoldPrice(cityArg);
-  console.log("✅ Scheduled gold price fetch complete.");
-
-  if (!API_ENDPOINT_GOLD_PRODUCT) {
-    console.error(
-      "❌ API_ENDPOINT_GOLD_PRODUCT is not defined in environment variables."
-    );
-    return;
-  }
-
-  try {
-    const response = await axios.get(API_ENDPOINT_GOLD_PRODUCT);
-    console.log("✅ API call success:", response.data);
-  } catch (error) {
-    console.error("❌ Failed to call PRICE_UPDATE_API_URL:", error);
-  }
-});
-
-// const cityArg = process.argv[2];
+// Run immediately once (optional)
+const cityArg = process.argv[2] || "Bangalore";
 // getGoldPrice(cityArg);
+
+// Schedule the cron job: 9 AM, 3 PM, 9 PM IST (cron: '30 3,9,15 * * *')
+console.log(
+  `⏰ Scheduling price update job at 9 AM, 3 PM, 9 PM IST (cron: '30 3,9,15 * * *')`
+);
+
+cron.schedule("30 3,9,15 * * *", () => {
+  console.log(`\n⏰ Running scheduled job at ${new Date().toLocaleString()}`);
+  getGoldPrice(cityArg);
+});
