@@ -1,40 +1,53 @@
-// actions/initiatePayment.ts
-
-"use server";
-import { v4 as uuidv4 } from "uuid";
-import sha256 from "crypto-js/sha256";
+import { NextRequest, NextResponse } from "next/server";
 import axios from "axios";
+import crypto from "crypto";
 
-export async function initiatePayment(data: number) {
-  const transactionId = "Tr-" + uuidv4().toString().slice(-6); // Here I am generating random id you can send the id of the product you are selling or anything else.
-
-  const payload = {
-    merchantId: process.env.NEXT_PUBLIC_MERCHANT_ID,
-    merchantTransactionId: transactionId,
-    merchantUserId: "MUID-" + uuidv4().toString().slice(-6),
-    amount: 100 * data, // Amount is converted to the smallest currency unit (e.g., cents/paise) by multiplying by 100. For example, $1 = 100 cents or ₹1 = 100 paise.
-    redirectUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/status/${transactionId}`,
-    redirectMode: "REDIRECT",
-    callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL}/status/${transactionId}`,
-    paymentInstrument: {
-      type: "PAY_PAGE",
-    },
-  };
-
-  const dataPayload = JSON.stringify(payload);
-  const dataBase64 = Buffer.from(dataPayload).toString("base64");
-
-  const fullURL = dataBase64 + "/pg/v1/pay" + process.env.NEXT_PUBLIC_SALT_KEY;
-  const dataSha256 = sha256(fullURL).toString();
-
-  const checksum = dataSha256 + "###" + process.env.NEXT_PUBLIC_SALT_INDEX;
-
-  const UAT_PAY_API_URL = `${process.env.NEXT_PUBLIC_PHONE_PAY_HOST_URL}/pg/v1/pay`;
-
+export async function POST(req: NextRequest) {
   try {
+    const body = await req.json();
+    const {
+      amount,
+      merchantTransactionId,
+      merchantUserId,
+      redirectUrl,
+      mobileNumber,
+    } = body;
+
+    // PhonePe required data
+    const payload = {
+      merchantId: process.env.NEXT_PUBLIC_PHONEPE_MERCHANT_ID!,
+      merchantTransactionId,
+      merchantUserId,
+      amount, // Amount in paise (e.g., 100 = ₹1.00)
+      redirectUrl,
+      redirectMode: "REDIRECT",
+      callbackUrl: redirectUrl,
+      mobileNumber,
+      paymentInstrument: {
+        type: "PAY_PAGE",
+      },
+    };
+
+    // Convert payload to base64
+    const jsonPayload = JSON.stringify(payload);
+    const base64Payload = Buffer.from(jsonPayload).toString("base64");
+
+    // Live environment: HMAC-SHA256
+    const fullPath = "/pg/v1/pay";
+    const hmac = crypto.createHmac(
+      "sha256",
+      process.env.NEXT_PUBLIC_PHONEPE_SALT_KEY!
+    );
+    hmac.update(base64Payload + fullPath);
+    const hash = hmac.digest("hex");
+
+    // Final checksum format
+    const checksum = `${hash}###${process.env.NEXT_PUBLIC_PHONEPE_SALT_INDEX!}`;
+
+    // Send payment initiation request to PhonePe
     const response = await axios.post(
-      UAT_PAY_API_URL,
-      { request: dataBase64 },
+      `https://api.phonepe.com/apis/hermes${fullPath}`,
+      { request: base64Payload },
       {
         headers: {
           accept: "application/json",
@@ -44,12 +57,16 @@ export async function initiatePayment(data: number) {
       }
     );
 
-    return {
-      redirectUrl: response.data.data.instrumentResponse.redirectInfo.url,
-      transactionId: transactionId,
-    };
-  } catch (error) {
-    console.error("Error in server action:", error);
-    throw error;
+    // Return PhonePe response
+    return NextResponse.json(response.data);
+  } catch (error: any) {
+    console.error(
+      "Payment Initiation Error:",
+      error.response?.data || error.message
+    );
+    return NextResponse.json(
+      { success: false, error: error.response?.data || error.message },
+      { status: 500 }
+    );
   }
 }
