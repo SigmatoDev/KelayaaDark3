@@ -97,10 +97,18 @@ const Form = () => {
       const res = await fetch("/api/phonepe/initiatePayment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: totalPrice }),
+        body: JSON.stringify({
+          amount: 1, // in rupees
+          transactionId: "Tr-67003d",
+          userId: "5d6c46",
+        }),
       });
-      const data = await res.json();
-      console.log(data);
+      const result = await res.json();
+      if (result.success) {
+        window.location.href = result.redirectUrl;
+      } else {
+        alert("Payment failed");
+      }
 
       savePaymentMethod("PhonePe");
     } catch (error) {
