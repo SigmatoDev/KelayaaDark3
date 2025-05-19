@@ -1,53 +1,37 @@
-import { NextRequest, NextResponse } from "next/server";
+import { v4 as uuidv4 } from "uuid";
+import sha256 from "crypto-js/sha256";
 import axios from "axios";
-import crypto from "crypto";
 
-export async function POST(req: NextRequest) {
+export async function initiatePayment(data: number) {
+  const transactionId = "Tr-" + uuidv4().toString().slice(-6);
+
+  const payload = {
+    merchantId: process.env.MERCHANT_ID, // Server-only env variable
+    merchantTransactionId: transactionId,
+    merchantUserId: "MUID-" + uuidv4().toString().slice(-6),
+    amount: 100 * data,
+    redirectUrl: `${process.env.BASE_URL}/status/${transactionId}`,
+    redirectMode: "REDIRECT",
+    callbackUrl: `${process.env.BASE_URL}/status/${transactionId}`,
+    paymentInstrument: {
+      type: "PAY_PAGE",
+    },
+  };
+
+  const dataPayload = JSON.stringify(payload);
+  const dataBase64 = Buffer.from(dataPayload).toString("base64");
+
+  const fullURL = dataBase64 + "/pg/v1/pay" + process.env.SALT_KEY;
+  const dataSha256 = sha256(fullURL).toString();
+
+  const checksum = dataSha256 + "###" + process.env.SALT_INDEX;
+
+  const PAY_API_URL = `${process.env.PHONEPE_HOST_URL}/pg/v1/pay`;
+
   try {
-    const body = await req.json();
-    const {
-      amount,
-      merchantTransactionId,
-      merchantUserId,
-      redirectUrl,
-      mobileNumber,
-    } = body;
-
-    // PhonePe required data
-    const payload = {
-      merchantId: process.env.NEXT_PUBLIC_PHONEPE_MERCHANT_ID!,
-      merchantTransactionId,
-      merchantUserId,
-      amount, // Amount in paise (e.g., 100 = ₹1.00)
-      redirectUrl,
-      redirectMode: "REDIRECT",
-      callbackUrl: redirectUrl,
-      mobileNumber,
-      paymentInstrument: {
-        type: "PAY_PAGE",
-      },
-    };
-
-    // Convert payload to base64
-    const jsonPayload = JSON.stringify(payload);
-    const base64Payload = Buffer.from(jsonPayload).toString("base64");
-
-    // Live environment: HMAC-SHA256
-    const fullPath = "/pg/v1/pay";
-    const hmac = crypto.createHmac(
-      "sha256",
-      process.env.NEXT_PUBLIC_PHONEPE_SALT_KEY!
-    );
-    hmac.update(base64Payload + fullPath);
-    const hash = hmac.digest("hex");
-
-    // Final checksum format
-    const checksum = `${hash}###${process.env.NEXT_PUBLIC_PHONEPE_SALT_INDEX!}`;
-
-    // Send payment initiation request to PhonePe
     const response = await axios.post(
-      `https://api.phonepe.com/apis/hermes${fullPath}`,
-      { request: base64Payload },
+      PAY_API_URL,
+      { request: dataBase64 },
       {
         headers: {
           accept: "application/json",
@@ -57,16 +41,15 @@ export async function POST(req: NextRequest) {
       }
     );
 
-    // Return PhonePe response
-    return NextResponse.json(response.data);
-  } catch (error: any) {
+    return {
+      redirectUrl: response.data.data.instrumentResponse.redirectInfo.url,
+      transactionId,
+    };
+  } catch (error) {
     console.error(
-      "Payment Initiation Error:",
+      "Error in initiatePayment:",
       error.response?.data || error.message
     );
-    return NextResponse.json(
-      { success: false, error: error.response?.data || error.message },
-      { status: 500 }
-    );
+    throw new Error("Payment initiation failed");
   }
 }
