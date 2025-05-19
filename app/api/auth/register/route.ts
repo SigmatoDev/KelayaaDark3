@@ -5,17 +5,46 @@ import dbConnect from "@/lib/dbConnect";
 import UserModel from "@/lib/models/UserModel";
 
 export const POST = async (request: NextRequest) => {
-  const { name, email, password } = await request.json();
-  console.log("register", name, email, password);
+  const { name, email, password, mobileNumber } = await request.json();
+
   await dbConnect();
-  const hashedPassword = await bcrypt.hash(password, 5);
-  const newUser = new UserModel({
-    name,
-    email,
-    password: hashedPassword,
-  });
+
   try {
+    // Check if email or mobileNumber already exists
+    const existingUser = await UserModel.findOne({
+      $or: [{ email }, { mobileNumber }],
+    });
+
+    if (existingUser) {
+      let message = "Email or mobile number already exists";
+
+      if (existingUser.mobileNumber === mobileNumber) {
+        message = "Mobile number already exists";
+      } else if (existingUser.email === email) {
+        message = "Email already exists";
+      }
+
+      return Response.json(
+        { message },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // Hash password
+    const hashedPassword = await bcrypt.hash(password, 5);
+
+    // Create new user document
+    const newUser = new UserModel({
+      name,
+      email,
+      password: hashedPassword,
+      mobileNumber,
+    });
+
     await newUser.save();
+
     return Response.json(
       { message: "User has been created" },
       {
@@ -24,7 +53,7 @@ export const POST = async (request: NextRequest) => {
     );
   } catch (err: any) {
     return Response.json(
-      { message: err.message },
+      { message: err.message || "Internal server error" },
       {
         status: 500,
       }

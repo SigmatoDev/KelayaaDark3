@@ -1,11 +1,12 @@
 "use client";
 
-import { IoClose } from "react-icons/io5";
+import { IoClose, IoEye, IoEyeOff } from "react-icons/io5";
 import { signIn } from "next-auth/react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import ResetPasswordPopup from "./ResetPassword";
 
 interface SignInPopupProps {
   isOpen: boolean;
@@ -19,6 +20,7 @@ type Inputs = {
   email: string;
   password: string;
   confirmPassword?: string;
+  mobileNumber?: string;
 };
 
 export default function SignInPopup({
@@ -30,10 +32,15 @@ export default function SignInPopup({
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isRegistering, setIsRegistering] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const {
     register,
     setValue,
+    reset,
+    setError: setFormError,
     handleSubmit,
     watch,
     formState: { errors, isSubmitting },
@@ -45,10 +52,26 @@ export default function SignInPopup({
     }
   }, [prefillEmail, setValue]);
 
+  const handleModeSwitch = () => {
+    setIsRegistering((prev) => !prev);
+    setError(null);
+    reset(); // clear all fields
+    if (prefillEmail) setValue("email", prefillEmail);
+  };
+
+  const handleForgotPassword = () => {
+    setShowResetPassword(true);
+    setError(null);
+    reset(); // clear all fields
+    if (prefillEmail) setValue("email", prefillEmail);
+  };
+
   const formSubmit: SubmitHandler<Inputs> = async (data) => {
-    const { email, password, confirmPassword, fullName } = data;
+    const { email, password, confirmPassword, fullName, mobileNumber } = data;
 
     try {
+      setError(null);
+
       if (isRegistering) {
         if (password !== confirmPassword) {
           toast.error("Passwords do not match!");
@@ -58,16 +81,30 @@ export default function SignInPopup({
         const res = await fetch("/api/auth/register", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: fullName, email, password }),
+          body: JSON.stringify({
+            name: fullName,
+            email,
+            password,
+            mobileNumber,
+          }),
         });
 
         const responseData = await res.json();
         if (!res.ok) {
-          throw new Error(responseData.message || "Registration failed");
+          if (responseData.message?.toLowerCase().includes("email")) {
+            setFormError("email", {
+              type: "server",
+              message: responseData.message || "Email already exists",
+            });
+          } else {
+            setError(responseData.message || "Registration failed");
+          }
+          return;
         }
 
         toast.success("Account created! Please login.");
         setIsRegistering(false);
+        reset();
         return;
       }
 
@@ -98,6 +135,7 @@ export default function SignInPopup({
         <button
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
           onClick={() => setIsOpen(false)}
+          aria-label="Close popup"
         >
           <IoClose size={22} />
         </button>
@@ -105,10 +143,6 @@ export default function SignInPopup({
         <h2 className="text-xl font-semibold text-center mb-4">
           {isRegistering ? "Create Account" : "Login to Continue"}
         </h2>
-
-        {error && (
-          <div className="text-red-500 text-center text-sm mb-4">{error}</div>
-        )}
 
         {message && (
           <div className="text-sm text-gray-700 mb-4 text-center bg-yellow-100 p-2 rounded">
@@ -118,67 +152,148 @@ export default function SignInPopup({
 
         <form className="space-y-3" onSubmit={handleSubmit(formSubmit)}>
           {isRegistering && (
-            <div>
-              <label className="text-xs font-medium">Full Name</label>
-              <input
-                type="text"
-                {...register("fullName", {
-                  required: "Full name is required",
-                })}
-                placeholder="John Doe"
-                className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
-              />
-            </div>
+            <>
+              <div>
+                <label className="text-xs font-medium" htmlFor="fullName">
+                  Full Name
+                </label>
+                <input
+                  id="fullName"
+                  type="text"
+                  {...register("fullName", {
+                    required: "Full name is required",
+                  })}
+                  placeholder="John Doe"
+                  className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
+                />
+                {errors.fullName && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.fullName.message}
+                  </p>
+                )}
+              </div>
+              <div>
+                <label className="text-xs font-medium" htmlFor="mobileNumber">
+                  Mobile Number
+                </label>
+                <input
+                  id="mobileNumber"
+                  type="tel"
+                  {...register("mobileNumber", {
+                    required: "Mobile number is required",
+                    pattern: {
+                      value: /^[0-9]{10}$/,
+                      message: "Enter a valid 10-digit mobile number",
+                    },
+                  })}
+                  className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
+                />
+                {errors.mobileNumber && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.mobileNumber.message}
+                  </p>
+                )}
+              </div>
+            </>
           )}
 
           <div>
-            <label className="text-xs font-medium">Email</label>
+            <label className="text-xs font-medium" htmlFor="email">
+              Email
+            </label>
             <input
+              id="email"
               type="email"
               {...register("email", { required: "Email is required" })}
               placeholder="Email address"
               className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
               readOnly={!!prefillEmail}
             />
+            {errors.email && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.email.message}
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="text-xs font-medium">Password</label>
-            <input
-              type="password"
-              {...register("password", { required: "Password is required" })}
-              placeholder="Password"
-              className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
-            />
+            <label className="text-xs font-medium" htmlFor="password">
+              Password
+            </label>
+            <div className="relative">
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                {...register("password", {
+                  required: "Password is required",
+                  ...(isRegistering && {
+                    minLength: {
+                      value: 6,
+                      message: "Password must be at least 6 characters",
+                    },
+                  }),
+                })}
+                placeholder="Password"
+                className="w-full mt-1 p-2 pr-10 border rounded-md text-sm bg-gray-100"
+              />
+              <span
+                className="absolute top-1/2 right-2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                onClick={() => setShowPassword(!showPassword)}
+              >
+                {showPassword ? <IoEyeOff size={18} /> : <IoEye size={18} />}
+              </span>
+            </div>
             {!isRegistering && (
               <div className="text-right mt-1">
                 <button
                   type="button"
-                  onClick={() => {
-                    setIsOpen(false);
-                    router.push("/forgot-password");
-                  }}
+                  onClick={handleForgotPassword}
                   className="text-xs text-pink-500 hover:underline"
                 >
                   Forgot Password?
                 </button>
               </div>
             )}
+            {errors.password && (
+              <p className="text-red-500 text-xs mt-1">
+                {errors.password.message}
+              </p>
+            )}
           </div>
 
           {isRegistering && (
             <div>
-              <label className="text-xs font-medium">Confirm Password</label>
-              <input
-                type="password"
-                {...register("confirmPassword", {
-                  required: "Confirm Password is required",
-                  validate: (value) =>
-                    value === watch("password") || "Passwords do not match",
-                })}
-                placeholder="Confirm password"
-                className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
-              />
+              <label className="text-xs font-medium" htmlFor="confirmPassword">
+                Confirm Password
+              </label>
+              <div className="relative">
+                <input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  {...register("confirmPassword", {
+                    required: "Confirm Password is required",
+                    validate: (value) =>
+                      value === watch("password") || "Passwords do not match",
+                  })}
+                  placeholder="Confirm password"
+                  className="w-full mt-1 p-2 pr-10 border rounded-md text-sm bg-gray-100"
+                />
+                <span
+                  className="absolute top-1/2 right-2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                >
+                  {showConfirmPassword ? (
+                    <IoEyeOff size={18} />
+                  ) : (
+                    <IoEye size={18} />
+                  )}
+                </span>
+              </div>
+              {errors.confirmPassword && (
+                <p className="text-red-500 text-xs mt-1">
+                  {errors.confirmPassword.message}
+                </p>
+              )}
             </div>
           )}
 
@@ -201,12 +316,20 @@ export default function SignInPopup({
             : "Don't have an account?"}{" "}
           <span
             className="text-pink-500 cursor-pointer font-semibold"
-            onClick={() => setIsRegistering(!isRegistering)}
+            onClick={handleModeSwitch}
           >
             {isRegistering ? "Login" : "Register"}
           </span>
         </p>
       </div>
+
+      {showResetPassword && (
+        <ResetPasswordPopup
+          isOpen={showResetPassword}
+          setIsOpen={setShowResetPassword}
+          prefillEmail={watch("email")}
+        />
+      )}
     </div>
   );
 }
