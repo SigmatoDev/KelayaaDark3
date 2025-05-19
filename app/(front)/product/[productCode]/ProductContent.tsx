@@ -9,7 +9,7 @@ import {
   FaWhatsapp,
   FaHeart,
   FaSearchPlus,
-  FaSearchMinus
+  FaSearchMinus,
 } from "react-icons/fa";
 import AddToCart from "@/components/products/AddToCart";
 import { convertDocToObj } from "@/lib/utils";
@@ -33,6 +33,7 @@ import SetPriceBreakupCard from "./setDetailsCard";
 import BangleDetails from "./bangleDetails";
 import Link from "next/link";
 import ProductDetailsSkeleton from "./productSkeleton";
+import axios from "axios";
 
 interface Product {
   subCategories: string;
@@ -78,6 +79,7 @@ interface Product {
     makingCharge: number;
     additionalCharges?: number;
     totalPrice: number;
+    gst: number;
   };
   isFeatured?: boolean; // Optional field (can be boolean or undefined)
   goldPrice?: number;
@@ -137,36 +139,76 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
       );
     }
   };
-
   useEffect(() => {
     if (!session || !userId || !product._id) return;
 
-    fetch(`/api/wishlist?userId=${userId}&productId=${product._id}`)
-      .then((res) => res.json())
-      .then((data) => setIsWishlisted(data.status));
+    const fetchWishlistStatus = async () => {
+      try {
+        const res = await axios.get(`/api/wishlist?userId=${userId}`);
+        const data = res?.data;
+        console.log("ress", res);
+
+        const isInWishlist = data?.products?.some(
+          (item: Product) => item._id === product._id
+        );
+        console.log("isInWishlist", isInWishlist);
+
+        setIsWishlisted(isInWishlist);
+      } catch (error) {
+        console.error("Error fetching wishlist status:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWishlistStatus();
   }, [session, userId, product._id]);
 
   const toggleWishlist = async () => {
     if (!userId) {
       setIsSignInOpen(true);
+      // toast.error("Please log in to manage wishlist");
       return;
     }
 
-    const response = await fetch("/api/wishlist", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ userId, productId: product._id }),
-    });
+    if (loading) return;
+    setLoading(true);
 
-    const data = await response.json();
-    setIsWishlisted(data.status);
+    const newWishlistState = !isWishlisted;
+    setIsWishlisted(newWishlistState);
+
+    try {
+      const response = await fetch("/api/wishlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId, productId: product._id }),
+      });
+
+      const data = await response.json();
+
+      if (data.productId !== product._id) {
+        throw new Error("Product mismatch");
+      }
+
+      setIsWishlisted(data.status);
+
+      if (data.status) {
+        toast.success("Added to Wishlist ❤️");
+      } else {
+        toast.success("Removed from Wishlist ❌");
+      }
+    } catch (error) {
+      console.error("Error updating wishlist:", error);
+      toast.error("Something went wrong. Please try again.");
+      setIsWishlisted(!newWishlistState);
+    } finally {
+      setLoading(false);
+    }
   };
-
 
   useEffect(() => {
     setMainImageLoading(true); // Reset loader whenever selected image changes
   }, [selectedImage]);
-
 
   const generateBreadcrumbLink = () => {
     if (product?.materialType === "Beads") {
@@ -207,28 +249,24 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
   //   return <ProductDetailsSkeleton />;
   // }
 
-
-
-
-
   useEffect(() => {
     if (!selectedImage || typeof window === "undefined") return;
-  
+
     const isSlowConnection =
       navigator.connection &&
       (navigator.connection.saveData ||
         ["slow-2g", "2g"].includes(navigator.connection.effectiveType));
-  
+
     const isMobile =
       /Android|iPhone|iPad|iPod|Opera Mini|IEMobile|WPDesktop/i.test(
         navigator.userAgent
       );
-  
+
     if (isSlowConnection || isMobile) return; // Skip for mobile or slow connections
-  
+
     const index = product.images.findIndex((img) => img === selectedImage);
     const originalImage = product.image_variants?.[index]?.original;
-  
+
     if (originalImage) {
       const preloadLink = document.createElement("link");
       preloadLink.rel = "preload";
@@ -237,8 +275,6 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
       document.head.appendChild(preloadLink);
     }
   }, [selectedImage]);
-
-  
 
   return (
     <>
@@ -269,7 +305,6 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
       <div className="max-w-7xl mx-auto p-4 grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Left Section - Image Gallery */}
 
-
         {/* Left Section - Image Gallery */}
         {/* Left Section - Image Gallery */}
         <div className="flex flex-col md:flex-row gap-4 md:sticky md:top-24 self-start">
@@ -291,8 +326,11 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                           setIsZoomed(false); // reset zoom mode
                           setSelectedImage(img);
                         }}
-                        className={`p-1 rounded-none ${selectedImage === img ? "border-2 border-pink-500" : ""
-                          }`}
+                        className={`p-1 rounded-none ${
+                          selectedImage === img
+                            ? "border-2 border-pink-500"
+                            : ""
+                        }`}
                       >
                         <Image
                           src={thumbUrl}
@@ -305,7 +343,8 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                           loading="lazy"
                           className="object-cover"
                           onError={(e) =>
-                            ((e.target as HTMLImageElement).style.display = "none")
+                            ((e.target as HTMLImageElement).style.display =
+                              "none")
                           }
                         />
                       </button>
@@ -329,10 +368,11 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                     )}
                   </button>
 
-
                   {/* Main or Zoomed image */}
                   {(() => {
-                    const index = product.images.findIndex((img) => img === selectedImage);
+                    const index = product.images.findIndex(
+                      (img) => img === selectedImage
+                    );
                     const variant = product.image_variants?.[index] ?? {};
                     const mainImage = variant.image_large || selectedImage;
                     const zoomImage = variant.original || selectedImage;
@@ -369,11 +409,11 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                           onLoad={() => setMainImageLoading(false)}
                           className="w-full h-full object-contain transition-transform duration-300 ease-in-out"
                           onError={(e) =>
-                            ((e.target as HTMLImageElement).style.display = "none")
+                            ((e.target as HTMLImageElement).style.display =
+                              "none")
                           }
                         />
                       </div>
-
                     );
                   })()}
                 </div>
@@ -383,8 +423,6 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             <p>No images found for this product.</p>
           )}
         </div>
-
-
 
         {/* Right Section - Product Details */}
         <div className="flex flex-col gap-4">
@@ -426,15 +464,15 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                 ₹
                 {product.price
                   ? product.price.toLocaleString("en-IN", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                  })
+                      minimumFractionDigits: 2,
+                      maximumFractionDigits: 2,
+                    })
                   : "N/A"}
               </div>
             )}
 
             <div className="text-xs text-gray-400">
-              MRP (exclusive of all taxes)
+              MRP (enclusive of all taxes)
             </div>
           </div>
 
@@ -458,7 +496,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                 <p className="font-semibold">
                   :{" "}
                   {product?.productType === "Sets" ||
-                    product?.productType === "Bangles"
+                  product?.productType === "Bangles"
                     ? product?.productType
                     : product?.productCategory}
                 </p>
@@ -466,7 +504,8 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             )}
             {product?.materialType !== "Beads" &&
               product?.productType !== "Sets" &&
-              product?.productType !== "Bangles" && (
+              product?.productType !== "Bangles" &&
+              product?.productType !== "Bracelet" && (
                 <>
                   <p className="text-gray-600">Style</p>
                   <p className="font-semibold">
@@ -481,13 +520,13 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             {(product?.productType === "Sets" ||
               product?.productCategory === "Pendants" ||
               product?.productCategory === "Sets") && (
-                <>
-                  <p className="text-red-400 text-xs">*Note</p>
-                  <p className="text-red-400 text-xs">
-                    : Chains are not included.
-                  </p>
-                </>
-              )}
+              <>
+                <p className="text-red-400 text-xs">*Note</p>
+                <p className="text-red-400 text-xs">
+                  : Chains are not included.
+                </p>
+              </>
+            )}
 
             {/* <p className="text-gray-600">Tags</p>
           <p className="font-semibold capitalize">
@@ -549,8 +588,8 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
             {((product?.materialType === "gold" &&
               product?.productType === "Sets") ||
               product?.productType === "Bangles") && (
-                <SetPriceBreakupCard product={product} />
-              )}
+              <SetPriceBreakupCard product={product} />
+            )}
           </div>
           {/* Buttons Grid */}
           <div

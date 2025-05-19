@@ -88,14 +88,24 @@ export const GET = auth(async (req: any) => {
 //       const goldPrice =
 //         goldPriceMap[product.goldPurity] ?? pricingDetails.goldPrice;
 //       const goldTotal = pricingDetails.grossWeight * goldPrice;
-//       const totalPrice =
-//         goldTotal + pricingDetails.makingCharge + pricingDetails.diamondTotal;
+
+//       const { makingCharge, diamondTotal } = pricingDetails;
+
+//       // Subtotal before GST
+//       const subtotal = goldTotal + makingCharge + diamondTotal;
+
+//       // Calculate 3% GST
+//       const gstAmount = +(subtotal * 0.03).toFixed(2);
+
+//       // Final total price including GST
+//       const totalPrice = subtotal + gstAmount;
 
 //       await GoldDiamondProductPricingModel.findByIdAndUpdate(
 //         pricingDetails._id,
 //         {
 //           goldPrice,
 //           goldTotal,
+//           gst: gstAmount,
 //           totalPrice,
 //         }
 //       );
@@ -152,16 +162,26 @@ export const GET = auth(async (req: any) => {
 //         const grossWeight = pricing?.grossWeight ?? 0;
 //         const diamondTotal = pricing?.diamondTotal ?? 0;
 //         const makingCharges = pricing?.makingCharges ?? 0;
+
 //         const goldTotal = grossWeight * latestGoldPrice;
-//         const totalPrice = goldTotal + diamondTotal + makingCharges;
+
+//         // Subtotal before GST
+//         const subtotal = goldTotal + diamondTotal + makingCharges;
+
+//         // Calculate 3% GST
+//         const gstAmount = +(subtotal * 0.03).toFixed(2);
+
+//         // Final total price including GST
+//         const totalPrice = subtotal + gstAmount;
 
 //         console.log(
-//           `📦 ${productCode} | Gold: ₹${latestGoldPrice} x ${grossWeight}g = ₹${goldTotal}, Diamond: ₹${diamondTotal}, Making: ₹${makingCharges}, Total: ₹${totalPrice}`
+//           `📦 ${productCode} | Gold: ₹${latestGoldPrice} x ${grossWeight}g = ₹${goldTotal}, Diamond: ₹${diamondTotal}, Making: ₹${makingCharges}, GST (3%): ₹${gstAmount}, Total: ₹${totalPrice}`
 //         );
 
 //         // Update pricing fields properly
 //         pricing.goldPrice = latestGoldPrice;
 //         pricing.goldTotal = goldTotal;
+//         pricing.gst = gstAmount;
 //         pricing.totalPrice = totalPrice;
 //       });
 
@@ -225,16 +245,26 @@ export const GET = auth(async (req: any) => {
 //         const grossWeight = pricing?.grossWeight ?? 0;
 //         const diamondTotal = pricing?.diamondTotal ?? 0;
 //         const makingCharges = pricing?.makingCharges ?? 0;
+
 //         const goldTotal = grossWeight * latestGoldPrice;
-//         const totalPrice = goldTotal + diamondTotal + makingCharges;
+
+//         // Subtotal before GST
+//         const subtotal = goldTotal + diamondTotal + makingCharges;
+
+//         // Calculate 3% GST
+//         const gstAmount = +(subtotal * 0.03).toFixed(2);
+
+//         // Final total price including GST
+//         const totalPrice = subtotal + gstAmount;
 
 //         console.log(
-//           `💍 ${productCode} | Gold: ₹${latestGoldPrice} x ${grossWeight}g = ₹${goldTotal}, Diamond: ₹${diamondTotal}, Making: ₹${makingCharges}, Total: ₹${totalPrice}`
+//           `💍 ${productCode} | Gold: ₹${latestGoldPrice} x ${grossWeight}g = ₹${goldTotal}, Diamond: ₹${diamondTotal}, Making: ₹${makingCharges}, GST (3%): ₹${gstAmount}, Total: ₹${totalPrice}`
 //         );
 
 //         // Update pricing fields properly
 //         pricing.goldPrice = latestGoldPrice;
 //         pricing.goldTotal = goldTotal;
+//         pricing.gst = gstAmount;
 //         pricing.totalPrice = totalPrice;
 //       });
 

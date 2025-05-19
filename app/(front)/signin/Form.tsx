@@ -32,26 +32,26 @@ const Form = () => {
   });
 
   // Log session data for debugging
-  useEffect(() => {
-    if (session) {
-      console.log("Session data:", session); // Log session data
-      if (session.user) {
-        // Log user details
-        console.log("User is logged in:", session.user);
+  // useEffect(() => {
+  //   if (session) {
+  //     console.log("Session data:", session); // Log session data
+  //     if (session.user) {
+  //       // Log user details
+  //       console.log("User is logged in:", session.user);
 
-        // Check if the user is an admin
-        if (session.user.isAdmin) {
-          console.log("User is an admin, redirecting to /admin/dashboard");
-          router.push("/admin/dashboard"); // Redirect to admin dashboard if user is an admin
-        } else {
-          console.log(`User is not an admin, redirecting to ${callbackUrl}`);
-          router.push(callbackUrl); // Otherwise, redirect to the callback URL or home
-        }
-      }
-    } else {
-      console.log("No session found");
-    }
-  }, [session, callbackUrl, router]);
+  //       // Check if the user is an admin
+  //       if (session.user.isAdmin) {
+  //         console.log("User is an admin, redirecting to /admin/dashboard");
+  //         router.push("/admin/dashboard"); // Redirect to admin dashboard if user is an admin
+  //       } else {
+  //         console.log(`User is not an admin, redirecting to ${callbackUrl}`);
+  //         router.push(callbackUrl); // Otherwise, redirect to the callback URL or home
+  //       }
+  //     }
+  //   } else {
+  //     console.log("No session found");
+  //   }
+  // }, [session, callbackUrl, router]);
 
   const formSubmit: SubmitHandler<any> = async (form) => {
     const { email, password } = form;
@@ -128,7 +128,7 @@ const Form = () => {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="btn btn-primary w-full"
+              className="btn bg-gray-900 text-white w-full"
             >
               {isSubmitting && (
                 <span className="loading loading-spinner"></span>

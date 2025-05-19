@@ -13,6 +13,7 @@ interface Pricing {
   diamondTotal: number;
   goldTotal: number;
   totalPrice: number;
+  gst: number;
 }
 
 interface Item {

@@ -22,6 +22,7 @@ interface Product {
     makingCharge: number;
     additionalCharges?: number;
     totalPrice: number;
+    gst: number;
   };
 }
 
@@ -44,6 +45,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
     makingCharge,
     additionalCharges,
     totalPrice,
+    gst,
   } = product.pricing;
 
   return (
@@ -268,7 +270,31 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
                       </span>
                     </div>
                   ) : null}
-
+                  <div className="flex justify-between text-sm font-semibold text-[#e26e8f]">
+                    <span>SubTotal</span>
+                    <span>
+                      ₹
+                      {(goldTotal + diamondTotal + makingCharge).toLocaleString(
+                        "en-IN",
+                        {
+                          minimumFractionDigits: 2,
+                          maximumFractionDigits: 2,
+                        }
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-green-600 font-medium">
+                    <span>➕ GST</span>
+                    <span>
+                      ₹
+                      {gst
+                        ? gst.toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })
+                        : "N/A"}
+                    </span>
+                  </div>
                   <div className="border-t pt-4 mt-6 flex justify-between items-center bg-pink-50 rounded-lg px-4 py-2">
                     <span className="text-lg font-semibold text-[#e26e8f]">
                       Final Price
