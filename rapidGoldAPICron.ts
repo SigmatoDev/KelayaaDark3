@@ -82,7 +82,7 @@ const getGoldPrice = async (city = "Bangalore") => {
 
     try {
       const apiResponse = await axios.get(API_ENDPOINT_GOLD_PRODUCT);
-      console.log("✅ API call success:", apiResponse.data);
+      console.log("✅ API call success:");
     } catch (apiErr) {
       if (apiErr instanceof Error) {
         console.error(
@@ -111,7 +111,26 @@ console.log(
   `⏰ Scheduling price update job at 9 AM, 3 PM, 9 PM IST (cron: '30 3,9,15 * * *')`
 );
 
-cron.schedule("30 3,9,15 * * *", () => {
-  console.log(`\n⏰ Running scheduled job at ${new Date().toLocaleString()}`);
-  getGoldPrice(cityArg);
+// Define all your exact times
+const scheduleTimes = [
+  { minute: 30, hour: 9 }, // 9:30 AM IST
+  { minute: 0, hour: 14 }, // 2:00 PM IST
+  { minute: 15, hour: 15 }, // 3:15 PM IST
+  { minute: 30, hour: 15 }, // 3:30 PM IST
+];
+
+scheduleTimes.forEach(({ minute, hour }) => {
+  const cronTime = `${minute} ${hour} * * *`;
+  cron.schedule(
+    cronTime,
+    () => {
+      console.log(
+        `\n⏰ Running scheduled job at ${new Date().toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}`
+      );
+      getGoldPrice(cityArg);
+    },
+    {
+      timezone: "Asia/Kolkata",
+    }
+  );
 });
