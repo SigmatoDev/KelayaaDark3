@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from "uuid";
 const MERCHANT_ID = process.env.MERCHANT_ID!;
 const SALT_KEY = process.env.SALT_KEY!;
 const SALT_INDEX = process.env.SALT_INDEX!;
-const PHONEPE_PROD_URL = "https://api.phonepe.com/apis/hermes/pg/v3/pay";
+const PHONEPE_PROD_URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay";
 
 export async function POST(req: NextRequest) {
   try {
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
       merchantId: MERCHANT_ID,
       merchantTransactionId: transactionId,
       merchantUserId: `MUID-${userId}`,
-      amount: amount, // Convert to paisa
+      amount: amount * 100, // Convert to paisa
       redirectUrl: `https://kelayaa.com/status/${transactionId}`,
       redirectMode: "REDIRECT",
       callbackUrl: `https://kelayaa.com/status/${transactionId}`,
@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
     const base64Payload = Buffer.from(JSON.stringify(payload)).toString(
       "base64"
     );
-    const stringToHash = `${base64Payload}/pg/v3/pay${SALT_KEY}`;
+    const stringToHash = `${base64Payload}/pg/v1/pay${SALT_KEY}`;
     const sha256Hash = crypto
       .createHash("sha256")
       .update(stringToHash)
