@@ -1,18 +1,17 @@
-// actions/initiatePayment.ts
-
 "use server";
+
 import { v4 as uuidv4 } from "uuid";
-import sha256 from "crypto-js/sha256";
+import crypto from "crypto";
 import axios from "axios";
 
 export async function initiatePayment(data: number) {
-  const transactionId = "Tr-" + uuidv4().toString().slice(-6); // Here I am generating random id you can send the id of the product you are selling or anything else.
+  const transactionId = "Tr-" + uuidv4().toString().slice(-6);
 
   const payload = {
-    merchantId: process.env.PHONEPE_MERCHANT_ID,
+    merchantId: process.env.PHONEPE_MERCHANT_ID!,
     merchantTransactionId: transactionId,
     merchantUserId: "MUID-" + uuidv4().toString().slice(-6),
-    amount: 100 * data, // Amount is converted to the smallest currency unit (e.g., cents/paise) by multiplying by 100. For example, $1 = 100 cents or ₹1 = 100 paise.
+    amount: data * 100,
     redirectUrl: `${process.env.PBASE_URL}/status/${transactionId}`,
     redirectMode: "REDIRECT",
     callbackUrl: `${process.env.PBASE_URL}/status/${transactionId}`,
@@ -22,20 +21,25 @@ export async function initiatePayment(data: number) {
     },
   };
 
-  const dataPayload = JSON.stringify(payload);
-  const dataBase64 = Buffer.from(dataPayload).toString("base64");
+  const jsonPayload = JSON.stringify(payload);
+  const base64Payload = Buffer.from(jsonPayload).toString("base64");
 
-  const fullURL = dataBase64 + "/pg/v1/pay" + process.env.PHONEPE_SALT_KEY;
-  const dataSha256 = sha256(fullURL).toString();
+  const path = "/pg/v1/pay";
+  const saltKey = process.env.PHONEPE_SALT_KEY!;
+  const saltIndex = process.env.PHONEPE_SALT_INDEX!;
 
-  const checksum = dataSha256 + "###" + process.env.PHONEPE_SALT_INDEX;
+  const toSign = base64Payload + path + saltKey;
 
-  const PAY_API_URL = `${process.env.PHONEPE_HOST_URL}/pg/v1/pay`;
+  const checksum =
+    crypto.createHash("sha256").update(toSign).digest("hex") +
+    `###${saltIndex}`;
+
+  const PAY_API_URL = `${process.env.PHONEPE_HOST_URL}${path}`;
 
   try {
     const response = await axios.post(
       PAY_API_URL,
-      { request: dataBase64 },
+      { request: base64Payload },
       {
         headers: {
           accept: "application/json",
@@ -47,10 +51,10 @@ export async function initiatePayment(data: number) {
 
     return {
       redirectUrl: response.data.data.instrumentResponse.redirectInfo.url,
-      transactionId: transactionId,
+      transactionId,
     };
-  } catch (error) {
-    console.error("Error in server action:", error);
-    throw error;
+  } catch (error: any) {
+    console.error("PhonePe Error:", error?.response?.data || error.message);
+    throw new Error("Failed to initiate PhonePe payment");
   }
 }
