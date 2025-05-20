@@ -29,7 +29,7 @@ export async function initiatePayment(data: number) {
 
   const checksum = dataSha256 + "###" + process.env.PHONEPE_SALT_INDEX;
 
-  const UAT_PAY_API_URL = `${process.env.PHONEPE_HOST_UR}/pg/v1/pay`;
+  const UAT_PAY_API_URL = `${process.env.PHONEPE_HOST_URL}/pg/v1/pay`;
 
   try {
     const response = await axios.post(
