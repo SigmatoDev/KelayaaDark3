@@ -38,7 +38,6 @@ export async function initiatePayment(data: number) {
         headers: {
           "Content-Type": "application/json",
           "X-VERIFY": checksum,
-          accept: "application/json",
         },
       }
     );
