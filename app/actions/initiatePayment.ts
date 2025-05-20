@@ -1,20 +1,21 @@
 // actions/initiatePayment.ts
+
+"use server";
 import { v4 as uuidv4 } from "uuid";
 import sha256 from "crypto-js/sha256";
 import axios from "axios";
 
-export async function initiatePayment(amount: number) {
-  const transactionId = "Tr-" + uuidv4().toString().slice(-6);
-  const merchantUserId = "MUID-" + uuidv4().toString().slice(-6);
+export async function initiatePayment(data: number) {
+  const transactionId = "Tr-" + uuidv4().toString().slice(-6); // Here I am generating random id you can send the id of the product you are selling or anything else.
 
   const payload = {
-    merchantId: process.env.MERCHANT_ID!,
+    merchantId: process.env.PHONEPE_MERCHANT_ID,
     merchantTransactionId: transactionId,
-    merchantUserId: merchantUserId,
-    amount: amount * 100, // amount in paise
-    redirectUrl: `${process.env.BASE_URL}/status/${transactionId}`,
+    merchantUserId: "MUID-" + uuidv4().toString().slice(-6),
+    amount: 100 * data, // Amount is converted to the smallest currency unit (e.g., cents/paise) by multiplying by 100. For example, $1 = 100 cents or ₹1 = 100 paise.
+    redirectUrl: `${process.env.PBASE_URL}/status/${transactionId}`,
     redirectMode: "REDIRECT",
-    callbackUrl: `${process.env.BASE_URL}/status/${transactionId}`,
+    callbackUrl: `${process.env.PBASE_URL}/status/${transactionId}`,
     paymentInstrument: {
       type: "PAY_PAGE",
     },
@@ -23,45 +24,32 @@ export async function initiatePayment(amount: number) {
   const dataPayload = JSON.stringify(payload);
   const dataBase64 = Buffer.from(dataPayload).toString("base64");
 
-  // ✅ Form checksum correctly per PhonePe docs
-  const endpoint = "/pg/v1/pay";
-  const saltKey = process.env.SALT_KEY!;
-  const saltIndex = process.env.SALT_INDEX!;
+  const fullURL = dataBase64 + "/pg/v1/pay" + process.env.PHONEPE_SALT_KEY;
+  const dataSha256 = sha256(fullURL).toString();
 
-  const toHash = dataBase64 + endpoint + saltKey;
-  const checksum = sha256(toHash).toString() + "###" + saltIndex;
+  const checksum = dataSha256 + "###" + process.env.PHONEPE_SALT_INDEX;
 
-  const PAY_API_URL = `${process.env.PHONEPE_HOST_URL}${endpoint}`;
+  const UAT_PAY_API_URL = `${process.env.PHONEPE_HOST_UR}/pg/v1/pay`;
 
   try {
     const response = await axios.post(
-      PAY_API_URL,
+      UAT_PAY_API_URL,
       { request: dataBase64 },
       {
         headers: {
+          accept: "application/json",
           "Content-Type": "application/json",
           "X-VERIFY": checksum,
-          accept: "application/json",
         },
       }
     );
 
-    const redirectUrl =
-      response.data?.data?.instrumentResponse?.redirectInfo?.url;
-
-    if (!redirectUrl) {
-      throw new Error("Redirect URL missing in PhonePe response.");
-    }
-
     return {
-      redirectUrl,
-      transactionId,
+      redirectUrl: response.data.data.instrumentResponse.redirectInfo.url,
+      transactionId: transactionId,
     };
-  } catch (error: any) {
-    console.error(
-      "PhonePe Payment Init Error:",
-      error?.response?.data || error
-    );
-    throw new Error("Failed to initiate PhonePe payment.");
+  } catch (error) {
+    console.error("Error in server action:", error);
+    throw error;
   }
 }
