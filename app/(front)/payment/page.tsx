@@ -11,6 +11,7 @@ import { initiatePayment } from "@/app/actions/initiatePayment";
 
 const Form = () => {
   const { data: session } = useSession();
+  const userId = session?.user?._id;
   const router = useRouter();
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
     "Razorpay" | "PhonePe" | "CashOnDelivery"
@@ -97,10 +98,11 @@ const Form = () => {
       const res = await fetch("/api/phonepe/initiatePayment", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: totalPrice }),
+        body: JSON.stringify({ amount: totalPrice, userId }),
       });
 
       const data = await res.json();
+      console.log("data", data);
       if (data.redirectUrl) {
         window.location.href = data.redirectUrl;
       } else {
