@@ -8,6 +8,7 @@ node_modules/
 dist/
 resizeandmodifydb.js
 .env
+.env.local
 
 # Compiled Java class files
 *.class
