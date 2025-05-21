@@ -15,7 +15,7 @@ export async function initiatePayment(amount: number) {
     const payload = {
       merchantOrderId: transactionId,
       amount: amount * 100, // in paise
-      expireAfter: tokenResponse?.expires_at, // seconds (20 minutes)
+      expireAfter: tokenResponse?.expires_in, // seconds (20 minutes)
       metaInfo: {
         udf1: "test1",
         udf2: "new param2",
