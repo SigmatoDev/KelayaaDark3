@@ -27,7 +27,7 @@ export async function initiatePayment(amount: number) {
       payload,
       {
         headers: {
-          Authorization: `Bearer ${accessToken}`,
+          Authorization: `O-Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
       }
