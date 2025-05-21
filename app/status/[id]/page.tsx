@@ -115,12 +115,13 @@ const StatusPage = () => {
 
   const fetchStatus = async () => {
     try {
-      const response = await axios.post("/api/status", { id: params?.id });
+      const response = await axios.post("/api/phonepe/status", {
+        id: params?.id, // This should be the merchantOrderId
+      });
 
-      const paymentStatus = response.data.status;
-      const transactionId = response.data.transactionId;
+      const paymentStatus = response.data.state;
+      const transactionId = response.data.paymentDetails[0]?.transactionId;
 
-      // ✅ Correct format sent to placeOrder
       const fullPaymentData = {
         status: paymentStatus,
         transactionId: transactionId,
