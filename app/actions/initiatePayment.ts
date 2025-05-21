@@ -37,21 +37,14 @@ export async function initiatePayment(amount: number) {
       payload,
       {
         headers: {
-          Authorization: `${tokenType} ${accessToken}`, // O-Bearer <access_token>
+          Authorization: `${tokenType} ${accessToken}`,
           "Content-Type": "application/json",
         },
       }
     );
 
-    const redirectUrl = res.data?.data?.redirectInfo?.url;
-
-    if (!redirectUrl) {
-      console.error("PhonePe Error:", res.data);
-      throw new Error("Failed to initiate PhonePe payment");
-    }
-
     return {
-      redirectUrl,
+      fullResponse: res.data,
       transactionId,
     };
   } catch (error: any) {

@@ -118,11 +118,20 @@ const Form = () => {
         body: JSON.stringify({ amount: totalPrice }),
       });
 
-      const data: { paymentRequest?: any; redirectUrl?: string } =
-        await res.json();
+      const data: {
+        fullResponse?: {
+          orderId: string;
+          state: string;
+          redirectUrl: string;
+          expireAt: number;
+        };
+        transactionId?: string;
+      } = await res.json();
 
-      if (!data.paymentRequest) {
-        alert("Payment initiation failed.");
+      const paymentRequest = data.fullResponse?.redirectUrl;
+
+      if (!paymentRequest) {
+        alert("Payment initiation failed: No redirect URL.");
         return;
       }
 
@@ -131,10 +140,11 @@ const Form = () => {
         return;
       }
 
-      window.PhonePeCheckout.transact(data.paymentRequest, {
+      // Call PhonePe SDK with redirect URL (token-based payment)
+      window.PhonePeCheckout.transact(paymentRequest, {
         onSuccess: (response) => {
           console.log("PhonePe Payment Success", response);
-          // Redirect or show success UI here
+          // You can redirect or show a success screen here
         },
         onFailure: (error) => {
           console.error("PhonePe Payment Failed", error);
@@ -146,7 +156,7 @@ const Form = () => {
       });
     } catch (error) {
       console.error("Payment error:", error);
-      alert("Something went wrong");
+      alert("Something went wrong during payment.");
     }
   };
 
