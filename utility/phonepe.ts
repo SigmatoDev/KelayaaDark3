@@ -28,7 +28,7 @@ export default class PhonepeGateway {
     this.saltIndex = config.saltIndex;
     this.baseUrl = config.isDev
       ? "https://api-preprod.phonepe.com/apis/pg-sandbox"
-      : "https://api.phonepe.com/apis/pg";
+      : "https://api.phonepe.com/apis/hermes"; // Correct prod base URL
     console.log("PhonePe Gateway initialized with:");
     console.log("  Merchant ID:", this.merchantId);
     console.log("  Salt Index:", this.saltIndex);
@@ -40,8 +40,8 @@ export default class PhonepeGateway {
     const reqBody = {
       merchantId: this.merchantId,
       merchantTransactionId: payload.transactionId,
-      merchantUserId: payload.userId || "guest_user",
       amount: payload.amount * 100, // Convert to paise
+      merchantUserId: payload.userId || "guest_user",
       redirectUrl: payload.redirectUrl,
       redirectMode: "REDIRECT",
       callbackUrl: payload.callbackUrl,
@@ -57,7 +57,11 @@ export default class PhonepeGateway {
     );
     console.log("Base64 encoded payload:", base64Payload);
 
-    const stringToSign = base64Payload + "/v1/pay" + this.saltKey;
+    // Correct endpoint path used in signature and URL
+    const endpointPath = "/pg/v1/pay";
+
+    // Correct string to sign = base64Payload + endpointPath + saltKey
+    const stringToSign = base64Payload + endpointPath + this.saltKey;
     console.log("String to sign:", stringToSign);
 
     const sha256 = crypto
@@ -68,7 +72,8 @@ export default class PhonepeGateway {
     const xVerify = `${sha256}###${this.saltIndex}`;
     console.log("X-VERIFY:", xVerify);
 
-    const endpoint = `${this.baseUrl}/v1/pay`;
+    // Compose full endpoint URL correctly
+    const endpoint = `${this.baseUrl}${endpointPath}`;
     console.log("Making request to:", endpoint);
 
     try {
@@ -78,9 +83,7 @@ export default class PhonepeGateway {
         {
           headers: {
             "Content-Type": "application/json",
-            "X-VERIFY": xVerify,
-            "X-MERCHANT-ID": this.merchantId,
-          },
+            "X-VERIFY": xVerify,          },
         }
       );
 
