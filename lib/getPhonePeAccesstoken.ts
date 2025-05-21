@@ -1,17 +1,26 @@
 import axios from "axios";
 import qs from "qs";
 
-let cachedToken: string | null = null;
+let cachedToken: {
+  access_token: string;
+  token_type: string;
+  expires_at: number;
+} | null = null;
+
 let tokenExpiresAt = 0;
 
-export async function getPhonePeAccessToken(): Promise<string> {
+export async function getPhonePeAccessToken(): Promise<{
+  access_token: string;
+  token_type: string;
+  expires_at: number;
+}> {
   const now = Date.now();
   console.log("🔄 Checking cached token...");
   console.log("⏱️ Current time:", now, "Token expiry time:", tokenExpiresAt);
 
   if (cachedToken && now < tokenExpiresAt - 60 * 1000) {
     console.log("✅ Using cached token");
-    return cachedToken!;
+    return cachedToken;
   }
 
   try {
@@ -35,20 +44,25 @@ export async function getPhonePeAccessToken(): Promise<string> {
 
     console.log("📥 Response data:", response.data);
 
-    const { access_token, expires_at } = response.data;
+    const { access_token, token_type, expires_at } = response.data;
 
     if (!access_token) {
       console.error("❌ Access token missing in response");
       throw new Error("Failed to obtain PhonePe access token");
     }
 
-    cachedToken = access_token;
+    cachedToken = {
+      access_token,
+      token_type: token_type || "O-Bearer",
+      expires_at,
+    };
+
     tokenExpiresAt = new Date(expires_at).getTime();
 
     console.log("🔐 New access token obtained");
     console.log("⏳ Expires at (ms):", tokenExpiresAt);
 
-    return cachedToken!;
+    return cachedToken;
   } catch (error: any) {
     console.error(
       "❗ PhonePe Auth Error:",
