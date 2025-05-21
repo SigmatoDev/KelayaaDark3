@@ -45,6 +45,7 @@
     "next-nprogress-bar": "^2.3.11",
     "node-cron": "^3.0.3",
     "node-fetch": "^3.3.2",
+    "phonepepg": "^0.1.0",
     "plaiceholder": "^3.0.0",
     "razorpay": "^2.9.6",
     "react": "18.2",

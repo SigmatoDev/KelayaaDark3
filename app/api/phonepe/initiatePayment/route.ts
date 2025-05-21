@@ -1,14 +1,29 @@
-// app/api/payment/initiate/route.ts
-import { initiatePayment } from "@/app/actions/initiatePayment";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
+import gateway from "@/utility/phonepe";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
-    const { amount } = await req.json();
-    const result = await initiatePayment(amount);
-    return NextResponse.json(result);
-  } catch (error: any) {
-    console.error("Error in API route:", error.response?.data || error.message);
-    return new NextResponse("Failed to initiate payment", { status: 500 });
+    const body = await req.json(); // ✅ Parse the JSON body
+
+    const transactionId = `TXN-${Date.now()}`;
+    const userId = `TXN-${Date.now()}`;
+
+    const origin = req.headers.get("origin") || ""; // ✅ Safer fallback for origin
+
+    const resp = await gateway.initPayment({
+      amount: body.amount,
+      transactionId,
+      userId,
+      redirectUrl: `${origin}/payment-redirect`,
+      callbackUrl: `${origin}/api/phonepe/callback`,
+    });
+
+    return NextResponse.json(resp); // ✅ Return response with 200 by default
+  } catch (error) {
+    console.error("[Payment Initiation Error]", error);
+    return NextResponse.json(
+      { error: "Payment initiation failed" },
+      { status: 500 }
+    );
   }
 }
