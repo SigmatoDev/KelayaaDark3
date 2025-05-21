@@ -28,7 +28,7 @@ export default class PhonepeGateway {
     this.saltIndex = config.saltIndex;
     this.baseUrl = config.isDev
       ? "https://api-preprod.phonepe.com/apis/pg-sandbox"
-      : "https://api.phonepe.com/apis/hermes";
+      : "https://api.phonepe.com/apis/pg";
     console.log("PhonePe Gateway initialized with:");
     console.log("  Merchant ID:", this.merchantId);
     console.log("  Salt Index:", this.saltIndex);
@@ -57,7 +57,7 @@ export default class PhonepeGateway {
     );
     console.log("Base64 encoded payload:", base64Payload);
 
-    const stringToSign = base64Payload + "/pg/v1/pay" + this.saltKey;
+    const stringToSign = base64Payload + "/v1/pay" + this.saltKey;
     console.log("String to sign:", stringToSign);
 
     const sha256 = crypto
@@ -68,7 +68,7 @@ export default class PhonepeGateway {
     const xVerify = `${sha256}###${this.saltIndex}`;
     console.log("X-VERIFY:", xVerify);
 
-    const endpoint = `${this.baseUrl}/pg/v1/pay`;
+    const endpoint = `${this.baseUrl}/v1/pay`;
     console.log("Making request to:", endpoint);
 
     try {
