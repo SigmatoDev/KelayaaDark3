@@ -139,7 +139,7 @@ const Form = () => {
         alert("PhonePe SDK not loaded yet.");
         return;
       }
-
+      router.push(paymentRequest);
       // Call PhonePe SDK with redirect URL (token-based payment)
       window.PhonePeCheckout.transact(paymentRequest, {
         onSuccess: (response) => {
