@@ -29,6 +29,11 @@ export default class PhonepeGateway {
     this.baseUrl = config.isDev
       ? "https://api-preprod.phonepe.com/apis/pg-sandbox"
       : "https://api.phonepe.com/apis/hermes";
+    console.log("PhonePe Gateway initialized with:");
+    console.log("  Merchant ID:", this.merchantId);
+    console.log("  Salt Index:", this.saltIndex);
+    console.log("  Environment:", config.isDev ? "Sandbox" : "Production");
+    console.log("  Base URL:", this.baseUrl);
   }
 
   async initPayment(payload: InitPaymentPayload) {
@@ -45,19 +50,30 @@ export default class PhonepeGateway {
       },
     };
 
+    console.log("Payment request body:", JSON.stringify(reqBody, null, 2));
+
     const base64Payload = Buffer.from(JSON.stringify(reqBody)).toString(
       "base64"
     );
+    console.log("Base64 encoded payload:", base64Payload);
+
     const stringToSign = base64Payload + "/pg/v1/pay" + this.saltKey;
+    console.log("String to sign:", stringToSign);
+
     const sha256 = crypto
       .createHash("sha256")
       .update(stringToSign)
       .digest("hex");
+
     const xVerify = `${sha256}###${this.saltIndex}`;
+    console.log("X-VERIFY:", xVerify);
+
+    const endpoint = `${this.baseUrl}/pg/v1/pay`;
+    console.log("Making request to:", endpoint);
 
     try {
       const response = await axios.post(
-        `${this.baseUrl}/pg/v1/pay`,
+        endpoint,
         { request: base64Payload },
         {
           headers: {
@@ -68,17 +84,29 @@ export default class PhonepeGateway {
         }
       );
 
+      console.log(
+        "PhonePe API response:",
+        JSON.stringify(response.data, null, 2)
+      );
+
       if (response.data.success) {
         return {
           success: true,
           redirectUrl: response.data.data.instrumentResponse.redirectInfo.url,
         };
       } else {
+        console.error("PhonePe response error code:", response.data.code);
         return { success: false, error: response.data.code };
       }
     } catch (err: any) {
-      console.error("PhonePe error:", err?.response?.data || err.message);
-      return { success: false, error: err.message };
+      console.error("PhonePe API call failed:");
+      console.error("Status:", err?.response?.status);
+      console.error("Headers:", err?.response?.headers);
+      console.error("Data:", err?.response?.data);
+      return {
+        success: false,
+        error: err?.response?.data?.message || err.message || "Unknown error",
+      };
     }
   }
 }
