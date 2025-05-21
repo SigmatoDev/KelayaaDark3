@@ -4,7 +4,7 @@ import qs from "qs";
 let cachedToken: {
   access_token: string;
   token_type: string;
-  expires_at: number;
+  expires_in: number;
 } | null = null;
 
 let tokenExpiresAt = 0;
@@ -12,7 +12,7 @@ let tokenExpiresAt = 0;
 export async function getPhonePeAccessToken(): Promise<{
   access_token: string;
   token_type: string;
-  expires_at: number;
+  expires_in: number;
 }> {
   const now = Date.now();
   console.log("🔄 Checking cached token...");
@@ -44,7 +44,7 @@ export async function getPhonePeAccessToken(): Promise<{
 
     console.log("📥 Response data:", response.data);
 
-    const { access_token, token_type, expires_at } = response.data;
+    const { access_token, token_type, expires_in } = response.data;
 
     if (!access_token) {
       console.error("❌ Access token missing in response");
@@ -54,10 +54,10 @@ export async function getPhonePeAccessToken(): Promise<{
     cachedToken = {
       access_token,
       token_type: token_type || "O-Bearer",
-      expires_at,
+      expires_in,
     };
 
-    tokenExpiresAt = new Date(expires_at).getTime();
+    tokenExpiresAt = new Date(expires_in).getTime();
 
     console.log("🔐 New access token obtained");
     console.log("⏳ Expires at (ms):", tokenExpiresAt);
