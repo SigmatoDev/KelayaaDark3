@@ -131,7 +131,7 @@ const StatusPage = () => {
 
       setTransactionStatus(paymentStatus);
 
-      if (paymentStatus === "PAYMENT_SUCCESS") {
+      if (paymentStatus === "COMPLETED") {
         if (!hasPlacedOrder.current) {
           hasPlacedOrder.current = true;
           await placeOrder({ paymentResult: fullPaymentData });
