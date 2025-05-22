@@ -119,6 +119,8 @@ const StatusPage = () => {
         id: params?.id, // This should be the merchantOrderId
       });
 
+      console.log("id-----", params?.id);
+
       const paymentStatus = response.data.state;
       const transactionId = response.data.paymentDetails[0]?.transactionId;
 

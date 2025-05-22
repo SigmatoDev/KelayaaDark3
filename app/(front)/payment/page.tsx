@@ -13,14 +13,7 @@ import Script from "next/script";
 declare global {
   interface Window {
     PhonePeCheckout?: {
-      transact: (
-        paymentRequest: any,
-        callbacks: {
-          onSuccess: (response: any) => void;
-          onFailure: (error: any) => void;
-          onDismiss: () => void;
-        }
-      ) => void;
+      transact: (tokenUrl: any) => void;
     };
   }
 }
@@ -120,40 +113,28 @@ const Form = () => {
 
       const data: {
         fullResponse?: {
-          merchantOrderId: string;
+          orderId: string;
           state: string;
           redirectUrl: string;
-          expire_at: number;
+          expireAt: number;
         };
         transactionId?: string;
       } = await res.json();
 
-      const tokenUrl = data.fullResponse?.redirectUrl;
+      const paymentRequest = data.fullResponse?.redirectUrl;
 
-      if (!tokenUrl) {
+      if (!paymentRequest) {
         alert("Payment initiation failed: No redirect URL.");
         return;
       }
 
-      if (typeof window === "undefined" || !window.PhonePeCheckout) {
+      if (!window.PhonePeCheckout) {
         alert("PhonePe SDK not loaded yet.");
         return;
       }
-
-      window.PhonePeCheckout.transact(tokenUrl, {
-        onSuccess: (response: any) => {
-          console.log("PhonePe Payment Success", response);
-          alert("Payment successful!");
-          window.location.reload();
-        },
-        onFailure: (error: any) => {
-          console.error("PhonePe Payment Failed", error);
-          alert("Payment failed, please try again.");
-        },
-        onDismiss: () => {
-          console.log("PhonePe Payment Closed by user");
-        },
-      });
+      // router.push(paymentRequest);
+      // Call PhonePe SDK with redirect URL (token-based payment)
+      window.PhonePeCheckout.transact({ tokenUrl: paymentRequest });
     } catch (error) {
       console.error("Payment error:", error);
       alert("Something went wrong during payment.");
