@@ -120,33 +120,33 @@ const Form = () => {
 
       const data: {
         fullResponse?: {
-          orderId: string;
+          merchantOrderId: string;
           state: string;
           redirectUrl: string;
-          expireAt: number;
+          expire_at: number;
         };
         transactionId?: string;
       } = await res.json();
 
-      const paymentRequest = data.fullResponse?.redirectUrl;
+      const tokenUrl = data.fullResponse?.redirectUrl;
 
-      if (!paymentRequest) {
+      if (!tokenUrl) {
         alert("Payment initiation failed: No redirect URL.");
         return;
       }
 
-      if (!window.PhonePeCheckout) {
+      if (typeof window === "undefined" || !window.PhonePeCheckout) {
         alert("PhonePe SDK not loaded yet.");
         return;
       }
-      router.push(paymentRequest);
-      // Call PhonePe SDK with redirect URL (token-based payment)
-      window.PhonePeCheckout.transact(paymentRequest, {
-        onSuccess: (response) => {
+
+      window.PhonePeCheckout.transact(tokenUrl, {
+        onSuccess: (response: any) => {
           console.log("PhonePe Payment Success", response);
-          // You can redirect or show a success screen here
+          alert("Payment successful!");
+          window.location.reload();
         },
-        onFailure: (error) => {
+        onFailure: (error: any) => {
           console.error("PhonePe Payment Failed", error);
           alert("Payment failed, please try again.");
         },
