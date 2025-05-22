@@ -14,8 +14,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const response = await axios.get(url, {
       headers: {
-        Authorization: `${token_type || "O-Bearer"} ${accessToken}`,
         "Content-Type": "application/json",
+        Authorization: `${token_type || "O-Bearer"} ${accessToken}`,
       },
     });
 

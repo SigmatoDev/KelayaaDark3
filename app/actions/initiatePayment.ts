@@ -27,7 +27,7 @@ export async function initiatePayment(amount: number) {
         type: "PG_CHECKOUT",
         message: "Payment message used for collect requests",
         merchantUrls: {
-          redirectUrl: `${process.env.PHONEPE_REDIRECT_URL}/${transactionId}`,
+          redirectUrl: `${process.env.PHONEPE_REDIRECT_URL}/status/${transactionId}`,
         },
       },
     };
