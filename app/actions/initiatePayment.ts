@@ -33,7 +33,7 @@ export async function initiatePayment(amount: number) {
     };
 
     const res = await axios.post(
-      `${process.env.PHONEPE_BASE_URL}/checkout/ui/v2/pay`,
+      `${process.env.PHONEPE_BASE_URL}/checkout/v2/pay`,
       payload,
       {
         headers: {
