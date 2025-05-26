@@ -8,14 +8,14 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
 
     const { access_token: accessToken, token_type } =
       await getPhonePeAccessToken();
-    const baseUrl = process.env.PHONEPE_BASE_URL || "https://api.phonepe.com";
+    const baseUrl = process.env.PHONEPE_BASE_URL;
 
-    const url = `${baseUrl}/apis/pg/checkout/v2/order/${merchantOrderId}/status?details=false`;
+    const url = `${baseUrl}/checkout/v2/order/${merchantOrderId}/status?details=false&errorContext=true`;
 
     const response = await axios.get(url, {
       headers: {
         "Content-Type": "application/json",
-        Authorization: `${token_type || "O-Bearer"} ${accessToken}`,
+        Authorization: `${token_type} ${accessToken}`,
       },
     });
 
