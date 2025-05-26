@@ -10,11 +10,23 @@ import useCartService from "@/lib/hooks/useCartStore";
 import useSWRMutation from "swr/mutation";
 import { SparklesIcon } from "lucide-react";
 
+interface TransactionDetails {
+  paymentDetails?: [];
+  errorContext: {
+    errorCode: string;
+    source: string;
+    description: string;
+  };
+}
+
 const StatusPage = () => {
   const params = useParams();
   const [transactionStatus, setTransactionStatus] = useState<string | null>(
     null
   );
+  const [transactionDetails, setTransactionDetails] =
+    useState<TransactionDetails | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -132,7 +144,7 @@ const StatusPage = () => {
       console.log("PaymentResult to be saved:", fullPaymentData);
 
       setTransactionStatus(paymentStatus);
-
+      setTransactionDetails(response?.data?.result);
       if (paymentStatus === "COMPLETED") {
         if (!hasPlacedOrder.current) {
           hasPlacedOrder.current = true;
@@ -174,26 +186,43 @@ const StatusPage = () => {
               <div className="w-8 h-8 border-4 border-t-4 border-gray-300 border-t-transparent rounded-full animate-spin"></div>
               <p className="text-lg text-gray-700">Loading...</p>
             </div>
-          ) : transactionStatus === "FAIL" ? (
+          ) : transactionStatus === "FAILED" ? (
             <>
               <SparklesIcon className="text-red-400 w-16 h-16 mx-auto animate-bounce" />
-              <h2 className="text-3xl font-extrabold text-red-600 animate-fadeIn">
-                Payment Failed!
+
+              <h2 className="text-3xl font-extrabold text-red-600 text-center animate-fadeIn">
+                Payment Failed
               </h2>
-              <p className="text-lg text-gray-700 animate-fadeIn">
-                Unfortunately, your payment could not be processed.
-                <br /> Please try again later.
+
+              <p className="text-lg text-gray-700 text-center mt-2 animate-fadeIn">
+                Unfortunately, we couldn’t complete your payment.
+                <br />
+                Please check your payment method or try again later.
               </p>
-              <div className="flex flex-col gap-3 mt-6">
+
+              {transactionDetails?.errorContext && (
+                <div className="bg-red-50 border border-red-200 rounded-md p-4 mt-4 text-sm text-red-700">
+                  <p>
+                    <strong>Error Code:</strong>{" "}
+                    {transactionDetails.errorContext.errorCode}
+                  </p>
+                  <p>
+                    <strong>Details:</strong>{" "}
+                    {transactionDetails.errorContext.description}
+                  </p>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3 mt-6 animate-fadeIn">
                 <button
                   onClick={() => router.push("/cart")}
-                  className="w-full py-3 bg-gradient-to-r from-red-400 to-rose-500 text-white font-semibold rounded-md hover:opacity-90 animate-fadeIn"
+                  className="w-full py-3 bg-gradient-to-r from-red-400 to-rose-500 text-white font-semibold rounded-md hover:opacity-90"
                 >
                   Return to Cart
                 </button>
                 <button
                   onClick={() => router.push("/")}
-                  className="w-full py-3 border border-rose-300 text-red-400 font-semibold rounded-md hover:bg-rose-50 animate-fadeIn"
+                  className="w-full py-3 border border-rose-300 text-red-400 font-semibold rounded-md hover:bg-rose-50"
                 >
                   Continue Browsing
                 </button>
@@ -218,7 +247,7 @@ const StatusPage = () => {
                 </button>
               </div>
             </>
-          ) : transactionStatus === "PAYMENT_SUCCESS" ? (
+          ) : transactionStatus === "COMPLETED" ? (
             <>
               <SparklesIcon className="text-pink-400 w-16 h-16 mx-auto animate-bounce" />
               <h2 className="text-3xl font-extrabold text-pink-600 animate-fadeIn">
