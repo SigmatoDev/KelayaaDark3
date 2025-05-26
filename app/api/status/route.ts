@@ -1,55 +1,53 @@
 import { NextRequest, NextResponse } from "next/server";
-import sha256 from "crypto-js/sha256";
 import axios from "axios";
+import { getPhonePeAccessToken } from "@/lib/getPhonePeAccesstoken";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    const { id } = await req.json();
-    const merchantId = process.env.NEXT_PUBLIC_MERCHANT_ID;
-    const transactionId = id;
-    const st =
-      `/pg/v1/status/${merchantId}/${transactionId}` +
-      process.env.NEXT_PUBLIC_SALT_KEY;
-    const dataSha256 = sha256(st).toString();
-    const checksum = dataSha256 + "###" + process.env.NEXT_PUBLIC_SALT_INDEX;
-    console.log(checksum);
+    const { id: merchantOrderId } = await req.json();
 
-    const options = {
-      method: "GET",
-      url: `${process.env.NEXT_PUBLIC_PHONE_PAY_HOST_URL}/pg/v1/status/${merchantId}/${transactionId}`,
+    const { access_token: accessToken, token_type } =
+      await getPhonePeAccessToken();
+    const baseUrl = process.env.PHONEPE_BASE_URL || "https://api.phonepe.com";
+
+    const url = `${baseUrl}/apis/pg/checkout/v2/order/${merchantOrderId}/status`;
+
+    const response = await axios.get(url, {
       headers: {
-        accept: "application/json",
         "Content-Type": "application/json",
-        "X-VERIFY": checksum,
-        "X-MERCHANT-ID": `${merchantId}`,
+        Authorization: `${token_type || "O-Bearer"} ${accessToken}`,
       },
-    };
+    });
 
-    const response = await axios.request(options);
-    console.log("r===", response);
+    const result = response.data;
 
-    if (response.data.code === "PAYMENT_SUCCESS") {
+    console.log("PhonePe Status Response:", result);
+
+    if (result.state === "COMPLETED") {
       return NextResponse.json(
         {
-          status: response.data.code,
-          transactionId: response.data.data.transactionId,
+          status: "COMPLETED",
+          transactionId: result.data?.paymentDetails[0]?.transactionId,
         },
         { status: 200 }
       );
     } else {
       return NextResponse.json(
         {
-          status: "FAIL",
-          referenceId: null,
+          status: result.state,
+          referenceId: result.data?.paymentDetails[0]?.transactionId || null,
         },
         { status: 200 }
       );
     }
-  } catch (error) {
-    console.error("Error in payment status check:", error);
+  } catch (error: any) {
+    console.error(
+      "Error in OAuth payment status check:",
+      error?.response?.data || error.message
+    );
     return NextResponse.json(
       {
-        status: "SERVER ERROR",
+        status: "SERVER_ERROR",
         referenceId: null,
       },
       { status: 500 }

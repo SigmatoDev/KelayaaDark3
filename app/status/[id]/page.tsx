@@ -115,12 +115,15 @@ const StatusPage = () => {
 
   const fetchStatus = async () => {
     try {
-      const response = await axios.post("/api/status", { id: params?.id });
+      const response = await axios.post("/api/phonepe/status", {
+        id: params?.id, // This should be the merchantOrderId
+      });
 
-      const paymentStatus = response.data.status;
-      const transactionId = response.data.transactionId;
+      console.log("id-----", params?.id);
 
-      // ✅ Correct format sent to placeOrder
+      const paymentStatus = response.data.state;
+      const transactionId = response.data.paymentDetails[0]?.transactionId;
+
       const fullPaymentData = {
         status: paymentStatus,
         transactionId: transactionId,
@@ -130,7 +133,7 @@ const StatusPage = () => {
 
       setTransactionStatus(paymentStatus);
 
-      if (paymentStatus === "PAYMENT_SUCCESS") {
+      if (paymentStatus === "COMPLETED") {
         if (!hasPlacedOrder.current) {
           hasPlacedOrder.current = true;
           await placeOrder({ paymentResult: fullPaymentData });

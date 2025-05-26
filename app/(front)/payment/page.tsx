@@ -8,10 +8,21 @@ import { loadScript } from "@/lib/loadRazorpay";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 import { initiatePayment } from "@/app/actions/initiatePayment";
+import Script from "next/script";
+
+declare global {
+  interface Window {
+    PhonePeCheckout?: {
+      transact: (tokenUrl: any) => void;
+    };
+  }
+}
 
 const Form = () => {
   const { data: session } = useSession();
   const router = useRouter();
+  const [phonePeLoaded, setPhonePeLoaded] = useState(false);
+
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
     "Razorpay" | "PhonePe" | "CashOnDelivery"
   >("Razorpay");
@@ -92,7 +103,7 @@ const Form = () => {
     }
   };
 
-  const handlePhonePePayment = async () => {
+  const handlePhonePePayment = async (): Promise<void> => {
     try {
       const res = await fetch("/api/phonepe/initiatePayment", {
         method: "POST",
@@ -100,15 +111,33 @@ const Form = () => {
         body: JSON.stringify({ amount: totalPrice }),
       });
 
-      const data = await res.json();
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl;
-      } else {
-        alert("Payment initiation failed.");
+      const data: {
+        fullResponse?: {
+          orderId: string;
+          state: string;
+          redirectUrl: string;
+          expireAt: number;
+        };
+        transactionId?: string;
+      } = await res.json();
+
+      const paymentRequest = data.fullResponse?.redirectUrl;
+
+      if (!paymentRequest) {
+        alert("Payment initiation failed: No redirect URL.");
+        return;
       }
-    } catch (err) {
-      console.error("Payment error:", err);
-      alert("Something went wrong");
+
+      if (!window.PhonePeCheckout) {
+        alert("PhonePe SDK not loaded yet.");
+        return;
+      }
+      // router.push(paymentRequest);
+      // Call PhonePe SDK with redirect URL (token-based payment)
+      window.PhonePeCheckout.transact({ tokenUrl: paymentRequest });
+    } catch (error) {
+      console.error("Payment error:", error);
+      alert("Something went wrong during payment.");
     }
   };
 
@@ -122,6 +151,11 @@ const Form = () => {
 
   return (
     <div>
+      <Script
+        src="https://mercury.phonepe.com/web/bundle/checkout.js"
+        strategy="afterInteractive"
+        onLoad={() => setPhonePeLoaded(true)}
+      />
       <CheckoutSteps current={2} />
       <div className="card mx-auto my-6 max-w-sm bg-[#eaeaea] shadow-md">
         <div className="card-body">
@@ -157,6 +191,7 @@ const Form = () => {
 
             <button
               type="submit"
+              disabled={!phonePeLoaded}
               className="btn bg-gradient-to-r from-pink-500 to-red-500 text-white w-full font-semibold"
             >
               {selectedPaymentMethod === "CashOnDelivery"
