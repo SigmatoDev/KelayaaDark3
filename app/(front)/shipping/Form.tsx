@@ -14,6 +14,7 @@ import {
   GstDetails,
 } from "@/lib/models/OrderModel";
 import SignInPopup from "@/components/signin/SignIn";
+import { TextValidationHelper } from "../helpers/validationHelpers";
 
 type FormData = {
   personalInfo: PersonalInfo & { fullName?: string };
@@ -48,6 +49,7 @@ const Form = () => {
     watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
+    mode: 'onChange', 
     defaultValues: {
       personalInfo: {
         email: "",
@@ -188,13 +190,43 @@ const Form = () => {
             <div className="space-y-3">
               <div>
                 <label className="text-xs font-medium">Full Name</label>
-                <input
+                {/* <input
                   type="text"
                   placeholder="Full Name"
                   disabled={isNameLocked}
                   {...register("personalInfo.fullName", { required: true })}
                   className={`input input-bordered w-full text-sm ${isNameLocked ? "bg-gray-100" : ""}`}
+                /> */}
+
+
+
+                <input
+                  type="text"
+                  placeholder="Full Name"
+                  disabled={isNameLocked}
+                  {...register('personalInfo.fullName', {
+                    required: 'Full name is required',
+                    validate: TextValidationHelper.createNameValidator(3, 30),
+                  })}
+                  onBlur={(e) => {
+                    const cleaned = TextValidationHelper.sanitizeText(e.target.value);
+                    setValue('personalInfo.fullName', cleaned, {
+                      shouldValidate: true,
+                      shouldDirty: true,
+                    });
+                  }}
+                  className={`input input-bordered w-full text-sm ${isNameLocked ? "bg-gray-100" : ""}`}
                 />
+
+
+                {errors.personalInfo?.fullName && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.personalInfo.fullName.message}
+                  </p>
+                )}
+
+
+
               </div>
 
               <div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
@@ -215,6 +247,12 @@ const Form = () => {
                   inputMode="numeric"
                 />
               </div>
+
+              {errors.personalInfo?.mobileNumber && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.personalInfo.mobileNumber.message}
+                  </p>
+                )}
 
               <input
                 type="email"
@@ -250,27 +288,55 @@ const Form = () => {
                 className="textarea textarea-bordered w-full text-sm"
                 rows={3}
               />
+
+{errors.shippingAddress?.address && (
+  <p className="text-red-500 text-sm mt-1">
+    {errors.shippingAddress.address.message}
+  </p>
+)}
+
             </div>
 
             <div>
               <label className="text-xs font-medium">Landmark</label>
               <input
-                type="text"
-                placeholder="Landmark (Optional)"
-                {...register("shippingAddress.landmark")}
-                className="input input-bordered w-full text-sm"
-              />
+  type="text"
+  placeholder="Landmark (Optional)"
+  maxLength={30}
+  {...register("shippingAddress.landmark", {
+    validate: TextValidationHelper.createLandmarkValidator(),
+  })}
+  className={`input input-bordered w-full text-sm ${
+    errors.shippingAddress?.landmark ? "border-red-500" : ""
+  }`}
+/>
+
+{errors.shippingAddress?.landmark && (
+  <p className="text-red-500 text-sm mt-1">
+    {errors.shippingAddress.landmark.message}
+  </p>
+)}
+
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="text-xs font-medium">City</label>
                 <input
-                  type="text"
-                  placeholder="City"
-                  {...register("shippingAddress.city", { required: true })}
-                  className="input input-bordered w-full text-sm"
-                />
+  type="text"
+  placeholder="City"
+  {...register('shippingAddress.city', {
+    validate: TextValidationHelper.createCityValidator(2, 50)
+  })}
+  className="input input-bordered w-full text-sm"
+/>
+
+{errors.shippingAddress?.city && (
+  <p className="text-red-500 text-sm mt-1">
+    {errors.shippingAddress.city.message}
+  </p>
+)}
+
               </div>
 
               <div>
@@ -325,14 +391,42 @@ const Form = () => {
 
               <div>
                 <label className="text-xs font-medium">Postal Code</label>
-                <input
+                {/* <input
                   type="text"
                   placeholder="Postal Code"
                   {...register("shippingAddress.postalCode", {
                     required: true,
                   })}
                   className="input input-bordered w-full text-sm"
-                />
+                /> */}
+
+
+
+<input
+  type="text"
+  placeholder="Postal Code"
+  {...register("shippingAddress.postalCode", {
+    required: "Postal code is required",
+    validate: TextValidationHelper.createPostalCodeValidator(),
+  })}
+  className={`input input-bordered w-full text-sm ${
+    errors.shippingAddress?.postalCode ? 'border-red-500' : ''
+  }`}
+/>
+
+{errors.shippingAddress?.postalCode && (
+  <p className="text-red-500 text-sm mt-1">
+    {errors.shippingAddress.postalCode.message}
+  </p>
+)}
+
+
+
+
+
+
+
+
               </div>
             </div>
 
@@ -376,34 +470,118 @@ const Form = () => {
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
                   <label className="text-xs font-medium">City</label>
-                  <input
+                  {/* <input
                     type="text"
                     placeholder="City"
                     {...register("billingDetails.city", { required: true })}
                     className="input input-bordered w-full text-sm"
-                  />
+                  /> */}
+
+
+                <input
+                  type="text"
+                  placeholder="City"
+                  {...register('billingDetails.city', {
+                    validate: TextValidationHelper.createCityValidator(2, 50)
+                  })}
+                  className="input input-bordered w-full text-sm"
+                />
+
+                {errors.billingDetails?.city && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.billingDetails.city.message}
+                  </p>
+                )}
+
                 </div>
 
                 <div>
                   <label className="text-xs font-medium">State</label>
-                  <input
+                  {/* <input
                     type="text"
                     placeholder="State"
                     {...register("billingDetails.state", { required: true })}
                     className="input input-bordered w-full text-sm"
-                  />
+                  /> */}
+
+
+<select
+                  {...register("billingDetails.state", { required: true })}
+                  className="select select-bordered w-full text-sm"
+                >
+                
+  <option value="">Select</option>
+  <option value="Andhra Pradesh">Andhra Pradesh</option>
+  <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+  <option value="Assam">Assam</option>
+  <option value="Bihar">Bihar</option>
+  <option value="Chhattisgarh">Chhattisgarh</option>
+  <option value="Goa">Goa</option>
+  <option value="Gujarat">Gujarat</option>
+  <option value="Haryana">Haryana</option>
+  <option value="Himachal Pradesh">Himachal Pradesh</option>
+  <option value="Jharkhand">Jharkhand</option>
+  <option value="Karnataka">Karnataka</option>
+  <option value="Kerala">Kerala</option>
+  <option value="Madhya Pradesh">Madhya Pradesh</option>
+  <option value="Maharashtra">Maharashtra</option>
+  <option value="Manipur">Manipur</option>
+  <option value="Meghalaya">Meghalaya</option>
+  <option value="Mizoram">Mizoram</option>
+  <option value="Nagaland">Nagaland</option>
+  <option value="Odisha">Odisha</option>
+  <option value="Punjab">Punjab</option>
+  <option value="Rajasthan">Rajasthan</option>
+  <option value="Sikkim">Sikkim</option>
+  <option value="Tamil Nadu">Tamil Nadu</option>
+  <option value="Telangana">Telangana</option>
+  <option value="Tripura">Tripura</option>
+  <option value="Uttar Pradesh">Uttar Pradesh</option>
+  <option value="Uttarakhand">Uttarakhand</option>
+  <option value="West Bengal">West Bengal</option>
+  <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
+  <option value="Chandigarh">Chandigarh</option>
+  <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
+  <option value="Delhi">Delhi</option>
+  <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+  <option value="Ladakh">Ladakh</option>
+  <option value="Lakshadweep">Lakshadweep</option>
+  <option value="Puducherry">Puducherry</option>
+</select>
+
                 </div>
 
                 <div>
                   <label className="text-xs font-medium">Postal Code</label>
-                  <input
+                  {/* <input
                     type="text"
                     placeholder="Postal Code"
                     {...register("billingDetails.postalCode", {
                       required: true,
                     })}
                     className="input input-bordered w-full text-sm"
-                  />
+                  /> */}
+
+
+              <input
+                type="text"
+                placeholder="Postal Code"
+                {...register("billingDetails.postalCode", {
+                  required: "Postal code is required",
+                  validate: TextValidationHelper.createPostalCodeValidator(),
+                })}
+                className={`input input-bordered w-full text-sm ${
+                  errors.billingDetails?.postalCode ? 'border-red-500' : ''
+                }`}
+              />
+
+            {errors.billingDetails?.postalCode && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.billingDetails.postalCode.message}
+              </p>
+            )}
+
+
                 </div>
               </div>
 
@@ -412,8 +590,10 @@ const Form = () => {
                 <input
                   type="text"
                   placeholder="Country"
+                  value="India"
+                  readOnly
                   {...register("billingDetails.country", { required: true })}
-                  className="input input-bordered w-full text-sm"
+                 className="input input-bordered w-full text-sm bg-gray-100"
                 />
               </div>
             </div>
@@ -450,11 +630,20 @@ const Form = () => {
                 <div>
                   <label className="text-xs font-medium">GST Number</label>
                   <input
-                    type="text"
-                    placeholder="GST Number"
-                    {...register("gstDetails.gstNumber")}
-                    className="input input-bordered w-full text-sm"
-                  />
+  type="text"
+  placeholder="GST Number"
+  {...register("gstDetails.gstNumber", {
+    validate: TextValidationHelper.validateGSTIN,
+  })}
+  className="input input-bordered w-full text-sm"
+/>
+{errors.gstDetails?.gstNumber && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.gstDetails?.gstNumber.message}
+              </p>
+            )}
+
+
                 </div>
               </div>
             )}

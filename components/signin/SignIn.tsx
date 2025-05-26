@@ -170,25 +170,40 @@ export default function SignInPopup({
                   Full Name
                 </label>
                 <input
-                  id="fullName"
-                  type="text"
-                  aria-invalid={!!errors.fullName}
-                  {...register("fullName", {
-                    required: "Full name is required",
-                  })}
-                  placeholder="John Doe"
-                  className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
-                />
+  id="fullName"
+  type="text"
+  aria-invalid={!!errors.fullName}
+  {...register("fullName", {
+    required: "Full name is required",
+    maxLength: {
+      value: 30,
+      message: "Full name cannot exceed 30 characters",
+    },
+    pattern: {
+      value: /^[A-Za-z\s]+$/,
+      message: "Only alphabets and spaces are allowed",
+    },
+  })}
+  placeholder="Full Name"
+  className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#e58aaa] focus:border-[#e58aaa]"
+/>
+
+
                 {errors.fullName && (
                   <p className="text-red-500 text-xs mt-1">
                     {errors.fullName.message}
                   </p>
                 )}
               </div>
+
               <div>
                 <label className="text-xs font-medium" htmlFor="mobileNumber">
                   Mobile Number
                 </label>
+                <div className="flex mt-1">
+    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-200 text-sm select-none">
+          +91
+        </span>
                 <input
                   id="mobileNumber"
                   type="tel"
@@ -200,8 +215,20 @@ export default function SignInPopup({
                       message: "Enter a valid 10-digit mobile number",
                     },
                   })}
-                  className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
+                  placeholder="Enter 10-digit number"
+                  className={`flex-1 min-w-0 block w-full rounded-r-md border border-gray-300 p-2 text-sm bg-gray-100 
+                    focus:outline-none focus:ring-2 focus:ring-[#e58aaa] focus:border-[#e58aaa] ${
+                      errors.mobileNumber ? "border-red-500" : ""
+                    }`}
                 />
+                </div>
+
+{errors.mobileNumber && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.mobileNumber.message}
+                  </p>
+                )}
+
                 {/* Show any general error message (not linked to a field) */}
                 {error && (
                   <div className="text-red-600 text-xs mb-3">
@@ -222,7 +249,7 @@ export default function SignInPopup({
               aria-invalid={!!errors.email}
               {...register("email", { required: "Email is required" })}
               placeholder="Email address"
-              className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100"
+              className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#e58aaa] focus:border-[#e58aaa]"
               readOnly={!!prefillEmail}
             />
             {errors.email && (
@@ -251,7 +278,7 @@ export default function SignInPopup({
                   }),
                 })}
                 placeholder="Password"
-                className="w-full mt-1 p-2 pr-10 border rounded-md text-sm bg-gray-100"
+                className="w-full mt-1 p-2 pr-10 border rounded-md text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#e58aaa] focus:border-[#e58aaa]"
               />
               <span
                 className="absolute top-1/2 right-2 transform -translate-y-1/2 cursor-pointer text-gray-500"
@@ -297,7 +324,7 @@ export default function SignInPopup({
                   className="w-full mt-1 p-2 pr-10 border rounded-md text-sm bg-gray-100"
                 />
                 <span
-                  className="absolute top-1/2 right-2 transform -translate-y-1/2 cursor-pointer text-gray-500"
+                  className="absolute top-1/2 right-2 transform -translate-y-1/2 cursor-pointer text-gray-500 focus:outline-none focus:ring-2 focus:ring-[#e58aaa] focus:border-[#e58aaa]"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (

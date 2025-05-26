@@ -181,7 +181,7 @@ const Carousel = () => {
             ))}
 
             {/* Centered / Left-aligned Text */}
-            <div className="absolute z-30 bottom-6 md:bottom-10 left-4 flex flex-col items-start text-left px-4 max-w-[65vw] md:max-w-none">
+            <div className="absolute z-30 bottom-6 md:bottom-10 left-20 flex flex-col items-start text-left px-4 max-w-[65vw] md:max-w-none">
   <h2 className="text-white text-lg sm:text-xl md:text-5xl font-semibold leading-snug md:leading-tight">
     Celebrate Every Moment with <br className="hidden md:block" /> Pure, Elegant Gold
   </h2>

@@ -11,7 +11,7 @@ import {
   User2,
 } from "lucide-react";
 import Link from "next/link";
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useRef } from "react";
 import { FaFacebookF, FaInstagram, FaTwitter, FaYoutube } from "react-icons/fa";
 import Banner from "./Banner";
 import { signOut, useSession } from "next-auth/react";
@@ -330,6 +330,8 @@ const DesktopHeader = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [hoveredMaterialType, setHoveredMaterialType] = useState<string>("");
 
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   // const signOutHandler = async () => {
   //   await signOut({ redirect: false }); // Prevent full page reload
   //   setMenuOpen(false); // Close menu on logout
@@ -344,6 +346,25 @@ const DesktopHeader = () => {
   };
 
   const handleClick = () => setMenuOpen(false); // Close menu on link click
+
+
+  useEffect(() => {
+    // handler to call on click outside
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+
+    // Bind the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Unbind the event listener on clean up
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [dropdownRef]);
+
+
 
   useEffect(() => {
     let keywordIndex = 0;
@@ -571,7 +592,7 @@ const DesktopHeader = () => {
                         <div className="relative">
                           {session && session.user ? (
                             <li className="list-none">
-                              <div className="relative">
+                              <div ref={dropdownRef} className="relative">
                                 <button
                                   onClick={() => setMenuOpen(!menuOpen)}
                                   className="flex items-center px-3 py-2 text-sm text-white bg-black rounded-lg hover:bg-gray-800 transition"
