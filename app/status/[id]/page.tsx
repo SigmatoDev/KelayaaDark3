@@ -121,8 +121,8 @@ const StatusPage = () => {
 
       console.log("id-----", params?.id);
 
-      const paymentStatus = response.data.state;
-      const transactionId = response.data.paymentDetails[0]?.transactionId;
+      const paymentStatus = response.data.status;
+      const transactionId = response.data?.transactionId;
 
       const fullPaymentData = {
         status: paymentStatus,
