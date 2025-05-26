@@ -27,7 +27,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           status: "COMPLETED",
-          transactionId: result.data?.paymentDetails[0]?.transactionId,
+          transactionId: result?.paymentDetails[0]?.transactionId,
         },
         { status: 200 }
       );
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       return NextResponse.json(
         {
           status: result.state,
-          referenceId: result.data?.paymentDetails[0]?.transactionId || null,
+          referenceId: result?.paymentDetails[0]?.transactionId || null,
         },
         { status: 200 }
       );
