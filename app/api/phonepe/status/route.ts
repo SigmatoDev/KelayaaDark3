@@ -10,7 +10,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       await getPhonePeAccessToken();
     const baseUrl = process.env.PHONEPE_BASE_URL || "https://api.phonepe.com";
 
-    const url = `${baseUrl}/apis/pg/checkout/v2/order/${merchantOrderId}/status?details=false&errorContext=true`;
+    const url = `${baseUrl}/apis/pg/checkout/v2/order/${merchantOrderId}/status?details=false`;
 
     const response = await axios.get(url, {
       headers: {
