@@ -57,7 +57,7 @@ export async function getPhonePeAccessToken(): Promise<{
       expires_in,
     };
 
-    tokenExpiresAt = new Date(expires_in).getTime();
+    tokenExpiresAt = Date.now() + expires_in * 1000; // ✅ fixed
 
     console.log("🔐 New access token obtained");
     console.log("⏳ Expires at (ms):", tokenExpiresAt);
