@@ -64,7 +64,7 @@ const initialState: Cart = {
   totalPrice: 0,
   totalPriceAfterCheckout: 0,
   totalCartQuantity: 0,
-  paymentMethod: "Razorpay",
+  paymentMethod: "PhonePe",
   shippingAddress: {
     firstName: "",
     lastName: "",
