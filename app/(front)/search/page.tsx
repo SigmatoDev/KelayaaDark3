@@ -15,7 +15,7 @@ import CollectionTypeFilter from "./collectionTypeFilter";
 // import ClearAllFilters from "./clearAllFilters";
 import MobileFilter from "./MobileFilter";
 
-const sortOrders = ["newest", "lowest", "highest", "rating"];
+const sortOrders = ["newest", "lowest", "highest"];
 const pageSize = 10; // Default to 10 products per page
 
 // Function to validate image URLs

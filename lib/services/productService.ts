@@ -676,7 +676,6 @@ const getByQuery = cache(
             },
           }
         : {};
-
     const order: Record<string, 1 | -1> =
       sort === "lowest"
         ? { price: 1 }
@@ -684,7 +683,9 @@ const getByQuery = cache(
           ? { price: -1 }
           : sort === "toprated"
             ? { rating: -1 }
-            : { _id: -1 };
+            : sort === "newest"
+              ? { createdAt: -1 } // 👈 Add this line
+              : { _id: -1 };
 
     let products: any[] = [];
 
@@ -735,6 +736,9 @@ const getByQuery = cache(
             ...ratingFilter,
             ...materialTypeFilter,
           },
+        },
+        {
+          $sort: order,
         },
       ]);
 

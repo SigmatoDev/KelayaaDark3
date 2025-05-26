@@ -116,7 +116,7 @@ const StatusPage = () => {
   const fetchStatus = async () => {
     try {
       const response = await axios.post("/api/phonepe/status", {
-        id: params?.id, // This should be the merchantOrderId
+        merchantOrderId: params?.id, // This should be the merchantOrderId
       });
 
       console.log("id-----", params?.id);
