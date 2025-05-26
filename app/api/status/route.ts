@@ -4,13 +4,13 @@ import { getPhonePeAccessToken } from "@/lib/getPhonePeAccesstoken";
 
 export async function POST(req: NextRequest): Promise<NextResponse> {
   try {
-    const { id: merchantOrderId } = await req.json();
+    const { merchantOrderId } = await req.json();
 
     const { access_token: accessToken, token_type } =
       await getPhonePeAccessToken();
     const baseUrl = process.env.PHONEPE_BASE_URL || "https://api.phonepe.com";
 
-    const url = `${baseUrl}/apis/pg/checkout/v2/order/${merchantOrderId}/status`;
+    const url = `${baseUrl}/apis/pg/checkout/v2/order/${merchantOrderId}/status?details=false&errorContext=true`;
 
     const response = await axios.get(url, {
       headers: {

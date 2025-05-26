@@ -10,18 +10,18 @@ export async function initiatePayment(amount: number) {
     const accessToken = tokenResponse.access_token;
     const tokenType = tokenResponse.token_type || "O-Bearer";
 
-    const transactionId = `Tr-${uuidv4().slice(-6)}`;
-
+    const rawId = uuidv4().replace(/[^a-zA-Z0-9_-]/g, ""); // keep only allowed characters
+    const transactionId = `TX${rawId.slice(0, 21)}`;
     const payload = {
       merchantOrderId: transactionId,
       amount: amount * 100, // in paise
       expireAfter: tokenResponse?.expires_in, // seconds (20 minutes)
       metaInfo: {
-        udf1: "test1",
-        udf2: "new param2",
-        udf3: "test3",
-        udf4: "dummy value 4",
-        udf5: "additional info ref1",
+        udf1: "",
+        udf2: "",
+        udf3: "",
+        udf4: "",
+        udf5: "",
       },
       paymentFlow: {
         type: "PG_CHECKOUT",

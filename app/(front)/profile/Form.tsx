@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 type Inputs = {
   name: string;
   email: string;
+  mobileNumber: string;
   password: string;
   confirmPassword: string;
 };
@@ -25,22 +26,31 @@ const Profile = () => {
 
   useEffect(() => {
     if (session && session.user) {
-      setValue("name", session.user.name!);
-      setValue("email", session.user.email!);
+      setValue("name", session.user.name || "");
+      setValue("email", session.user.email || "");
+      setValue("mobileNumber", (session.user as any).mobileNumber || ""); // assuming session.user.mobileNumber exists
     }
   }, [session, setValue]);
 
   const formSubmit: SubmitHandler<Inputs> = async (form) => {
-    const { name, email, password } = form;
+    const { name, email, mobileNumber, password } = form;
     try {
       const res = await fetch("/api/auth/profile", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({ name, email, mobileNumber, password }),
       });
       if (res.status === 200) {
         toast.success("Profile updated successfully");
-        await update({ ...session, user: { ...session?.user, name, email } });
+        await update({
+          ...session,
+          user: {
+            ...session?.user,
+            name,
+            email,
+            mobileNumber,
+          },
+        });
       } else {
         const data = await res.json();
         toast.error(data.message || "Error updating profile");
@@ -73,6 +83,26 @@ const Profile = () => {
             className="w-full mt-1 p-2 border rounded-md bg-gray-100"
           />
           {errors.email && <p className="text-error">{errors.email.message}</p>}
+        </div>
+
+        <div>
+          <label className="text-gray-700 text-sm font-semibold">
+            MOBILE NUMBER
+          </label>
+          <input
+            type="tel"
+            {...register("mobileNumber", {
+              required: "Mobile number is required",
+              pattern: {
+                value: /^[0-9]{10}$/,
+                message: "Enter a valid 10-digit mobile number",
+              },
+            })}
+            className="w-full mt-1 p-2 border rounded-md bg-gray-100"
+          />
+          {errors.mobileNumber && (
+            <p className="text-error">{errors.mobileNumber.message}</p>
+          )}
         </div>
 
         <div>
