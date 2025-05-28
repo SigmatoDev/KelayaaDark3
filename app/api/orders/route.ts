@@ -63,7 +63,7 @@ export const POST = auth(async (...request: any) => {
     }
 
     const newOrder = await OrderModel.create({
-      user: new mongoose.Types.ObjectId(req.auth.userId), // ✅ converted
+      user: new mongoose.Types.ObjectId(req?.auth?.user?._id), // ✅ converted
       status,
       items,
       itemsPrice,
@@ -86,7 +86,6 @@ export const POST = auth(async (...request: any) => {
     const populatedOrder = await OrderModel.findById(newOrder._id).populate(
       "user"
     );
-
     await sendOrderEmails(populatedOrder); // ✅ Send emails with user data
 
     return Response.json({ success: true, order: newOrder }, { status: 201 });
