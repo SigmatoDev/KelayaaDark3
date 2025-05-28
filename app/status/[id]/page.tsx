@@ -94,7 +94,7 @@ const StatusPage = () => {
               gstNumber: gstDetails.gstNumber || "",
             },
             paymentStatus: "completed",
-            paymentMethod,
+            paymentMethod: "PhonePe",
             paymentIntentId,
             paymentResult,
             personalInfo: {
