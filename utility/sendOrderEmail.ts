@@ -17,6 +17,7 @@ apiInstance.setApiKey(TransactionalEmailsApiApiKeys.apiKey, apiKey);
 
 export const sendOrderEmails = async (order: any) => {
   const {
+    user,
     personalInfo,
     items,
     totalPrice,
@@ -127,9 +128,9 @@ export const sendOrderEmails = async (order: any) => {
         <div class="section">
           <div class="section-title">Customer Info</div>
           <div class="details">
-            <p><strong>Name:</strong> ${personalInfo?.fullName}</p>
+            <p><strong>Name:</strong> ${user?.name}</p>
             <p><strong>Email:</strong> ${personalInfo?.email}</p>
-            <p><strong>Phone:</strong> ${personalInfo?.phone}</p>
+            <p><strong>Phone:</strong> ${personalInfo?.mobileNumber}</p>
           </div>
         </div>
 
@@ -137,7 +138,7 @@ export const sendOrderEmails = async (order: any) => {
           <div class="section-title">Shipping Address</div>
           <div class="details">
             <p>${shippingAddress?.address},</p>
-            <p>${shippingAddress?.city}, ${shippingAddress?.state} - ${shippingAddress?.pincode}</p>
+            <p>${shippingAddress?.city}, ${shippingAddress?.state} - ${shippingAddress?.postalCode}</p>
           </div>
         </div>
 

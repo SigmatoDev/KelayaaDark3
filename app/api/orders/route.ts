@@ -11,7 +11,6 @@ export const POST = auth(async (...request: any) => {
     return Response.json({ message: "Unauthorized" }, { status: 401 });
   }
 
-  
   try {
     await dbConnect();
 
@@ -31,9 +30,9 @@ export const POST = auth(async (...request: any) => {
       personalInfo,
       paymentResult,
     } = await req.json();
+
     console.log(
       "order Details",
-
       status,
       items,
       itemsPrice,
@@ -49,6 +48,7 @@ export const POST = auth(async (...request: any) => {
       personalInfo,
       paymentResult
     );
+
     if (
       !items ||
       !totalAmount ||
@@ -64,7 +64,6 @@ export const POST = auth(async (...request: any) => {
 
     const newOrder = await OrderModel.create({
       user: new mongoose.Types.ObjectId(req.auth.userId), // ✅ converted
-
       status,
       items,
       itemsPrice,
@@ -83,7 +82,12 @@ export const POST = auth(async (...request: any) => {
       paymentResult,
     });
 
-    await sendOrderEmails(newOrder); // ✅ Send emails
+    // ✅ Populate the user info after creation
+    const populatedOrder = await OrderModel.findById(newOrder._id).populate(
+      "user"
+    );
+
+    await sendOrderEmails(populatedOrder); // ✅ Send emails with user data
 
     return Response.json({ success: true, order: newOrder }, { status: 201 });
   } catch (error: any) {

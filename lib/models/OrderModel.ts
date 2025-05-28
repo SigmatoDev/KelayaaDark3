@@ -39,7 +39,7 @@ const orderSchema = new mongoose.Schema(
       city: { type: String, required: false },
       state: { type: String, required: false },
       postalCode: { type: String, required: false },
-      country: { type: String, required: false },
+      country: { type: String, required: false, default: "India" },
     },
 
     gstDetails: {
@@ -53,7 +53,7 @@ const orderSchema = new mongoose.Schema(
       lastName: { type: String },
       address: { type: String },
       landmark: { type: String },
-      country: { type: String },
+      country: { type: String, default: "India" },
       state: { type: String },
       city: { type: String },
       postalCode: { type: String },
