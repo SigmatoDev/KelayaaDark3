@@ -2,6 +2,7 @@ import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/dbConnect";
 import mongoose from "mongoose"; // ✅ IMPORTANT
 import OrderModel from "@/lib/models/OrderModel";
+import { sendOrderEmails } from "@/utility/sendOrderEmail";
 
 export const POST = auth(async (...request: any) => {
   const [req] = request;
@@ -80,6 +81,8 @@ export const POST = auth(async (...request: any) => {
       paidAt: paymentStatus === "completed" ? new Date() : undefined,
       paymentResult,
     });
+
+    await sendOrderEmails(newOrder); // ✅ Send emails
 
     return Response.json({ success: true, order: newOrder }, { status: 201 });
   } catch (error: any) {
