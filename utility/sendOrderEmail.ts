@@ -108,7 +108,7 @@ export const sendOrderEmails = async (order: any) => {
   <body>
     <div class="email-wrapper">
       <div class="header">
-        <img src="https://kelayaa.com/logo.png" alt="Kelayaa Logo" />
+        <img src="https://kelayaa.com/Kelayaa%20-%20logo.webp" alt="Kelayaa Logo" />
         <div class="title">
           ${recipient === "admin" ? "New Order Alert 🚀" : "Thank You for Your Order 💖"}
         </div>
