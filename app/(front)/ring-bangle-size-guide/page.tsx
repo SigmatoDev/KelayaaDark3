@@ -155,52 +155,106 @@ export default function SizeGuide() {
         {/* Bangle Size Chart Section */}
         {activeTab === "bangle" && (
           <section className="text-center">
-            <h2 className="text-4xl font-bold mb-10">Bangle Size Chart</h2>
-            <p className="text-lg text-gray-700 max-w-4xl mx-auto mb-8">
-              Bring your thumb and little finger together and measure around the widest part of your hand. Use a flexible tape or thread. Mark and measure to find your ideal bangle size.
-            </p>
-
-            <div className="flex flex-col items-center">
-                  <div className="w-full md:w-[80%]">
-                    <Image src="/images/howto/banglestep.webp" alt="Procedure 2 Step 1" width={1200} height={500} className="rounded-xl" />
-                  </div>
-                  <div className="flex">
-                  <p className="text-center mt-4"><h3>Step:1<br/></h3> Cut a thin strip of paper or thread - Bring your thumb and little finger together and measure where your hand is the widest. - Mark the spot where the thread meets.</p>
-                  <p className="text-center mt-2"><h3>Step 2: <br/></h3>Measure the length of the thread with your ruler. - Use the following chart to determine your bangle size.</p>
-                  </div>
-                </div>
-            <div className="overflow-x-auto mt-4">
-              <div className="mx-auto w-full md:w-[60%]">
-                <table className="min-w-full text-sm text-left border">
-                  <thead className="bg-gray-100">
-                    <tr>
-                      <th className="p-4 border">Bangle Size (Indian)</th>
-                      <th className="p-4 border">Circumference (Inches)</th>
-                      <th className="p-4 border">Circumference (MM)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      ["2-2", "6.67", "169.4"],
-                      ["2-4", "7.06", "179.6"],
-                      ["2-6", "7.46", "189.5"],
-                      ["2-8", "7.85", "199.4"],
-                      ["2-10", "8.24", "209.3"],
-                      ["2-12", "8.64", "219.5"],
-                      ["2-14", "9.03", "229.4"],
-                      ["3", "9.42", "239.3"],
-                    ].map(([size, inch, mm], i) => (
-                      <tr className="border" key={i}>
-                        <td className="p-4 border">{size}</td>
-                        <td className="p-4 border">{inch}</td>
-                        <td className="p-4 border">{mm}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <h2 className="text-4xl font-bold mb-10">Bangle Size Chart</h2>
+          <p className="text-lg text-gray-700 max-w-4xl mx-auto mb-8">
+            Bring your thumb and little finger together and measure around the widest part of your hand. Use a flexible tape or thread. Mark and measure to find your ideal bangle size.
+          </p>
+        
+          <div className="flex flex-col items-center mb-10">
+            <div className="w-full md:w-[80%]">
+              <Image src="/images/howto/banglestep.webp" alt="Procedure 1 Step" width={1200} height={500} className="rounded-xl" />
+            </div>
+            <div className="flex flex-col md:flex-row gap-8 mt-6 text-left md:text-center">
+              <div className="md:w-1/2">
+                <h3 className="text-xl font-semibold mb-2">Step 1:</h3>
+                <p>
+                  Cut a thin strip of paper or thread. Bring your thumb and little finger together and measure where your hand is the widest. Mark the spot where the thread meets.
+                </p>
+              </div>
+              <div className="md:w-1/2">
+                <h3 className="text-xl font-semibold mb-2">Step 2:</h3>
+                <p>
+                  Measure the length of the thread with your ruler. Use the following chart to determine your bangle size.
+                </p>
               </div>
             </div>
-          </section>
+          </div>
+        
+          {/* Procedure #1 Table */}
+          <div className="overflow-x-auto mt-4">
+            <div className="mx-auto w-full md:w-[60%]">
+              <table className="min-w-full text-sm text-left border">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="p-4 border">Bangle Size (Indian)</th>
+                    <th className="p-4 border">Circumference (Inches)</th>
+                    <th className="p-4 border">Circumference (MM)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["2-2", "6.67", "169.4"],
+                    ["2-4", "7.06", "179.6"],
+                    ["2-6", "7.46", "189.5"],
+                    ["2-8", "7.85", "199.4"],
+                    ["2-10", "8.24", "209.3"],
+                    ["2-12", "8.64", "219.5"],
+                    ["2-14", "9.03", "229.4"],
+                    ["3", "9.42", "239.3"],
+                  ].map(([size, inch, mm], i) => (
+                    <tr className="border" key={i}>
+                      <td className="p-4 border">{size}</td>
+                      <td className="p-4 border">{inch}</td>
+                      <td className="p-4 border">{mm}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        
+          {/* Procedure #2 */}
+          <div className="mt-16 text-left max-w-4xl mx-auto">
+            <h3 className="text-2xl font-bold mb-4">Procedure #2</h3>
+            <div className="w-full md:w-[80%]">
+              <Image src="/images/howto/bangle2.webp" alt="Procedure 1 Step" width={1200} height={500} className="rounded-xl" />
+            </div>
+            <p className="mb-4">
+              <strong>Step 1:</strong> Take a bangle you already own. Make sure that you are choosing the correct hand. Place it on a ruler and measure its inner diameter. Use the following chart to determine your bangle size.
+            </p>
+        
+            <div className="overflow-x-auto mt-4">
+              <table className="min-w-full text-sm text-left border">
+                <thead className="bg-gray-100">
+                  <tr>
+                    <th className="p-4 border">Bangle Size (Indian)</th>
+                    <th className="p-4 border">Size (Inches)</th>
+                    <th className="p-4 border">Size (MM)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {[
+                    ["2-2", "2.125", "54.0"],
+                    ["2-4", "2.25", "57.2"],
+                    ["2-6", "2.375", "60.3"],
+                    ["2-8", "2.5", "63.5"],
+                    ["2-10", "2.625", "66.7"],
+                    ["2-12", "2.75", "69.9"],
+                    ["2-14", "2.875", "73.0"],
+                    ["3", "3.0", "76.3"],
+                  ].map(([size, inch, mm], i) => (
+                    <tr className="border" key={i}>
+                      <td className="p-4 border">{size}</td>
+                      <td className="p-4 border">{inch}</td>
+                      <td className="p-4 border">{mm}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        
         )}
       </div>
     </div>
