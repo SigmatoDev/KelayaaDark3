@@ -339,19 +339,19 @@ const DesktopHeader = () => {
 
   const signOutHandler = async () => {
     setMenuOpen(false); // Close menu first
-    await signOut({
-      redirect: true,
-      callbackUrl: "/",
-    });
+    await signOut({ redirect: false }); // Sign out without auto-redirect
+    router.push("/"); // Manual redirect to home page
   };
 
   const handleClick = () => setMenuOpen(false); // Close menu on link click
 
-
   useEffect(() => {
     // handler to call on click outside
     function handleClickOutside(event: MouseEvent) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         setMenuOpen(false);
       }
     }
@@ -363,8 +363,6 @@ const DesktopHeader = () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownRef]);
-
-
 
   useEffect(() => {
     let keywordIndex = 0;

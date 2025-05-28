@@ -5,6 +5,7 @@ import Wishlist from "@/lib/models/WishList";
 import ProductModel from "@/lib/models/ProductModel";
 import SetsProductModel from "@/lib/models/SetsProductsModel";
 import BanglesProductModel from "@/lib/models/BanglesProductSchema";
+import BeadsProductModel from "@/lib/models/BeadsProductModel";
 
 // ✅ Toggle Wishlist (Add/Remove)
 export async function POST(req: Request) {
@@ -24,13 +25,14 @@ export async function POST(req: Request) {
     const productObjectId = new Types.ObjectId(productId);
 
     // ✅ Check if product exists in any model
-    const [isProduct, isSet, isBangle] = await Promise.all([
+    const [isProduct, isSet, isBangle, isBead] = await Promise.all([
       ProductModel.exists({ _id: productObjectId }),
       SetsProductModel.exists({ _id: productObjectId }),
       BanglesProductModel.exists({ _id: productObjectId }),
+      BeadsProductModel.exists({ _id: productObjectId }),
     ]);
 
-    if (!isProduct && !isSet && !isBangle) {
+    if (!isProduct && !isSet && !isBangle && !isBead) {
       return NextResponse.json(
         { message: "Product not found in any model" },
         { status: 404 }
@@ -106,13 +108,14 @@ export async function GET(req: NextRequest) {
       .reverse()
       .map((id: any) => (typeof id === "string" ? new Types.ObjectId(id) : id));
 
-    const [products, sets, bangles] = await Promise.all([
+    const [products, sets, bangles, beads] = await Promise.all([
       ProductModel.find({ _id: { $in: productIds } }),
       SetsProductModel.find({ _id: { $in: productIds } }),
       BanglesProductModel.find({ _id: { $in: productIds } }),
+      BeadsProductModel.find({ _id: { $in: productIds } }),
     ]);
 
-    const all = [...products, ...sets, ...bangles];
+    const all = [...products, ...sets, ...bangles, ...beads];
 
     return NextResponse.json({
       status: true,
