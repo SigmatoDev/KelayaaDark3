@@ -21,19 +21,26 @@ export const sendOrderEmails = async (order: any) => {
     items,
     totalPrice,
     shippingAddress,
+    orderNumber,
     _id: orderId,
   } = order;
+
+  const formatter = new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 2,
+  });
 
   const formattedItems = items
     .map(
       (item: any) =>
-        `<li>${item.name} (Qty: ${item.quantity}) - ₹${item.price}</li>`
+        `<li>${item.name} (Qty: ${item.qty}) - ${formatter.format(item.price)}</li>`
     )
     .join("");
 
   const htmlContent = (recipient: "user" | "admin") => `
     <h2>Order Confirmation ${recipient === "admin" ? "(Admin Copy)" : ""}</h2>
-    <p>Order ID: ${orderId}</p>
+    <p>Order ID: ${orderNumber}</p>
     <p><strong>Name:</strong> ${personalInfo?.fullName}</p>
     <p><strong>Email:</strong> ${personalInfo?.email}</p>
     <p><strong>Phone:</strong> ${personalInfo?.phone}</p>
@@ -60,7 +67,7 @@ export const sendOrderEmails = async (order: any) => {
       { email: "arayan@kelayaa.com" },
       { email: "nuthan@sigmato.com" },
     ],
-    subject: `New Order Received - ${personalInfo?.fullName}`,
+    subject: `New Order Received 🎉`,
     htmlContent: htmlContent("admin"),
   };
 
