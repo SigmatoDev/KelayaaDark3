@@ -203,13 +203,13 @@ const StatusPage = () => {
               {transactionDetails?.errorContext && (
                 <div className="bg-red-50 border border-red-200 rounded-md p-4 mt-4 text-sm text-red-700">
                   <p>
-                    <strong>Error Code:</strong>{" "}
+                    <strong>Status:</strong>{" "}
                     {transactionDetails.errorContext.errorCode}
                   </p>
-                  <p>
+                  {/* <p>
                     <strong>Details:</strong>{" "}
                     {transactionDetails.errorContext.description}
-                  </p>
+                  </p> */}
                 </div>
               )}
 
