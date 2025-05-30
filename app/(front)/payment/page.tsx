@@ -199,8 +199,8 @@ const Form = () => {
               {selectedPaymentMethod === "CashOnDelivery"
                 ? "Place Order"
                 : selectedPaymentMethod === "PhonePe"
-                  ? "Pay with PhonePe"
-                  : "Pay with PhonePe"}
+                  ? "Pay with Card/UPI"
+                  : "Pay with Card/UPI"}
             </button>
 
             <button

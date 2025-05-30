@@ -29,7 +29,7 @@ const sendAdminEmail = async (designData: any) => {
   // Prepare email data with multiple recipients
   const toList = [
     { email: "dineshbhukta.sigmato@gmail.com" }, // Admin's email
-    { email: "arayan@kelayaa.com" }, // Second recipient
+    { email: "aryan@kelayaa.com" }, // Second recipient
     { email: "nuthan@sigmato.com" }, // Third recipient
   ];
 

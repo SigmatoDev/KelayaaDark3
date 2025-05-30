@@ -65,7 +65,7 @@ const Form = () => {
                 <label htmlFor={type} className="text-sm font-medium">
                   {type === "CashOnDelivery"
                     ? "Cash on Delivery (COD)"
-                    : "Pay with PhonePe"}
+                    : "Pay with Card/UPI"}
                 </label>
               </div>
             ))}
