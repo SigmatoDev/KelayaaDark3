@@ -28,13 +28,16 @@ const sendAdminEmail = async (designData: any) => {
 
   // Prepare email data with multiple recipients
   const toList = [
-    { email: "dineshbhukta.sigmato@gmail.com" }, // Admin's email
-    { email: "aryan@kelayaa.com" }, // Second recipient
-    { email: "nuthan@sigmato.com" }, // Third recipient
+    { email: "bharat@metamorfs.com" },
+    { email: "aryan@kelayaa.com" },
+    { email: "arushi@kelayaa.com" },
+    { email: "nuthan@sigmato.com" },
   ];
 
   // Format the appointment date to dd-mm-yyyy
-  const formattedAppointmentDate = formatDate(new Date(designData.appointmentDate));
+  const formattedAppointmentDate = formatDate(
+    new Date(designData.appointmentDate)
+  );
 
   // Generate dynamic content for design data in table format
   const designDataContent = Object.keys(designData)
@@ -42,7 +45,7 @@ const sendAdminEmail = async (designData: any) => {
     .map((key) => {
       return `<tr>
           <td style="padding: 8px; border: 1px solid #ddd; text-align: left;"><strong>${key.charAt(0).toUpperCase() + key.slice(1)}:</strong></td>
-          <td style="padding: 8px; border: 1px solid #ddd; text-align: left;">${key === 'appointmentDate' ? formattedAppointmentDate : designData[key]}</td>
+          <td style="padding: 8px; border: 1px solid #ddd; text-align: left;">${key === "appointmentDate" ? formattedAppointmentDate : designData[key]}</td>
         </tr>`;
     })
     .join(""); // Join rows together
