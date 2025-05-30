@@ -177,8 +177,9 @@ export const sendOrderEmails = async (order: any) => {
   const adminEmail: SendSmtpEmail = {
     sender: { email: "cdquery@kelayaa.com" },
     to: [
-      { email: "dineshbhukta.sigmato@gmail.com" },
-      { email: "arayan@kelayaa.com" },
+      { email: "bharat@metamorfs.com" },
+      { email: "aryan@kelayaa.com" },
+      { email: "arushi@kelayaa.com" },
       { email: "nuthan@sigmato.com" },
     ],
     subject: `New Order Received 🎉`,

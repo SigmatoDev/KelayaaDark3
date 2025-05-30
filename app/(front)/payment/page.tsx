@@ -25,7 +25,7 @@ const Form = () => {
 
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
     "Razorpay" | "PhonePe" | "CashOnDelivery"
-  >("Razorpay");
+  >("PhonePe");
 
   const {
     savePaymentMethod,
@@ -183,7 +183,9 @@ const Form = () => {
                   onChange={() => setSelectedPaymentMethod("PhonePe")}
                   className="radio radio-primary"
                 />
-                <span className="font-medium text-sm">PhonePe UPI</span>
+                <span className="font-medium text-sm">
+                  Pay via Credit Card / Debit Card / UPI
+                </span>
               </label>
 
               {/* COD option disabled but you can add back if needed */}
