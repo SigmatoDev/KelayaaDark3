@@ -167,7 +167,7 @@ export const sendOrderEmails = async (order: any) => {
 
   // Email to User
   const userEmail: SendSmtpEmail = {
-    sender: { email: "cdquery@kelayaa.com" },
+    sender: { email: "orders@kelayaa.com" },
     to: [{ email: personalInfo?.email }],
     subject: "Your Kelayaa Order Confirmation",
     htmlContent: htmlContent("user"),
@@ -175,12 +175,13 @@ export const sendOrderEmails = async (order: any) => {
 
   // Email to Admin(s)
   const adminEmail: SendSmtpEmail = {
-    sender: { email: "cdquery@kelayaa.com" },
+    sender: { email: "orders@kelayaa.com" },
     to: [
       { email: "bharat@metamorfs.com" },
       { email: "aryan@kelayaa.com" },
       { email: "arushi@kelayaa.com" },
       { email: "nuthan@sigmato.com" },
+      { email: "dineshbhukta.sigmato@gmail.com" },
     ],
     subject: `New Order Received 🎉`,
     htmlContent: htmlContent("admin"),
