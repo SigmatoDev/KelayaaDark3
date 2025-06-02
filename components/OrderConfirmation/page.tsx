@@ -15,6 +15,7 @@ interface OrderItem {
 
 interface OrderConfirmationProps {
   order: {
+    totalPrice: number;
     _id: string;
     createdAt: string;
     items: OrderItem[];
@@ -103,7 +104,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ order }) => {
           <p>Shipping: ₹{order.shippingPrice}</p>
           <p>Tax: ₹{order.taxPrice}</p>
           <p className="font-semibold text-lg mt-2">
-            Grand Total: ₹{order.totalAmount}
+            Grand Total: ₹{order?.totalPrice}
           </p>
         </div>
       </div>
