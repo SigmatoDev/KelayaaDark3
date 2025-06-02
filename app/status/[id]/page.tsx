@@ -9,6 +9,7 @@ import { useSession } from "next-auth/react";
 import useCartService from "@/lib/hooks/useCartStore";
 import useSWRMutation from "swr/mutation";
 import { SparklesIcon } from "lucide-react";
+import OrderConfirmation from "@/components/OrderConfirmation/page";
 
 interface TransactionDetails {
   paymentDetails?: [];
@@ -37,6 +38,7 @@ const StatusPage = () => {
   const paymentIntentId = params?.paymentIntentId as string;
   const [orderId, setOrderId] = useState<string | null>(null);
   const [paymentResult, setPaymentResult] = useState(null); // Optional: Store payment details
+  const [orderData, setOrderData] = useState<any>(null);
 
   const {
     paymentMethod,
@@ -101,6 +103,7 @@ const StatusPage = () => {
               ...personalInfo,
               createAccountAfterCheckout: false,
             },
+            unique_txn_id: params?.id,
           }),
         });
 
@@ -109,10 +112,11 @@ const StatusPage = () => {
         if (res.ok) {
           clear();
           setOrderId(data?.order?._id);
+          setOrderData(data?.order);
           toast.success("Order placed successfully!");
-          setTimeout(() => {
-            router.push("/");
-          }, 1000);
+          // setTimeout(() => {
+          //   router.push("/");
+          // }, 1000);
         } else {
           toast.error(data.message || "Order failed");
         }
@@ -248,32 +252,13 @@ const StatusPage = () => {
               </div>
             </>
           ) : transactionStatus === "COMPLETED" ? (
-            <>
-              <SparklesIcon className="text-pink-400 w-16 h-16 mx-auto animate-bounce" />
-              <h2 className="text-3xl font-extrabold text-pink-600 animate-fadeIn">
-                Payment Successful!
-              </h2>
-              <p className="text-lg text-gray-700 animate-fadeIn">
-                Thank you for trusting us. Your order has been placed with
-                elegance.
-              </p>
-              <div className="flex flex-col gap-3 mt-6">
-                {orderId && (
-                  <button
-                    onClick={() => router.push(`/my-orders`)}
-                    className="w-full py-3 bg-gradient-to-r from-rose-400 to-pink-500 text-white font-semibold rounded-md hover:opacity-90 animate-fadeIn"
-                  >
-                    View My Order
-                  </button>
-                )}
-                <button
-                  onClick={() => router.push("/")}
-                  className="w-full py-3 border border-rose-300 text-pink-400 font-semibold rounded-md hover:bg-rose-50 animate-fadeIn"
-                >
-                  Continue Shopping
-                </button>
+            orderData ? (
+              <OrderConfirmation order={orderData} />
+            ) : (
+              <div className="text-center text-gray-600">
+                Fetching order details...
               </div>
-            </>
+            )
           ) : (
             <>
               <h2 className="text-xl text-gray-700 font-semibold text-center">

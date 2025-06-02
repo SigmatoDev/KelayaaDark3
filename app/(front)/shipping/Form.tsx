@@ -35,6 +35,12 @@ const Form = () => {
   const isMobileLocked = !!session?.user?.mobileNumber;
   const isNameLocked = !!session?.user?.name;
 
+  const getShippingStorageKey = () => {
+    const mobile =
+      session?.user?.mobileNumber || watch("personalInfo.mobileNumber");
+    return `shippingAddress_${mobile}`;
+  };
+
   const {
     saveShippingAddress,
     shippingAddress,
@@ -49,7 +55,7 @@ const Form = () => {
     watch,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
-    mode: 'onChange', 
+    mode: "onChange",
     defaultValues: {
       personalInfo: {
         email: "",
@@ -67,18 +73,47 @@ const Form = () => {
         country: "India",
       },
       gstDetails: { hasGST: false, companyName: "", gstNumber: "" },
-      billingDetails: { sameAsShipping: true },
+      billingDetails: { sameAsShipping: true, country: "India" },
     },
   });
 
   useEffect(() => {
     setMounted(true);
-    if (shippingAddress) {
-      Object.entries(shippingAddress).forEach(([key, value]) => {
+
+    const key = getShippingStorageKey();
+    const stored = localStorage.getItem(key);
+
+    const source = shippingAddress || (stored ? JSON.parse(stored) : null);
+    if (source) {
+      Object.entries(source).forEach(([key, value]) => {
         setValue(`shippingAddress.${key as keyof ShippingAddress}`, value);
       });
     }
-  }, [shippingAddress, setValue]);
+  }, [shippingAddress, session, setValue]);
+
+  useEffect(() => {
+    const subscription = watch((value) => {
+      if (value.shippingAddress) {
+        const key = getShippingStorageKey();
+        localStorage.setItem(key, JSON.stringify(value.shippingAddress));
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [watch, session]);
+
+  useEffect(() => {
+    const currentMobile =
+      session?.user?.mobileNumber || watch("personalInfo.mobileNumber");
+    const storageKeys = Object.keys(localStorage).filter((k) =>
+      k.startsWith("shippingAddress_")
+    );
+
+    storageKeys.forEach((key) => {
+      if (!key.endsWith(currentMobile || "")) {
+        localStorage.removeItem(key); // remove others
+      }
+    });
+  }, [session, watch("personalInfo.mobileNumber")]);
 
   useEffect(() => {
     if (session?.user) {
@@ -100,6 +135,7 @@ const Form = () => {
         ...watch("shippingAddress"),
         landmark: watch("shippingAddress.landmark") || "",
         sameAsShipping: true,
+        country: "India",
       });
     }
   }, [sameAsShipping, setValue, watch]);
@@ -151,6 +187,11 @@ const Form = () => {
       });
       saveShippingAddress(form.shippingAddress);
 
+      localStorage.setItem(
+        getShippingStorageKey(),
+        JSON.stringify(form.shippingAddress)
+      );
+
       if (!sameAsShipping) {
         saveShippingAddress(form.billingDetails); // <-- billing details if user entered different one
       }
@@ -188,91 +229,111 @@ const Form = () => {
           <div className="space-y-4">
             <h2 className="text-lg font-semibold">Personal Information</h2>
             <div className="space-y-3">
-              <div>
-                <label className="text-xs font-medium">Full Name</label>
-                {/* <input
-                  type="text"
-                  placeholder="Full Name"
-                  disabled={isNameLocked}
-                  {...register("personalInfo.fullName", { required: true })}
-                  className={`input input-bordered w-full text-sm ${isNameLocked ? "bg-gray-100" : ""}`}
-                /> */}
-
-
-
-                <input
-                  type="text"
-                  placeholder="Full Name"
-                  disabled={isNameLocked}
-                  {...register('personalInfo.fullName', {
-                    required: 'Full name is required',
-                    validate: TextValidationHelper.createNameValidator(3, 30),
-                  })}
-                  onBlur={(e) => {
-                    const cleaned = TextValidationHelper.sanitizeText(e.target.value);
-                    setValue('personalInfo.fullName', cleaned, {
-                      shouldValidate: true,
-                      shouldDirty: true,
-                    });
-                  }}
-                  className={`input input-bordered w-full text-sm ${isNameLocked ? "bg-gray-100" : ""}`}
-                />
-
-
-                {errors.personalInfo?.fullName && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.personalInfo.fullName.message}
-                  </p>
-                )}
-
-
-
-              </div>
-
-              <div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
-                <span className="px-3 text-gray-600 text-sm">+91</span>
-                <input
-                  type="text"
-                  maxLength={10}
-                  placeholder="Enter 10 digit number"
-                  disabled={isMobileLocked}
-                  {...register("personalInfo.mobileNumber", {
-                    required: "Mobile number is required",
-                    pattern: {
-                      value: /^[6-9]\d{9}$/,
-                      message: "Enter valid 10 digit Indian mobile number",
-                    },
-                  })}
-                  className={`w-full px-2 py-2 outline-none text-sm ${isMobileLocked ? "bg-gray-100" : ""}`}
-                  inputMode="numeric"
-                />
-              </div>
-
-              {errors.personalInfo?.mobileNumber && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.personalInfo.mobileNumber.message}
-                  </p>
-                )}
-
-              <input
-                type="email"
-                placeholder="Email Address"
-                disabled={isEmailLocked}
-                {...register("personalInfo.email", { required: true })}
-                className={`input input-bordered w-full text-sm ${isEmailLocked ? "bg-gray-100" : ""}`}
-              />
-
-              {!session && (
+              <div className="space-y-3">
+                {/* Full Name */}
                 <div>
-                  <label className="text-xs font-medium">Create Password</label>
+                  <label className="text-xs font-medium block mb-1">
+                    Full Name
+                  </label>
                   <input
-                    type="password"
-                    placeholder="Password"
-                    {...register("personalInfo.password", { required: true })}
-                    className="input input-bordered w-full text-sm"
+                    type="text"
+                    placeholder="Full Name"
+                    disabled={isNameLocked}
+                    {...register("personalInfo.fullName", {
+                      required: "Full name is required",
+                      validate: TextValidationHelper.createNameValidator(3, 30),
+                    })}
+                    onBlur={(e) => {
+                      const cleaned = TextValidationHelper.sanitizeText(
+                        e.target.value
+                      );
+                      setValue("personalInfo.fullName", cleaned, {
+                        shouldValidate: true,
+                        shouldDirty: true,
+                      });
+                    }}
+                    className={`input input-bordered w-full text-sm ${isNameLocked ? "bg-gray-100" : ""}`}
                   />
+                  {errors.personalInfo?.fullName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.personalInfo.fullName.message}
+                    </p>
+                  )}
                 </div>
-              )}
+
+                {/* Mobile Number */}
+                <div>
+                  <label className="text-xs font-medium block mb-1">
+                    Mobile Number
+                  </label>
+                  <div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
+                    <span className="px-3 text-gray-600 text-sm">+91</span>
+                    <input
+                      type="text"
+                      maxLength={10}
+                      placeholder="Enter 10 digit number"
+                      disabled={isMobileLocked}
+                      {...register("personalInfo.mobileNumber", {
+                        required: "Mobile number is required",
+                        pattern: {
+                          value: /^[6-9]\d{9}$/,
+                          message: "Enter valid 10 digit Indian mobile number",
+                        },
+                      })}
+                      className={`w-full px-2 py-2 outline-none text-sm ${isMobileLocked ? "bg-gray-100" : ""}`}
+                      inputMode="numeric"
+                    />
+                  </div>
+                  {errors.personalInfo?.mobileNumber && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.personalInfo.mobileNumber.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Email */}
+                <div>
+                  <label className="text-xs font-medium block mb-1">
+                    Email Address
+                  </label>
+                  <input
+                    type="email"
+                    placeholder="Email Address"
+                    disabled={isEmailLocked}
+                    {...register("personalInfo.email", {
+                      required: "Email is required",
+                    })}
+                    className={`input input-bordered w-full text-sm ${isEmailLocked ? "bg-gray-100" : ""}`}
+                  />
+                  {errors.personalInfo?.email && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.personalInfo.email.message}
+                    </p>
+                  )}
+                </div>
+
+                {/* Password (only if user not logged in) */}
+                {!session && (
+                  <div>
+                    <label className="text-xs font-medium block mb-1">
+                      Create Password
+                    </label>
+                    <input
+                      type="password"
+                      placeholder="Password"
+                      {...register("personalInfo.password", {
+                        required: "Password is required",
+                      })}
+                      className="input input-bordered w-full text-sm"
+                    />
+                    {errors.personalInfo?.password && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.personalInfo.password.message}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -289,54 +350,51 @@ const Form = () => {
                 rows={3}
               />
 
-{errors.shippingAddress?.address && (
-  <p className="text-red-500 text-sm mt-1">
-    {errors.shippingAddress.address.message}
-  </p>
-)}
-
+              {errors.shippingAddress?.address && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.shippingAddress.address.message}
+                </p>
+              )}
             </div>
 
             <div>
               <label className="text-xs font-medium">Landmark</label>
               <input
-  type="text"
-  placeholder="Landmark (Optional)"
-  maxLength={30}
-  {...register("shippingAddress.landmark", {
-    validate: TextValidationHelper.createLandmarkValidator(),
-  })}
-  className={`input input-bordered w-full text-sm ${
-    errors.shippingAddress?.landmark ? "border-red-500" : ""
-  }`}
-/>
+                type="text"
+                placeholder="Landmark (Optional)"
+                maxLength={30}
+                {...register("shippingAddress.landmark", {
+                  validate: TextValidationHelper.createLandmarkValidator(),
+                })}
+                className={`input input-bordered w-full text-sm ${
+                  errors.shippingAddress?.landmark ? "border-red-500" : ""
+                }`}
+              />
 
-{errors.shippingAddress?.landmark && (
-  <p className="text-red-500 text-sm mt-1">
-    {errors.shippingAddress.landmark.message}
-  </p>
-)}
-
+              {errors.shippingAddress?.landmark && (
+                <p className="text-red-500 text-sm mt-1">
+                  {errors.shippingAddress.landmark.message}
+                </p>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div>
                 <label className="text-xs font-medium">City</label>
                 <input
-  type="text"
-  placeholder="City"
-  {...register('shippingAddress.city', {
-    validate: TextValidationHelper.createCityValidator(2, 50)
-  })}
-  className="input input-bordered w-full text-sm"
-/>
+                  type="text"
+                  placeholder="City"
+                  {...register("shippingAddress.city", {
+                    validate: TextValidationHelper.createCityValidator(2, 50),
+                  })}
+                  className="input input-bordered w-full text-sm"
+                />
 
-{errors.shippingAddress?.city && (
-  <p className="text-red-500 text-sm mt-1">
-    {errors.shippingAddress.city.message}
-  </p>
-)}
-
+                {errors.shippingAddress?.city && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.shippingAddress.city.message}
+                  </p>
+                )}
               </div>
 
               <div>
@@ -345,48 +403,50 @@ const Form = () => {
                   {...register("shippingAddress.state", { required: true })}
                   className="select select-bordered w-full text-sm"
                 >
-                
-  <option value="">Select</option>
-  <option value="Andhra Pradesh">Andhra Pradesh</option>
-  <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-  <option value="Assam">Assam</option>
-  <option value="Bihar">Bihar</option>
-  <option value="Chhattisgarh">Chhattisgarh</option>
-  <option value="Goa">Goa</option>
-  <option value="Gujarat">Gujarat</option>
-  <option value="Haryana">Haryana</option>
-  <option value="Himachal Pradesh">Himachal Pradesh</option>
-  <option value="Jharkhand">Jharkhand</option>
-  <option value="Karnataka">Karnataka</option>
-  <option value="Kerala">Kerala</option>
-  <option value="Madhya Pradesh">Madhya Pradesh</option>
-  <option value="Maharashtra">Maharashtra</option>
-  <option value="Manipur">Manipur</option>
-  <option value="Meghalaya">Meghalaya</option>
-  <option value="Mizoram">Mizoram</option>
-  <option value="Nagaland">Nagaland</option>
-  <option value="Odisha">Odisha</option>
-  <option value="Punjab">Punjab</option>
-  <option value="Rajasthan">Rajasthan</option>
-  <option value="Sikkim">Sikkim</option>
-  <option value="Tamil Nadu">Tamil Nadu</option>
-  <option value="Telangana">Telangana</option>
-  <option value="Tripura">Tripura</option>
-  <option value="Uttar Pradesh">Uttar Pradesh</option>
-  <option value="Uttarakhand">Uttarakhand</option>
-  <option value="West Bengal">West Bengal</option>
-  <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-  <option value="Chandigarh">Chandigarh</option>
-  <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
-  <option value="Delhi">Delhi</option>
-  <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-  <option value="Ladakh">Ladakh</option>
-  <option value="Lakshadweep">Lakshadweep</option>
-  <option value="Puducherry">Puducherry</option>
-</select>
+                  <option value="">Select</option>
+                  <option value="Andhra Pradesh">Andhra Pradesh</option>
+                  <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                  <option value="Assam">Assam</option>
+                  <option value="Bihar">Bihar</option>
+                  <option value="Chhattisgarh">Chhattisgarh</option>
+                  <option value="Goa">Goa</option>
+                  <option value="Gujarat">Gujarat</option>
+                  <option value="Haryana">Haryana</option>
+                  <option value="Himachal Pradesh">Himachal Pradesh</option>
+                  <option value="Jharkhand">Jharkhand</option>
+                  <option value="Karnataka">Karnataka</option>
+                  <option value="Kerala">Kerala</option>
+                  <option value="Madhya Pradesh">Madhya Pradesh</option>
+                  <option value="Maharashtra">Maharashtra</option>
+                  <option value="Manipur">Manipur</option>
+                  <option value="Meghalaya">Meghalaya</option>
+                  <option value="Mizoram">Mizoram</option>
+                  <option value="Nagaland">Nagaland</option>
+                  <option value="Odisha">Odisha</option>
+                  <option value="Punjab">Punjab</option>
+                  <option value="Rajasthan">Rajasthan</option>
+                  <option value="Sikkim">Sikkim</option>
+                  <option value="Tamil Nadu">Tamil Nadu</option>
+                  <option value="Telangana">Telangana</option>
+                  <option value="Tripura">Tripura</option>
+                  <option value="Uttar Pradesh">Uttar Pradesh</option>
+                  <option value="Uttarakhand">Uttarakhand</option>
+                  <option value="West Bengal">West Bengal</option>
+                  <option value="Andaman and Nicobar Islands">
+                    Andaman and Nicobar Islands
+                  </option>
+                  <option value="Chandigarh">Chandigarh</option>
+                  <option value="Dadra and Nagar Haveli and Daman and Diu">
+                    Dadra and Nagar Haveli and Daman and Diu
+                  </option>
+                  <option value="Delhi">Delhi</option>
+                  <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                  <option value="Ladakh">Ladakh</option>
+                  <option value="Lakshadweep">Lakshadweep</option>
+                  <option value="Puducherry">Puducherry</option>
+                </select>
 
-                  {/* add all Indian states if needed */}
-              
+                {/* add all Indian states if needed */}
               </div>
 
               <div>
@@ -400,45 +460,124 @@ const Form = () => {
                   className="input input-bordered w-full text-sm"
                 /> */}
 
+                <input
+                  type="text"
+                  placeholder="Postal Code"
+                  {...register("shippingAddress.postalCode", {
+                    required: "Postal code is required",
+                    validate: TextValidationHelper.createPostalCodeValidator(),
+                  })}
+                  className={`input input-bordered w-full text-sm ${
+                    errors.shippingAddress?.postalCode ? "border-red-500" : ""
+                  }`}
+                />
 
-
-<input
-  type="text"
-  placeholder="Postal Code"
-  {...register("shippingAddress.postalCode", {
-    required: "Postal code is required",
-    validate: TextValidationHelper.createPostalCodeValidator(),
-  })}
-  className={`input input-bordered w-full text-sm ${
-    errors.shippingAddress?.postalCode ? 'border-red-500' : ''
-  }`}
-/>
-
-{errors.shippingAddress?.postalCode && (
-  <p className="text-red-500 text-sm mt-1">
-    {errors.shippingAddress.postalCode.message}
-  </p>
-)}
-
-
-
-
-
-
-
-
+                {errors.shippingAddress?.postalCode && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.shippingAddress.postalCode.message}
+                  </p>
+                )}
               </div>
             </div>
 
             <div>
               <label className="text-xs font-medium">Country</label>
-              <input
-                value="India"
-                readOnly
-                {...register("shippingAddress.country")}
-                className="input input-bordered w-full text-sm bg-gray-100"
-              />
+              <div className="flex items-center gap-2">
+                <svg
+                  width="24"
+                  height="16"
+                  viewBox="0 0 640 480"
+                  xmlns="http://www.w3.org/2000/svg"
+                  aria-label="India Flag"
+                  role="img"
+                  className="inline-block"
+                >
+                  <rect width="640" height="160" fill="#FF9933" />
+                  <rect y="160" width="640" height="160" fill="#FFFFFF" />
+                  <rect y="320" width="640" height="160" fill="#138808" />
+                  <circle
+                    cx="320"
+                    cy="240"
+                    r="60"
+                    fill="none"
+                    stroke="#000088"
+                    strokeWidth="10"
+                  />
+                  {/* Ashoka Chakra spokes */}
+                  {[...Array(24)].map((_, i) => {
+                    const angle = i * 15 * (Math.PI / 180);
+                    return (
+                      <line
+                        key={i}
+                        x1={320}
+                        y1={240}
+                        x2={320 + 60 * Math.cos(angle)}
+                        y2={240 + 60 * Math.sin(angle)}
+                        stroke="#000088"
+                        strokeWidth="2"
+                      />
+                    );
+                  })}
+                </svg>
+
+                <input
+                  type="text"
+                  value="India"
+                  readOnly
+                  {...register("shippingAddress.country")}
+                  className="input input-bordered w-full text-sm bg-gray-100"
+                />
+              </div>
             </div>
+            {/* Email and Mobile Number fields */}
+            {/* <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="text-xs font-medium">Email</label>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  {...register("shippingAddress.email", {
+                    required: "Email is required",
+                    pattern: {
+                      value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                      message: "Invalid email format",
+                    },
+                  })}
+                  className={`input input-bordered w-full text-sm ${
+                    errors.shippingAddress?.email ? "border-red-500" : ""
+                  }`}
+                />
+                {errors.shippingAddress?.email && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.shippingAddress.email.message}
+                  </p>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs font-medium">Mobile Number</label>
+                <input
+                  type="tel"
+                  placeholder="Mobile Number"
+                  maxLength={10}
+                  {...register("shippingAddress.mobileNumber", {
+                    required: "Mobile number is required",
+                    pattern: {
+                      value: /^[6-9]\d{9}$/,
+                      message: "Invalid Indian mobile number",
+                    },
+                  })}
+                  className={`input input-bordered w-full text-sm ${
+                    errors.shippingAddress?.mobileNumber ? "border-red-500" : ""
+                  }`}
+                />
+                {errors.shippingAddress?.mobileNumber && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {errors.shippingAddress.mobileNumber.message}
+                  </p>
+                )}
+              </div>
+            </div> */}
           </div>
 
           <div className="col-span-2 mt-6">
@@ -477,22 +616,20 @@ const Form = () => {
                     className="input input-bordered w-full text-sm"
                   /> */}
 
+                  <input
+                    type="text"
+                    placeholder="City"
+                    {...register("billingDetails.city", {
+                      validate: TextValidationHelper.createCityValidator(2, 50),
+                    })}
+                    className="input input-bordered w-full text-sm"
+                  />
 
-                <input
-                  type="text"
-                  placeholder="City"
-                  {...register('billingDetails.city', {
-                    validate: TextValidationHelper.createCityValidator(2, 50)
-                  })}
-                  className="input input-bordered w-full text-sm"
-                />
-
-                {errors.billingDetails?.city && (
-                  <p className="text-red-500 text-sm mt-1">
-                    {errors.billingDetails.city.message}
-                  </p>
-                )}
-
+                  {errors.billingDetails?.city && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.billingDetails.city.message}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -504,51 +641,52 @@ const Form = () => {
                     className="input input-bordered w-full text-sm"
                   /> */}
 
-
-<select
-                  {...register("billingDetails.state", { required: true })}
-                  className="select select-bordered w-full text-sm"
-                >
-                
-  <option value="">Select</option>
-  <option value="Andhra Pradesh">Andhra Pradesh</option>
-  <option value="Arunachal Pradesh">Arunachal Pradesh</option>
-  <option value="Assam">Assam</option>
-  <option value="Bihar">Bihar</option>
-  <option value="Chhattisgarh">Chhattisgarh</option>
-  <option value="Goa">Goa</option>
-  <option value="Gujarat">Gujarat</option>
-  <option value="Haryana">Haryana</option>
-  <option value="Himachal Pradesh">Himachal Pradesh</option>
-  <option value="Jharkhand">Jharkhand</option>
-  <option value="Karnataka">Karnataka</option>
-  <option value="Kerala">Kerala</option>
-  <option value="Madhya Pradesh">Madhya Pradesh</option>
-  <option value="Maharashtra">Maharashtra</option>
-  <option value="Manipur">Manipur</option>
-  <option value="Meghalaya">Meghalaya</option>
-  <option value="Mizoram">Mizoram</option>
-  <option value="Nagaland">Nagaland</option>
-  <option value="Odisha">Odisha</option>
-  <option value="Punjab">Punjab</option>
-  <option value="Rajasthan">Rajasthan</option>
-  <option value="Sikkim">Sikkim</option>
-  <option value="Tamil Nadu">Tamil Nadu</option>
-  <option value="Telangana">Telangana</option>
-  <option value="Tripura">Tripura</option>
-  <option value="Uttar Pradesh">Uttar Pradesh</option>
-  <option value="Uttarakhand">Uttarakhand</option>
-  <option value="West Bengal">West Bengal</option>
-  <option value="Andaman and Nicobar Islands">Andaman and Nicobar Islands</option>
-  <option value="Chandigarh">Chandigarh</option>
-  <option value="Dadra and Nagar Haveli and Daman and Diu">Dadra and Nagar Haveli and Daman and Diu</option>
-  <option value="Delhi">Delhi</option>
-  <option value="Jammu and Kashmir">Jammu and Kashmir</option>
-  <option value="Ladakh">Ladakh</option>
-  <option value="Lakshadweep">Lakshadweep</option>
-  <option value="Puducherry">Puducherry</option>
-</select>
-
+                  <select
+                    {...register("billingDetails.state", { required: true })}
+                    className="select select-bordered w-full text-sm"
+                  >
+                    <option value="">Select</option>
+                    <option value="Andhra Pradesh">Andhra Pradesh</option>
+                    <option value="Arunachal Pradesh">Arunachal Pradesh</option>
+                    <option value="Assam">Assam</option>
+                    <option value="Bihar">Bihar</option>
+                    <option value="Chhattisgarh">Chhattisgarh</option>
+                    <option value="Goa">Goa</option>
+                    <option value="Gujarat">Gujarat</option>
+                    <option value="Haryana">Haryana</option>
+                    <option value="Himachal Pradesh">Himachal Pradesh</option>
+                    <option value="Jharkhand">Jharkhand</option>
+                    <option value="Karnataka">Karnataka</option>
+                    <option value="Kerala">Kerala</option>
+                    <option value="Madhya Pradesh">Madhya Pradesh</option>
+                    <option value="Maharashtra">Maharashtra</option>
+                    <option value="Manipur">Manipur</option>
+                    <option value="Meghalaya">Meghalaya</option>
+                    <option value="Mizoram">Mizoram</option>
+                    <option value="Nagaland">Nagaland</option>
+                    <option value="Odisha">Odisha</option>
+                    <option value="Punjab">Punjab</option>
+                    <option value="Rajasthan">Rajasthan</option>
+                    <option value="Sikkim">Sikkim</option>
+                    <option value="Tamil Nadu">Tamil Nadu</option>
+                    <option value="Telangana">Telangana</option>
+                    <option value="Tripura">Tripura</option>
+                    <option value="Uttar Pradesh">Uttar Pradesh</option>
+                    <option value="Uttarakhand">Uttarakhand</option>
+                    <option value="West Bengal">West Bengal</option>
+                    <option value="Andaman and Nicobar Islands">
+                      Andaman and Nicobar Islands
+                    </option>
+                    <option value="Chandigarh">Chandigarh</option>
+                    <option value="Dadra and Nagar Haveli and Daman and Diu">
+                      Dadra and Nagar Haveli and Daman and Diu
+                    </option>
+                    <option value="Delhi">Delhi</option>
+                    <option value="Jammu and Kashmir">Jammu and Kashmir</option>
+                    <option value="Ladakh">Ladakh</option>
+                    <option value="Lakshadweep">Lakshadweep</option>
+                    <option value="Puducherry">Puducherry</option>
+                  </select>
                 </div>
 
                 <div>
@@ -562,26 +700,24 @@ const Form = () => {
                     className="input input-bordered w-full text-sm"
                   /> */}
 
+                  <input
+                    type="text"
+                    placeholder="Postal Code"
+                    {...register("billingDetails.postalCode", {
+                      required: "Postal code is required",
+                      validate:
+                        TextValidationHelper.createPostalCodeValidator(),
+                    })}
+                    className={`input input-bordered w-full text-sm ${
+                      errors.billingDetails?.postalCode ? "border-red-500" : ""
+                    }`}
+                  />
 
-              <input
-                type="text"
-                placeholder="Postal Code"
-                {...register("billingDetails.postalCode", {
-                  required: "Postal code is required",
-                  validate: TextValidationHelper.createPostalCodeValidator(),
-                })}
-                className={`input input-bordered w-full text-sm ${
-                  errors.billingDetails?.postalCode ? 'border-red-500' : ''
-                }`}
-              />
-
-            {errors.billingDetails?.postalCode && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.billingDetails.postalCode.message}
-              </p>
-            )}
-
-
+                  {errors.billingDetails?.postalCode && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.billingDetails.postalCode.message}
+                    </p>
+                  )}
                 </div>
               </div>
 
@@ -590,10 +726,9 @@ const Form = () => {
                 <input
                   type="text"
                   placeholder="Country"
-                  value="India"
                   readOnly
                   {...register("billingDetails.country", { required: true })}
-                 className="input input-bordered w-full text-sm bg-gray-100"
+                  className="input input-bordered w-full text-sm bg-gray-100"
                 />
               </div>
             </div>
@@ -616,7 +751,7 @@ const Form = () => {
             </div>
 
             {hasGST && (
-              <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <div>
                   <label className="text-xs font-medium">Company Name</label>
                   <input
@@ -630,20 +765,61 @@ const Form = () => {
                 <div>
                   <label className="text-xs font-medium">GST Number</label>
                   <input
-  type="text"
-  placeholder="GST Number"
-  {...register("gstDetails.gstNumber", {
-    validate: TextValidationHelper.validateGSTIN,
-  })}
-  className="input input-bordered w-full text-sm"
-/>
-{errors.gstDetails?.gstNumber && (
-              <p className="text-red-500 text-sm mt-1">
-                {errors.gstDetails?.gstNumber.message}
-              </p>
-            )}
+                    type="text"
+                    placeholder="GST Number"
+                    {...register("gstDetails.gstNumber", {
+                      validate: TextValidationHelper.validateGSTIN,
+                    })}
+                    className="input input-bordered w-full text-sm"
+                  />
+                  {errors.gstDetails?.gstNumber && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.gstDetails.gstNumber.message}
+                    </p>
+                  )}
+                </div>
 
+                <div>
+                  <label className="text-xs font-medium">Mobile Number</label>
+                  <input
+                    type="text"
+                    placeholder="GST Mobile Number"
+                    maxLength={10}
+                    {...register("gstDetails.gstMobileNumber", {
+                      pattern: {
+                        value: /^[6-9]\d{9}$/,
+                        message: "Enter valid 10 digit Indian mobile number",
+                      },
+                    })}
+                    className="input input-bordered w-full text-sm"
+                    inputMode="numeric"
+                  />
+                  {errors.gstDetails?.gstMobileNumber && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.gstDetails.gstMobileNumber.message}
+                    </p>
+                  )}
+                </div>
 
+                <div>
+                  <label className="text-xs font-medium">Email Address</label>
+                  <input
+                    type="email"
+                    placeholder="GST Email"
+                    {...register("gstDetails.gstEmail", {
+                      pattern: {
+                        value:
+                          /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/,
+                        message: "Enter a valid email address",
+                      },
+                    })}
+                    className="input input-bordered w-full text-sm"
+                  />
+                  {errors.gstDetails?.gstEmail && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.gstDetails.gstEmail.message}
+                    </p>
+                  )}
                 </div>
               </div>
             )}

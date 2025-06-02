@@ -40,13 +40,18 @@ const orderSchema = new mongoose.Schema(
       state: { type: String, required: false },
       postalCode: { type: String, required: false },
       country: { type: String, required: false, default: "India" },
+      email: { type: String },
+      mobileNumber: { type: String },
     },
 
     gstDetails: {
       hasGST: { type: Boolean, required: false },
       companyName: { type: String },
       gstNumber: { type: String },
+      gstMobileNumber: { type: String }, // new optional field for GST mobile number
+      gstEmail: { type: String }, // new optional field for GST email
     },
+
     billingDetails: {
       sameAsShipping: { type: Boolean, default: true },
       firstName: { type: String },
@@ -77,6 +82,9 @@ const orderSchema = new mongoose.Schema(
       type: String,
       enum: ["pending", "completed", "failed"],
       default: "pending",
+    },
+    unique_txn_id: {
+      type: String,
     },
   },
   {
@@ -146,6 +154,7 @@ export type OrderItem = {
 };
 
 export type ShippingAddress = {
+  id: string;
   firstName: string;
   lastName: string;
   address: string;
@@ -154,6 +163,8 @@ export type ShippingAddress = {
   state: string;
   city: string;
   postalCode: string;
+  email: string;
+  mobileNumber: string;
 };
 
 export type BillingDetails = ShippingAddress & {
@@ -180,4 +191,6 @@ export type GstDetails = {
   hasGST: boolean;
   companyName?: string;
   gstNumber?: string;
+  gstMobileNumber?: string; // new optional field for GST mobile number
+  gstEmail?: string; // new optional field for GST email
 };
