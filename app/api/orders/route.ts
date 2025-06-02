@@ -29,6 +29,7 @@ export const POST = auth(async (...request: any) => {
       paymentIntentId,
       personalInfo,
       paymentResult,
+      unique_txn_id,
     } = await req.json();
 
     console.log(
@@ -80,6 +81,7 @@ export const POST = auth(async (...request: any) => {
       isPaid: paymentStatus === "completed",
       paidAt: paymentStatus === "completed" ? new Date() : undefined,
       paymentResult,
+      unique_txn_id,
     });
 
     // ✅ Populate the user info after creation
