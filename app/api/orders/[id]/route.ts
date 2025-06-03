@@ -2,11 +2,10 @@ import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/dbConnect";
 import OrderModel from "@/lib/models/OrderModel";
 import ProductModel from "@/lib/models/ProductModel";
-
 import BeadsProductModel from "@/lib/models/BeadsProductModel";
-import { Types } from "mongoose";
 import SetsProductModel from "@/lib/models/SetsProductsModel";
 import BanglesProductModel from "@/lib/models/BanglesProductSchema";
+import { Types } from "mongoose";
 
 export const GET = auth(
   async (req: any, { params }: { params: { id: string } }) => {
@@ -20,13 +19,15 @@ export const GET = auth(
     await dbConnect();
 
     try {
-      const order = await OrderModel.findById(orderId).lean();
+      const order = await OrderModel.findById(orderId)
+        .populate("user", "-password -__v") // ✅ Populate user & exclude sensitive fields
+        .lean();
 
       if (!order) {
         return Response.json({ message: "Order not found" }, { status: 404 });
       }
 
-      if (!user.isAdmin && order.user.toString() !== user._id.toString()) {
+      if (!user.isAdmin && order.user._id.toString() !== user._id.toString()) {
         return Response.json({ message: "Access denied" }, { status: 403 });
       }
 

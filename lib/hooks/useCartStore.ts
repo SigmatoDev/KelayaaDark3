@@ -44,6 +44,8 @@ type Cart = {
   couponDiscount: number;
   couponCode: string;
   gstDetails: {
+    gstMobileNumber: any;
+    gstEmail: any;
     hasGST: boolean;
     companyName: string;
     gstNumber: string;

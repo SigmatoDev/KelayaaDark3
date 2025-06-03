@@ -114,75 +114,77 @@ export default function OrderHistory() {
       ) : (
         <div className="space-y-6">
           {filteredOrders?.map((order) => (
-            <Card key={order._id}>
-              <CardContent className="p-6">
-                <div className="flex flex-col justify-between gap-6">
-                  {/* Order Info */}
-                  <div className="space-y-2 py-4">
-                    <div className="flex items-center gap-4">
-                      <Link
-                        // href={`/order/${order.orderNumber}`}
-                        href={``}
-                        className="text-lg font-medium hover:text-primary"
-                      >
-                        Order #{order?.orderNumber}
-                      </Link>
-                      <StatusBadge
-                        status={
-                          order.isDelivered
-                            ? "delivered"
-                            : order.isPaid
-                              ? "processing"
-                              : "pending"
-                        }
-                      />
+            <Link href={`/my-orders/${order._id}`} key={order._id}>
+              <Card key={order._id}>
+                <CardContent className="p-6">
+                  <div className="flex flex-col justify-between gap-6">
+                    {/* Order Info */}
+                    <div className="space-y-2 py-4">
+                      <div className="flex items-center gap-4">
+                        <Link
+                          // href={`/order/${order.orderNumber}`}
+                          href={``}
+                          className="text-lg font-medium hover:text-primary"
+                        >
+                          Order #{order?.orderNumber}
+                        </Link>
+                        <StatusBadge
+                          status={
+                            order.isDelivered
+                              ? "delivered"
+                              : order.isPaid
+                                ? "processing"
+                                : "pending"
+                          }
+                        />
+                      </div>
+                      <p className="text-sm text-gray-500">
+                        Placed on{" "}
+                        {new Date(order.createdAt).toLocaleDateString()}
+                      </p>
+                      <p className="text-sm text-gray-500">
+                        Payment :{" "}
+                        <StatusBadge
+                          status={order.isPaid ? "completed" : "pending"}
+                        />
+                      </p>
                     </div>
-                    <p className="text-sm text-gray-500">
-                      Placed on {new Date(order.createdAt).toLocaleDateString()}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Payment :{" "}
-                      <StatusBadge
-                        status={order.isPaid ? "completed" : "pending"}
-                      />
-                    </p>
-                  </div>
 
-                  {/* Order Items Preview */}
-                  <div className="flex-1">
-                    <div className="flex flex-wrap gap-4">
-                      {order.items.map((item, index) => (
-                        <div key={index} className="flex items-center gap-3">
-                          <div className="relative w-16 h-16">
-                            <Image
-                              src={item.image}
-                              alt={item.name}
-                              fill
-                              className="object-cover rounded-md"
-                            />
+                    {/* Order Items Preview */}
+                    <div className="flex-1">
+                      <div className="flex flex-wrap gap-4">
+                        {order.items.map((item, index) => (
+                          <div key={index} className="flex items-center gap-3">
+                            <div className="relative w-16 h-16">
+                              <Image
+                                src={item.image}
+                                alt={item.name}
+                                fill
+                                className="object-cover rounded-md"
+                              />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{item.name}</p>
+                              <p className="text-sm text-gray-500">
+                                Qty: {item.qty} ×
+                                {item?.product?.materialType === "Beads"
+                                  ? new Intl.NumberFormat("en-IN", {
+                                      style: "currency",
+                                      currency: "INR",
+                                    }).format(item?.product?.pricePerLine)
+                                  : new Intl.NumberFormat("en-IN", {
+                                      style: "currency",
+                                      currency: "INR",
+                                    }).format(item?.price)}
+                              </p>
+                            </div>
                           </div>
-                          <div>
-                            <p className="text-sm font-medium">{item.name}</p>
-                            <p className="text-sm text-gray-500">
-                              Qty: {item.qty} ×
-                              {item?.product?.materialType === "Beads"
-                                ? new Intl.NumberFormat("en-IN", {
-                                    style: "currency",
-                                    currency: "INR",
-                                  }).format(item?.product?.pricePerLine)
-                                : new Intl.NumberFormat("en-IN", {
-                                    style: "currency",
-                                    currency: "INR",
-                                  }).format(item?.price)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
-                  </div>
 
-                  {/* Order Total and Actions */}
-                  {/* <div className="flex flex-col justify-between items-end">
+                    {/* Order Total and Actions */}
+                    {/* <div className="flex flex-col justify-between items-end">
                     <div className="text-right">
                       <p className="text-sm font-medium">Total Amount</p>
                       <p className="text-lg font-bold">
@@ -196,48 +198,49 @@ export default function OrderHistory() {
                       View Details
                     </Link>
                   </div> */}
-                </div>
+                  </div>
 
-                {/* Order Status Timeline */}
-                <div className="mt-6 pt-6 border-t">
-                  <div className="flex items-center justify-between max-w-2xl">
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-4 h-4 rounded-full ${order.isPaid ? "bg-green-500" : "bg-gray-300"}`}
-                      >
-                        <FaCheckCircle className="text-white" />
-                      </div>
-                      <p className="text-sm mt-2">Order Placed</p>
-                      {order.paidAt && (
-                        <p className="text-xs text-gray-500">
-                          {new Date(order.paidAt).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                    <div
-                      className={`flex-1 h-0.5 ${order.isPaid ? "bg-green-500" : "bg-gray-300"}`}
-                    />
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-4 h-4 rounded-full ${order.isDelivered ? "bg-green-500" : "bg-gray-300"}`}
-                      >
-                        {order.isDelivered === false ? (
-                          <FaClock className="text-white" />
-                        ) : (
+                  {/* Order Status Timeline */}
+                  <div className="mt-6 pt-6 border-t">
+                    <div className="flex items-center justify-between max-w-2xl">
+                      <div className="flex flex-col items-center">
+                        <div
+                          className={`w-4 h-4 rounded-full ${order.isPaid ? "bg-green-500" : "bg-gray-300"}`}
+                        >
                           <FaCheckCircle className="text-white" />
+                        </div>
+                        <p className="text-sm mt-2">Order Placed</p>
+                        {order.paidAt && (
+                          <p className="text-xs text-gray-500">
+                            {new Date(order.paidAt).toLocaleDateString()}
+                          </p>
                         )}
                       </div>
-                      <p className="text-sm mt-2">Delivered</p>
-                      {order.deliveredAt && (
-                        <p className="text-xs text-gray-500">
-                          {new Date(order.deliveredAt).toLocaleDateString()}
-                        </p>
-                      )}
+                      <div
+                        className={`flex-1 h-0.5 ${order.isPaid ? "bg-green-500" : "bg-gray-300"}`}
+                      />
+                      <div className="flex flex-col items-center">
+                        <div
+                          className={`w-4 h-4 rounded-full ${order.isDelivered ? "bg-green-500" : "bg-gray-300"}`}
+                        >
+                          {order.isDelivered === false ? (
+                            <FaClock className="text-white" />
+                          ) : (
+                            <FaCheckCircle className="text-white" />
+                          )}
+                        </div>
+                        <p className="text-sm mt-2">Delivered</p>
+                        {order.deliveredAt && (
+                          <p className="text-xs text-gray-500">
+                            {new Date(order.deliveredAt).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            </Link>
           ))}
         </div>
       )}

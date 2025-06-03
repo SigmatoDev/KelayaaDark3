@@ -16,27 +16,41 @@ interface IOrderDetails {
   orderId: string;
 }
 
-const fetcher = (url: string) => fetch(url).then((res) => res.json());
+// Define a helper function to get the color class based on status
+const getStatusColorClass = (status: string) => {
+  return status === "processing"
+    ? "text-yellow-600"
+    : status === "shipped"
+      ? "text-blue-600"
+      : status === "out-for-delivery"
+        ? "text-indigo-600"
+        : status === "completed"
+          ? "text-green-600"
+          : status === "cancelled"
+            ? "text-red-600"
+            : "text-gray-700";
+};
 
-const validStatuses = ["processing", "completed", "cancelled"];
+const fetcher = (url: string) => fetch(url).then((res) => res.json());
 
 const OrderDetails = ({ orderId }: IOrderDetails) => {
   const router = useRouter();
   const { data: session } = useSession();
+
   const [status, setStatus] = useState("processing");
+  const [note, setNote] = useState("");
 
   const { trigger: deliverOrder, isMutating: isDelivering } = useSWRMutation(
     `/api/orders/${orderId}`,
-    async (url, { arg }: { arg: { status: string } }) => {
+    async (url, { arg }: { arg: { status: string; note?: string } }) => {
       const res = await fetch(`/api/admin/orders/${orderId}/deliver`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: arg.status }),
+        body: JSON.stringify({ status: arg.status, note: arg.note }),
       });
       const data = await res.json();
-      console.log("data", data);
       res.ok
         ? toast.success("Order status updated successfully")
         : toast.error(data.message);
@@ -44,6 +58,12 @@ const OrderDetails = ({ orderId }: IOrderDetails) => {
   );
 
   const { data, error } = useSWR(`/api/orders/${orderId}`, fetcher);
+
+  // Get last status from history or fallback to current data.status
+  const lastStatus =
+    data?.statusHistory && data.statusHistory.length > 0
+      ? data.statusHistory[data.statusHistory.length - 1].status
+      : data?.status || "";
 
   if (error) return error.message;
   if (!data)
@@ -68,6 +88,23 @@ const OrderDetails = ({ orderId }: IOrderDetails) => {
   } = data;
 
   console.log("items", items);
+
+  const sortedStatusHistory = (data?.statusHistory || [])
+    .slice()
+    .sort(
+      (
+        a: { changedAt: string | number | Date },
+        b: { changedAt: string | number | Date }
+      ) => {
+        return (
+          new Date(b.changedAt).getTime() - new Date(a.changedAt).getTime()
+        );
+      }
+    );
+
+  const existingStatuses = (data?.statusHistory || []).map(
+    (entry: { status: any }) => entry.status
+  );
 
   return (
     <div className="px-4 py-6">
@@ -165,13 +202,19 @@ const OrderDetails = ({ orderId }: IOrderDetails) => {
 
             <div className="space-y-2 text-sm text-gray-700">
               <div className="flex items-center">
-                <span className="font-medium">Method:</span>
+                <span className="font-medium">Payment_Mode:</span>
                 <span className="ml-2">{paymentMethod}</span>
               </div>
               <div className="flex items-center">
-                <span className="font-medium">Payment ID:</span>
+                <span className="font-medium">Payment_ID:</span>
                 <span className="text-gray-500 ml-2 font-semibold">
                   {data?.paymentResult?.transactionId || "N/A"}
+                </span>
+              </div>
+              <div className="flex items-center">
+                <span className="font-medium">Transaction_ID:</span>
+                <span className="text-gray-500 ml-2 font-semibold">
+                  {data?.unique_txn_id || "N/A"}
                 </span>
               </div>
             </div>
@@ -308,7 +351,6 @@ const OrderDetails = ({ orderId }: IOrderDetails) => {
             </li>
           </ul>
 
-          {/* Admin Dropdown and Button */}
           {session?.user?.isAdmin && (
             <>
               <div className="mt-4">
@@ -318,37 +360,114 @@ const OrderDetails = ({ orderId }: IOrderDetails) => {
                 >
                   Update Order Status
                 </label>
+                {/* Status select dropdown */}
+
                 <select
                   id="status"
                   value={status}
-                  onChange={(e) => setStatus(e.target.value)}
+                  onChange={(e) => {
+                    setStatus(e.target.value);
+                    setNote(""); // Clear note when status changes
+                  }}
                   className={`w-full border border-gray-300 rounded-md px-3 py-2
     ${
       status === "processing"
         ? "text-yellow-600"
-        : status === "cancelled"
-          ? "text-red-600"
-          : status === "completed"
-            ? "text-green-600"
-            : "text-gray-700"
+        : status === "shipped"
+          ? "text-blue-600"
+          : status === "out-for-delivery"
+            ? "text-indigo-600"
+            : status === "completed"
+              ? "text-green-600"
+              : status === "cancelled"
+                ? "text-red-600"
+                : "text-gray-700"
     }`}
                 >
-                  <option value="processing" className="text-yellow-600">
+                  <option
+                    value="processing"
+                    disabled={existingStatuses.includes("processing")}
+                    className={`${
+                      existingStatuses.includes("processing")
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-yellow-600"
+                    }`}
+                  >
                     Processing
                   </option>
-                  <option value="cancelled" className="text-red-600">
-                    Cancelled
+                  <option
+                    value="shipped"
+                    disabled={existingStatuses.includes("shipped")}
+                    className={`${
+                      existingStatuses.includes("shipped")
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-blue-600"
+                    }`}
+                  >
+                    Shipped
                   </option>
-                  <option value="completed" className="text-green-600">
+                  <option
+                    value="out-for-delivery"
+                    disabled={existingStatuses.includes("out-for-delivery")}
+                    className={`${
+                      existingStatuses.includes("out-for-delivery")
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-indigo-600"
+                    }`}
+                  >
+                    Out for Delivery
+                  </option>
+                  <option
+                    value="completed"
+                    disabled={existingStatuses.includes("completed")}
+                    className={`${
+                      existingStatuses.includes("completed")
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-green-600"
+                    }`}
+                  >
                     Completed
+                  </option>
+                  <option
+                    value="cancelled"
+                    disabled={existingStatuses.includes("cancelled")}
+                    className={`${
+                      existingStatuses.includes("cancelled")
+                        ? "text-gray-400 cursor-not-allowed"
+                        : "text-red-600"
+                    }`}
+                  >
+                    Cancelled
                   </option>
                 </select>
               </div>
 
+              <label className="block mt-4 text-sm font-medium text-gray-700">
+                Optional Note
+              </label>
+              <textarea
+                value={note}
+                onChange={(e) => setNote(e.target.value)}
+                rows={3}
+                placeholder="Optional note about status update"
+                className="w-full border border-gray-300 rounded-md px-3 py-2 resize-none"
+              />
+
+              {/* Update Status button */}
               <button
-                onClick={() => deliverOrder({ status })}
-                disabled={isDelivering}
-                className="btn bg-blue-600 hover:bg-blue-600 text-white w-full mt-4 flex items-center justify-center gap-2"
+                onClick={() => deliverOrder({ status, note })}
+                disabled={
+                  isDelivering ||
+                  status === data.status ||
+                  existingStatuses.includes(status)
+                }
+                className={`btn w-full mt-4 flex items-center justify-center gap-2 ${
+                  !isDelivering &&
+                  status !== data.status &&
+                  !existingStatuses.includes(status)
+                    ? "bg-blue-600 hover:bg-blue-700 text-white cursor-pointer"
+                    : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                }`}
               >
                 {isDelivering && (
                   <span className="loading loading-spinner"></span>
@@ -356,6 +475,35 @@ const OrderDetails = ({ orderId }: IOrderDetails) => {
                 Update Status
               </button>
             </>
+          )}
+
+          {sortedStatusHistory?.length > 0 && (
+            <div className="mt-6 bg-gray-50 border border-gray-200 p-4 rounded-xl">
+              <h3 className="text-lg font-semibold mb-3">Order Status History</h3>
+              <ul className="space-y-3 text-sm text-gray-700">
+                {sortedStatusHistory.map((entry: any, idx: number) => (
+                  <li key={idx} className="border-b pb-2 last:border-none">
+                    <div className="flex justify-between">
+                      <span
+                        className={`font-medium capitalize ${getStatusColorClass(
+                          entry.status
+                        )}`}
+                      >
+                        {entry.status.replace(/-/g, " ")}
+                      </span>
+                      <span className="text-gray-500">
+                        {new Date(entry.changedAt).toLocaleString("en-IN")}
+                      </span>
+                    </div>
+                    {entry.note && (
+                      <p className="mt-1 text-gray-600 italic">
+                        “{entry.note}”
+                      </p>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            </div>
           )}
         </div>
       </div>

@@ -5,9 +5,39 @@ const orderSchema = new mongoose.Schema(
     orderNumber: { type: String },
     status: {
       type: String,
-      enum: ["processing", "completed", "pending", "cancelled"],
+      enum: [
+        "processing",
+        "shipped",
+        "out-for-delivery",
+        "completed",
+        "cancelled",
+        "failed",
+      ],
       default: "processing",
     },
+
+    statusHistory: [
+      {
+        status: {
+          type: String,
+          enum: [
+            "processing",
+            "shipped",
+            "out-for-delivery",
+            "completed",
+            "cancelled",
+            "failed",
+          ],
+        },
+        note: { type: String }, // Optional admin message or system note
+        changedAt: { type: Date, default: Date.now },
+        changedBy: {
+          _id: { type: String }, // or mongoose.Schema.Types.ObjectId
+          name: { type: String },
+          email: { type: String },
+        },
+      },
+    ],
 
     user: {
       type: mongoose.Schema.Types.ObjectId,
@@ -86,6 +116,9 @@ const orderSchema = new mongoose.Schema(
     unique_txn_id: {
       type: String,
     },
+    invoice_id: {
+      type: String,
+    },
   },
   {
     timestamps: true,
@@ -96,6 +129,29 @@ const orderSchema = new mongoose.Schema(
 orderSchema.pre("save", function (next) {
   if (!this.orderNumber) {
     this.orderNumber = `ORDER_${Date.now()}`;
+  }
+  next();
+});
+
+// ✅ Attach pre-save hook BEFORE compiling model
+orderSchema.pre("save", function (next) {
+  if (!this.invoice_id) {
+    this.invoice_id = `IN_${Date.now()}`;
+  }
+  next();
+});
+
+orderSchema.pre("save", function (next) {
+  if (
+    this.isNew &&
+    this.status === "processing" &&
+    this.statusHistory.length === 0
+  ) {
+    this.statusHistory.push({
+      status: "processing",
+      note: "Order placed successfully",
+      changedAt: new Date(),
+    });
   }
   next();
 });
@@ -129,6 +185,7 @@ export type Order = {
   deliveredAt?: string;
   createdAt: string;
   paymentIntentId: string;
+  invoice_id: string;
 };
 
 export type OrderItem = {
