@@ -26,7 +26,7 @@ export const sendOrderStatusUpdateEmail = async ({
   note?: string;
   changedAt: Date;
 }) => {
-  const { personalInfo, orderNumber, items, totalPrice } = order;
+  const { personalInfo, orderNumber, items, totalPrice, user } = order;
 
   const formatter = new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -53,6 +53,7 @@ export const sendOrderStatusUpdateEmail = async ({
   const formattedDate = new Date(changedAt).toLocaleString("en-IN", {
     dateStyle: "medium",
     timeStyle: "short",
+    timeZone: "Asia/Kolkata", // 🔥 Force IST
   });
 
   const htmlContent = `
@@ -139,7 +140,7 @@ export const sendOrderStatusUpdateEmail = async ({
 
     <div class="content">
       <div class="section">
-        <div class="section-title">Hi ${order.user?.name},</div>
+        <div class="section-title">Hi ${user?.name},</div>
         <p>Your order <strong>#${orderNumber}</strong> has been updated to <strong>${statusLabels[status]}</strong> as of <strong>${formattedDate}</strong>.</p>
         ${note ? `<div class="note-box"><strong>Note:</strong> ${note}</div>` : ""}
       </div>
