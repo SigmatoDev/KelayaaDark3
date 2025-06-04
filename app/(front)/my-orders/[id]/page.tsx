@@ -123,34 +123,45 @@ export default function SingleOrderPage() {
         const data = await res.json();
         setOrder(data);
 
-        // Normalize status string for matching
         const normalizeStatus = (str: string) =>
           str.toLowerCase().replace(/[\s-]/g, "");
 
-        // Normalize order statuses similarly for matching
-        const normalizedStatuses = ORDER_STATUSES.map(normalizeStatus);
+        const normalizedStatuses = ORDER_STATUSES.map(normalizeStatus); // e.g. ['processing', 'shipped', 'outfordelivery', 'completed']
+        const statusHistory = data.statusHistory || [];
 
-        let step = 0; // default step (before payment or unknown)
+        console.log("Fetched Order Data:", data);
+        console.log("Normalized ORDER_STATUSES:", normalizedStatuses);
+        console.log("Raw statusHistory:", statusHistory);
 
-        if (!data.isPaid) {
-          step = 0; // Payment pending or processing
-        } else {
-          const normalizedOrderStatus = normalizeStatus(data.status);
+        // Normalize reached statuses from history
+        const reachedStatuses = statusHistory.map((item: any) =>
+          normalizeStatus(item.status)
+        );
 
-          // Find index of the normalized status in normalizedStatuses
-          const index = normalizedStatuses.indexOf(normalizedOrderStatus);
+        console.log(
+          "Normalized Reached Statuses from history:",
+          reachedStatuses
+        );
 
-          // If found, step is index + 1 (because 0 = before payment)
-          step = index >= 0 ? index + 1 : 1; // fallback to 1 (processing)
+        // Find the highest index from ORDER_STATUSES that exists in history
+        let lastReachedIndex = -1;
+        for (let i = normalizedStatuses.length - 1; i >= 0; i--) {
+          if (reachedStatuses.includes(normalizedStatuses[i])) {
+            lastReachedIndex = i;
+            break;
+          }
         }
 
+        const step = lastReachedIndex + 1; // +1 because step 0 means "before any status reached"
+        console.log(`✅ Calculated Current Step: ${step}`);
         setCurrentStep(step);
       } catch (err) {
-        console.error(err);
+        console.error("❌ Error fetching order:", err);
       } finally {
         setLoading(false);
       }
     }
+
     fetchOrder();
   }, [id]);
 
@@ -184,9 +195,9 @@ export default function SingleOrderPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-8">
       {/* Header and Download Invoice button */}
-      <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full md:mb-4 space-y-4 md:space-y-0">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between w-full md:mb-4 space-y-4 md:space-y-0 mb-2">
         <div className="flex-1 space-y-2">
-          <h1 className="xs:text-2xl md:text-3xl font-bold">
+          <h1 className="xs:text-2xl md:text-xl font-bold">
             Order #{order.orderNumber}
           </h1>
           <p className="text-gray-500 text-sm">
@@ -202,7 +213,7 @@ export default function SingleOrderPage() {
           </p>
         </div>
 
-        <div>
+        <div className="w-full flex justify-end">
           <PDFDownloadLink
             document={<InvoicePDF order={order} />}
             fileName={`Invoice_Order_${order.orderNumber}.pdf`}
@@ -277,6 +288,7 @@ export default function SingleOrderPage() {
           <Card>
             <CardContent className="p-6 space-y-3">
               <h2 className="text-xl font-semibold mb-2">Pricing Details</h2>
+
               <div className="grid grid-cols-2 gap-2">
                 <span>Price (Excl. GST):</span>
                 <span className="text-right">
@@ -290,10 +302,15 @@ export default function SingleOrderPage() {
                 <span className="font-semibold text-right">
                   ₹{order.totalPrice.toLocaleString("en-IN")}
                 </span>
+              </div>
 
+              {/* Separator should be outside the grid */}
+              <Separator className="my-2" />
+
+              <div className="grid grid-cols-2 gap-2">
                 <span>Payment Method:</span>
                 <span className="text-right">{order.paymentMethod}</span>
-                <span>Payment Method:</span>
+                <span>Transaction ID:</span>
                 <span className="text-right">{order.unique_txn_id}</span>
               </div>
             </CardContent>

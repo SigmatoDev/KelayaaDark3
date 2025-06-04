@@ -52,6 +52,9 @@ const MobileHeader = () => {
 
         {/* Right icons */}
         <div className="flex items-center space-x-4">
+          <button onClick={() => setSearchOpen(!searchOpen)}>
+            <Search className="w-5 h-5" />
+          </button>
           <Link href="/cart" className="relative">
             <ShoppingCart className="w-5 h-5" />
             {totalCartQuantity > 0 && (
@@ -61,14 +64,8 @@ const MobileHeader = () => {
             )}
           </Link>
 
-          <button onClick={() => setSearchOpen(!searchOpen)}>
-            <Search className="w-5 h-5" />
-          </button>
-
           {session?.user ? (
-            <Link href="/profile">
-              <User className="w-5 h-5" />
-            </Link>
+            <Link href="/profile">{/* <User className="w-5 h-5" /> */}</Link>
           ) : (
             <button onClick={() => setIsSignInOpen(true)}>
               <User className="w-5 h-5" />
@@ -79,12 +76,14 @@ const MobileHeader = () => {
 
       {/* Slide-Out Mobile Drawer */}
       {menuOpen && (
-  <>
-    <div className="fixed inset-0 bg-black/70 z-40" onClick={() => setMenuOpen(false)} />
-    <MobileDrawer closeDrawer={() => setMenuOpen(false)} />
-  </>
-)}
-
+        <>
+          <div
+            className="fixed inset-0 bg-black/70 z-40"
+            onClick={() => setMenuOpen(false)}
+          />
+          <MobileDrawer closeDrawer={() => setMenuOpen(false)} />
+        </>
+      )}
 
       {/* Expandable Search Bar */}
       {searchOpen && (
@@ -110,8 +109,8 @@ const MobileHeader = () => {
         </div>
       )}
 
-       {/* Render SignInPopup and control its visibility */}
-       {isSignInOpen && (
+      {/* Render SignInPopup and control its visibility */}
+      {isSignInOpen && (
         <SignInPopup isOpen={isSignInOpen} setIsOpen={setIsSignInOpen} />
       )}
     </>
