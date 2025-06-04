@@ -57,8 +57,8 @@ const StatusPage = () => {
 
   const { trigger: placeOrder } = useSWRMutation(
     `/api/orders`,
-    async (url, { arg }: { arg: { paymentResult: any } }) => {
-      const { paymentResult } = arg;
+    async (url, { arg }: { arg: { paymentResult: any; paymentMode: any } }) => {
+      const { paymentResult, paymentMode } = arg;
 
       if (!session?.user) {
         toast.error("User session not found.");
@@ -71,7 +71,9 @@ const StatusPage = () => {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
             user: session.user.id,
-            status: "pending",
+            status:
+              paymentResult?.status === "COMPLETED" ? "processing" : "failed",
+
             items: items.map((item) => ({
               productId: item._id,
               name: item.name,
@@ -94,9 +96,11 @@ const StatusPage = () => {
               hasGST: gstDetails.hasGST ?? false,
               companyName: gstDetails.companyName || "",
               gstNumber: gstDetails.gstNumber || "",
+              gstMobileNumber: gstDetails.gstMobileNumber,
+              gstEmail: gstDetails.gstEmail,
             },
-            paymentStatus: "completed",
-            paymentMethod: "PhonePe",
+            paymentStatus: paymentResult?.status,
+            paymentMethod: paymentMode,
             paymentIntentId,
             paymentResult,
             personalInfo: {
@@ -139,6 +143,7 @@ const StatusPage = () => {
 
       const paymentStatus = response.data.status;
       const transactionId = response.data?.transactionId;
+      const paymentModes = response.data?.paymentMode;
 
       const fullPaymentData = {
         status: paymentStatus,
@@ -149,15 +154,18 @@ const StatusPage = () => {
 
       setTransactionStatus(paymentStatus);
       setTransactionDetails(response?.data?.result);
-      if (paymentStatus === "COMPLETED") {
-        if (!hasPlacedOrder.current) {
-          hasPlacedOrder.current = true;
-          await placeOrder({ paymentResult: fullPaymentData });
+      if (!hasPlacedOrder.current) {
+        hasPlacedOrder.current = true;
+        await placeOrder({
+          paymentResult: fullPaymentData,
+          paymentMode: paymentModes,
+        });
+
+        if (paymentStatus === "COMPLETED") {
+          toast.success("Order placed successfully!");
+        } else {
+          toast.error("Order failed. Payment was not successful.");
         }
-      } else {
-        toast.error(
-          `Payment failed or not completed. Status: ${paymentStatus}`
-        );
       }
     } catch (error) {
       const errorMessage =

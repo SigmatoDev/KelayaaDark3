@@ -112,132 +112,154 @@ export default function OrderHistory() {
           </Link>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-4">
           {filteredOrders?.map((order) => (
-            <Card key={order._id}>
-              <CardContent className="p-6">
-                <div className="flex flex-col justify-between gap-6">
-                  {/* Order Info */}
-                  <div className="space-y-2 py-4">
-                    <div className="flex items-center gap-4">
-                      <Link
-                        // href={`/order/${order.orderNumber}`}
-                        href={``}
-                        className="text-lg font-medium hover:text-primary"
-                      >
-                        Order #{order?.orderNumber}
-                      </Link>
-                      <StatusBadge
-                        status={
-                          order.isDelivered
-                            ? "delivered"
-                            : order.isPaid
-                              ? "processing"
-                              : "pending"
-                        }
-                      />
-                    </div>
-                    <p className="text-sm text-gray-500">
-                      Placed on {new Date(order.createdAt).toLocaleDateString()}
-                    </p>
-                    <p className="text-sm text-gray-500">
-                      Payment :{" "}
-                      <StatusBadge
-                        status={order.isPaid ? "completed" : "pending"}
-                      />
-                    </p>
-                  </div>
-
-                  {/* Order Items Preview */}
-                  <div className="flex-1">
-                    <div className="flex flex-wrap gap-4">
-                      {order.items.map((item, index) => (
-                        <div key={index} className="flex items-center gap-3">
-                          <div className="relative w-16 h-16">
-                            <Image
-                              src={item.image}
-                              alt={item.name}
-                              fill
-                              className="object-cover rounded-md"
-                            />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium">{item.name}</p>
-                            <p className="text-sm text-gray-500">
-                              Qty: {item.qty} ×
-                              {item?.product?.materialType === "Beads"
-                                ? new Intl.NumberFormat("en-IN", {
-                                    style: "currency",
-                                    currency: "INR",
-                                  }).format(item?.product?.pricePerLine)
-                                : new Intl.NumberFormat("en-IN", {
-                                    style: "currency",
-                                    currency: "INR",
-                                  }).format(item?.price)}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-
-                  {/* Order Total and Actions */}
-                  {/* <div className="flex flex-col justify-between items-end">
-                    <div className="text-right">
-                      <p className="text-sm font-medium">Total Amount</p>
-                      <p className="text-lg font-bold">
-                        ₹{order.totalPrice.toLocaleString("en-IN")}
-                      </p>
-                    </div>
-                    <Link
-                      href={`/order/${order._id}`}
-                      className="inline-flex items-center justify-center px-4 py-2 bg-primary text-white rounded-md hover:bg-primary/90"
-                    >
-                      View Details
-                    </Link>
-                  </div> */}
-                </div>
-
-                {/* Order Status Timeline */}
-                <div className="mt-6 pt-6 border-t">
-                  <div className="flex items-center justify-between max-w-2xl">
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-4 h-4 rounded-full ${order.isPaid ? "bg-green-500" : "bg-gray-300"}`}
-                      >
-                        <FaCheckCircle className="text-white" />
-                      </div>
-                      <p className="text-sm mt-2">Order Placed</p>
-                      {order.paidAt && (
-                        <p className="text-xs text-gray-500">
-                          {new Date(order.paidAt).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
-                    <div
-                      className={`flex-1 h-0.5 ${order.isPaid ? "bg-green-500" : "bg-gray-300"}`}
+            <Link href={`/my-orders/${order._id}`} key={order._id}>
+              {/* Mobile Layout (Flipkart Style) */}
+              <div className="block md:hidden p-4 bg-white rounded-xl border border-gray-200 shadow-sm transition cursor-pointer mb-4">
+                <div className="flex items-center justify-between gap-4">
+                  {/* Product Image */}
+                  <div className="relative w-16 h-16 flex-shrink-0">
+                    <Image
+                      src={order.items[0]?.image || "/placeholder.png"}
+                      alt={order.items[0]?.name}
+                      fill
+                      className="rounded-md object-cover"
                     />
-                    <div className="flex flex-col items-center">
-                      <div
-                        className={`w-4 h-4 rounded-full ${order.isDelivered ? "bg-green-500" : "bg-gray-300"}`}
-                      >
-                        {order.isDelivered === false ? (
-                          <FaClock className="text-white" />
-                        ) : (
-                          <FaCheckCircle className="text-white" />
-                        )}
-                      </div>
-                      <p className="text-sm mt-2">Delivered</p>
-                      {order.deliveredAt && (
-                        <p className="text-xs text-gray-500">
-                          {new Date(order.deliveredAt).toLocaleDateString()}
-                        </p>
-                      )}
-                    </div>
+                  </div>
+
+                  {/* Order Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium truncate">
+                      {order.items.length === 1
+                        ? order.items[0].name
+                        : `${order.items.length} items`}
+                    </p>
+                    <p className="text-xs text-gray-500 truncate">
+                      Order #{order.orderNumber} ·{" "}
+                      {new Date(order.createdAt).toLocaleDateString()}
+                    </p>
+                    <p className="text-xs text-green-600 font-medium mt-1">
+                      {order.isDelivered
+                        ? `Delivered on ${new Date(order.deliveredAt).toLocaleDateString()}`
+                        : order.isPaid
+                          ? "Processing"
+                          : "Pending Payment"}
+                    </p>
+                  </div>
+
+                  {/* Chevron Icon */}
+                  <div className="text-gray-400">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              {/* Desktop Layout (Full Details) */}
+              <div className="hidden md:block transition-all duration-300 hover:bg-gray-50 hover:shadow-lg cursor-pointer rounded-xl mb-4">
+                <Card>
+                  <CardContent className="p-6 space-y-4">
+                    {/* Row 1: Order Info */}
+                    <div className="flex justify-between items-center flex-wrap gap-4">
+                      <div>
+                        <p className="text-lg font-semibold">
+                          Order #{order.orderNumber}
+                        </p>
+                        <p className="text-sm text-gray-500">
+                          Placed on{" "}
+                          {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
+                      </div>
+
+                      {/* Row 2: Items */}
+                      <div className="flex flex-wrap gap-4">
+                        {order.items.map((item, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-3 w-full sm:w-auto"
+                          >
+                            <div className="relative w-16 h-16">
+                              <Image
+                                src={item.image || "/placeholder.png"}
+                                alt={item.name}
+                                fill
+                                className="object-cover rounded-md"
+                              />
+                            </div>
+                            <div>
+                              <p className="text-sm font-medium">{item.name}</p>
+                              <p className="text-sm text-gray-500">
+                                Qty: {item.qty} ×{" "}
+                                {new Intl.NumberFormat("en-IN", {
+                                  style: "currency",
+                                  currency: "INR",
+                                }).format(
+                                  item?.product?.materialType === "Beads"
+                                    ? item?.product?.pricePerLine
+                                    : item.price
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+
+                      <div className="flex-col space-y-2 items-center gap-6 text-sm text-gray-600">
+                        <div className="flex items-center gap-1">
+                          Payment:
+                          <StatusBadge
+                            status={order.isPaid ? "completed" : "pending"}
+                          />
+                        </div>
+                        <div className="flex items-center gap-1">
+                          Order Status:
+                          <StatusBadge
+                            status={
+                              order.isDelivered
+                                ? "delivered"
+                                : order.isPaid
+                                  ? "processing"
+                                  : "pending"
+                            }
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end items-center">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="w-6 h-6 text-gray-400"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
+                      </div>
+                    </div>
+
+                    {/* Chevron Icon aligned vertically centered */}
+                  </CardContent>
+                </Card>
+              </div>
+            </Link>
           ))}
         </div>
       )}

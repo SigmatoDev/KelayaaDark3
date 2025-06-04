@@ -28,6 +28,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         {
           status: "COMPLETED",
           transactionId: result?.paymentDetails[0]?.transactionId,
+          paymentMode: result?.paymentDetails[0]?.paymentMode,
           result: result,
         },
         { status: 200 }

@@ -1,9 +1,10 @@
+"use client";
+
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import {
-  FaGem,
   FaRing,
   FaWrench,
   FaShapes,
@@ -17,6 +18,9 @@ import {
   FaRedo,
   FaTimes,
   FaSignInAlt,
+  FaShoppingCart,
+  FaBoxOpen,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import { HiOutlineSparkles } from "react-icons/hi";
 import { ReceiptTextIcon } from "lucide-react";
@@ -27,45 +31,55 @@ const MobileDrawer = ({ closeDrawer }: { closeDrawer: () => void }) => {
   const { data: session } = useSession();
   const [isSignInOpen, setIsSignInOpen] = useState(false);
 
+  // Use index-based active nav
+  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+
   const handleSignInClick = () => {
-    closeDrawer(); // Close drawer first
+    closeDrawer();
     setTimeout(() => {
-      setIsSignInOpen(true); // Then open sign-in popup
-    }, 300); // Slight delay for smoother UX
+      setIsSignInOpen(true);
+    }, 300);
   };
 
-  // const userName = session?.user?.name;
-  // const userPhone = session?.user?.mobileNumber;
+  const handleLogoutClick = async () => {
+    await signOut({ redirect: false });
+    router.push("/");
+    closeDrawer();
+  };
+
+  const userName = session?.user?.name ?? "";
+  const userPhone = session?.user?.mobileNumber ?? "";
+  const userInitial = userName ? userName[0].toUpperCase() : "";
 
   const navItems = [
     {
       label: "Silver",
-      icon: <HiOutlineSparkles className="w-5 h-5" />,
+      icon: <HiOutlineSparkles className="w-5 h-5 text-pink-500" />,
       href: "/search?materialType=silver",
     },
     {
       label: "Gold & Diamonds",
-      icon: <FaRing className="w-5 h-5" />,
+      icon: <FaRing className="w-5 h-5 text-pink-500" />,
       href: "/search?materialType=gold",
     },
     {
       label: "Beads",
-      icon: <FaEllipsisH className="w-5 h-5" />,
+      icon: <FaEllipsisH className="w-5 h-5 text-pink-500" />,
       href: "/search?materialType=Beads",
     },
     {
       label: "Custom Design",
-      icon: <FaWrench className="w-5 h-5" />,
+      icon: <FaWrench className="w-5 h-5 text-pink-500" />,
       href: "/custom-design",
     },
     {
       label: "Collections",
-      icon: <FaShapes className="w-5 h-5" />,
+      icon: <FaShapes className="w-5 h-5 text-pink-500" />,
       href: "/search?productCategory=collections",
     },
     {
       label: "Size Guide",
-      icon: <FaRuler className="w-5 h-5" />,
+      icon: <FaRuler className="w-5 h-5 text-pink-500" />,
       href: "/ring-bangle-size-guide",
     },
   ];
@@ -73,17 +87,17 @@ const MobileDrawer = ({ closeDrawer }: { closeDrawer: () => void }) => {
   const contactItems = [
     {
       label: "Email",
-      icon: <FaEnvelope className="w-5 h-5" />,
+      icon: <FaEnvelope className="w-5 h-5 text-pink-500" />,
       info: "info@kelayaa.com",
     },
     {
       label: "Phone",
-      icon: <FaPhoneAlt className="w-5 h-5" />,
+      icon: <FaPhoneAlt className="w-5 h-5 text-pink-500" />,
       info: "+91 9945000100",
     },
     {
       label: "Phone",
-      icon: <FaPhoneAlt className="w-5 h-5" />,
+      icon: <FaPhoneAlt className="w-5 h-5 text-pink-500" />,
       info: "+91 8431358078",
     },
   ];
@@ -92,22 +106,35 @@ const MobileDrawer = ({ closeDrawer }: { closeDrawer: () => void }) => {
     {
       label: "About Us",
       href: "/about-us",
-      icon: <FaInfoCircle className="w-5 h-5" />,
+      icon: <FaInfoCircle className="w-5 h-5 text-pink-500" />,
     },
     {
       label: "Privacy Policy",
       href: "/privacy-policy",
-      icon: <FaShieldAlt className="w-5 h-5" />,
+      icon: <FaShieldAlt className="w-5 h-5 text-pink-500" />,
     },
     {
       label: "Terms & Conditions",
       href: "/terms-and-conditions",
-      icon: <ReceiptTextIcon className="w-5 h-5" />,
+      icon: <ReceiptTextIcon className="w-5 h-5 text-pink-500" />,
     },
     {
       label: "Refund Policy",
       href: "/return-policy",
-      icon: <FaRedo className="w-5 h-5" />,
+      icon: <FaRedo className="w-5 h-5 text-pink-500" />,
+    },
+  ];
+
+  const userLinks = [
+    {
+      label: "My Orders",
+      href: "/my-orders",
+      icon: <FaBoxOpen className="w-5 h-5 text-pink-500" />,
+    },
+    {
+      label: "My Cart",
+      href: "/cart",
+      icon: <FaShoppingCart className="w-5 h-5 text-pink-500" />,
     },
   ];
 
@@ -118,28 +145,71 @@ const MobileDrawer = ({ closeDrawer }: { closeDrawer: () => void }) => {
         <button
           onClick={closeDrawer}
           className="absolute top-4 right-4 text-xl text-gray-600 hover:text-pink-600"
+          aria-label="Close menu"
         >
           <FaTimes />
         </button>
 
-        {/* Top Profile / Sign In Section */}
-        {/* {!session?.user ? (
+        {/* User Profile or Sign In */}
+        {!session?.user ? (
           <button
             onClick={handleSignInClick}
-            className="flex items-center space-x-2 text-pink-600 font-medium text-sm hover:text-pink-700 transition"
+            className="flex items-center space-x-2 text-pink-600 font-semibold text-base hover:text-pink-700 transition"
           >
-            <FaSignInAlt className="w-5 h-5" />
+            <FaSignInAlt className="w-6 h-6" />
             <span>Sign In</span>
           </button>
         ) : (
-          <div className="flex items-center space-x-3 mb-6">
-            <FaUserCircle className="w-10 h-10 text-pink-600" />
-            <div>
-              <p className="text-lg font-semibold">{userName}</p>
-              <p className="text-sm text-gray-500">{userPhone}</p>
+          <div className="flex items-center space-x-4 mb-6 justify-between">
+            <div className="flex items-center">
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-pink-100 text-pink-600 font-bold text-xl select-none">
+                {userInitial || <FaUserCircle className="w-8 h-8" />}
+              </div>
+              <div className="ml-2">
+                <p className="text-lg font-semibold text-gray-800">
+                  {userName}
+                </p>
+                <p className="text-sm text-gray-500">{userPhone}</p>
+              </div>
+            </div>
+            <button
+              onClick={handleLogoutClick}
+              className="flex items-center space-x-2 text-pink-600 font-semibold text-base hover:text-pink-700 transition"
+            >
+              <FaSignOutAlt className="w-5 h-5" />
+              {/* <span>Logout</span> */}
+            </button>
+          </div>
+        )}
+
+        {/* User quick links if logged in */}
+        {session?.user && (
+          <div className="mb-6">
+            <p className="text-sm font-semibold text-gray-700 mb-2">
+              Your Account
+            </p>
+            <div className="flex flex-col space-y-2">
+              {userLinks.map((link, idx) => (
+                <Link
+                  key={link.href}
+                  href={link.href}
+                  onClick={() => {
+                    closeDrawer();
+                    setActiveIndex(idx + navItems.length); // offset so indices don't overlap with navItems
+                  }}
+                  className={`flex items-center px-4 py-2 rounded-md space-x-3 text-sm font-medium transition-colors ${
+                    activeIndex === idx + navItems.length
+                      ? "bg-pink-200 text-pink-700 rounded-lg border border-pink-300"
+                      : "text-gray-700 hover:bg-pink-50 hover:text-pink-600"
+                  }`}
+                >
+                  {link.icon}
+                  <span>{link.label}</span>
+                </Link>
+              ))}
             </div>
           </div>
-        )} */}
+        )}
 
         <div className="border-t border-gray-300 mb-4" />
 
@@ -147,17 +217,20 @@ const MobileDrawer = ({ closeDrawer }: { closeDrawer: () => void }) => {
         <div className="space-y-4">
           <p className="text-sm font-semibold text-gray-700">Categories</p>
           <div className="flex flex-col space-y-2">
-            {navItems.map((item) => {
-              const isActive = router?.asPath === item.href;
+            {navItems.map((item, idx) => {
+              const isActive = activeIndex === idx;
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={closeDrawer}
+                  onClick={() => {
+                    closeDrawer();
+                    setActiveIndex(idx);
+                  }}
                   className={`flex items-center px-4 py-2 rounded-md space-x-3 text-sm font-medium transition-colors ${
                     isActive
-                      ? "bg-pink-100 text-pink-600"
-                      : "text-gray-700 hover:bg-gray-100"
+                      ? "bg-pink-200 text-pink-700 rounded-lg border border-pink-300"
+                      : "text-gray-700 hover:bg-pink-50 hover:text-pink-600"
                   }`}
                 >
                   {item.icon}
