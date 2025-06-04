@@ -140,7 +140,7 @@ export const sendOrderStatusUpdateEmail = async ({
 
     <div class="content">
       <div class="section">
-        <div class="section-title">Hi ${user?.name},</div>
+        <div class="section-title">Hi,</div>
         <p>Your order <strong>#${orderNumber}</strong> has been updated to <strong>${statusLabels[status]}</strong> as of <strong>${formattedDate}</strong>.</p>
         ${note ? `<div class="note-box"><strong>Note:</strong> ${note}</div>` : ""}
       </div>
