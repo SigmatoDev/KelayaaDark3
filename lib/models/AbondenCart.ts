@@ -1,11 +1,15 @@
-import mongoose, { Schema, Types } from "mongoose";
+import mongoose from "mongoose";
 
-const AbandonedCartSchema = new Schema(
+const AbandonedCartSchema = new mongoose.Schema(
   {
-    userId: { type: Types.ObjectId, ref: "User", required: true },
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
     items: [
       {
-        productId: { type: Types.ObjectId, required: true },
+        productId: { type: mongoose.Schema.Types.ObjectId, required: true },
         productType: {
           type: String,
           enum: ["BanglesProduct", "BeadsProduct", "SetsProduct", "Product"],
@@ -26,6 +30,7 @@ const AbandonedCartSchema = new Schema(
 );
 
 const AbandonedCart =
-  mongoose.models.AbandonedCart || mongoose.model("AbandonedCart", AbandonedCartSchema);
+  mongoose.models.AbandonedCart ||
+  mongoose.model("AbandonedCart", AbandonedCartSchema);
 
 export default AbandonedCart;
