@@ -50,6 +50,7 @@ const CartDetails = () => {
         ...item,
         _id: item._id,
         productType: item.materialType, // Adjust based on your store logic
+        price: item.materialType === "Beads" ? item.pricePerLine : item.price,
       }));
 
       console.log("📦 Attempting to save abandoned cart:", {
