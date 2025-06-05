@@ -5,10 +5,12 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const CRON_ENDPOINT = process.env.ABANDONED_CART_API_URL; // https://yourdomain.com/api/cron/abandoned-cart
+const CRON_ENDPOINT = process.env.ABANDONED_CART_API_URL!; // https://yourdomain.com/api/cron/abandoned-cart
 
 const runAbandonedCartReminder = async () => {
   if (!CRON_ENDPOINT) {
+    console.warn(CRON_ENDPOINT);
+
     console.error("❌ ABANDONED_CART_API_URL is not defined in .env");
     return;
   }
