@@ -12,7 +12,7 @@ const AbandonedCartSchema = new mongoose.Schema(
         productId: { type: mongoose.Schema.Types.ObjectId, required: true },
         productType: {
           type: String,
-          enum: ["BanglesProduct", "BeadsProduct", "SetsProduct", "Product"],
+          enum: ["gold", "silver", "Beads"],
           required: true,
         },
         name: { type: String, required: true },

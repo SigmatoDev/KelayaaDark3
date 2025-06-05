@@ -34,17 +34,21 @@ export async function GET() {
     if (interval.days) threshold.setDate(threshold.getDate() - interval.days);
 
     console.log(
-      `⏰ Checking carts for reminderCount=${interval.count} updated before ${threshold.toISOString()}`
+      `⏰ Checking carts for reminderCount=${interval.count} before ${threshold.toISOString()}`
     );
 
-    const carts = await AbandonedCart.find({
+    const dateField = interval.count === 0 ? "createdAt" : "updatedAt";
+
+    const query: any = {
       isRecovered: false,
       reminderCount: interval.count,
-      updatedAt: { $lte: threshold },
-    });
+      [dateField]: { $lte: threshold },
+    };
+
+    const carts = await AbandonedCart.find(query);
 
     console.log(
-      `📦 Found ${carts.length} abandoned carts to send reminders for interval`,
+      `📦 Found ${carts.length} abandoned carts for interval`,
       interval
     );
 
@@ -60,7 +64,7 @@ export async function GET() {
         cart.reminderCount += 1;
         await cart.save();
         console.log(
-          `💾 Updated abandoned cart reminderCount to ${cart.reminderCount} for userId: ${cart.userId}`
+          `💾 Updated reminderCount to ${cart.reminderCount} for userId: ${cart.userId}`
         );
 
         remindersSent.push(cart.userId.toString());
