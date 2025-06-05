@@ -29,8 +29,9 @@ const AbandonedCartSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// ✅ Safely define the model
 const AbandonedCart =
-  mongoose.models.AbandonedCart ||
+  mongoose.models?.AbandonedCart ||
   mongoose.model("AbandonedCart", AbandonedCartSchema);
 
 export default AbandonedCart;
