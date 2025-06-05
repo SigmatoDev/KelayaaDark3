@@ -11,6 +11,7 @@ import toast from "react-hot-toast";
 import EmptyCart from "./EmptyCart";
 import { useSession } from "next-auth/react";
 import SignInPopup from "@/components/signin/SignIn";
+import { saveAbandonedCart } from "@/lib/abandonedCart/saveAbandonedCart";
 
 const CartDetails = () => {
   const {
@@ -42,6 +43,22 @@ const CartDetails = () => {
   const [couponInput, setCouponInput] = useState("");
 
   const totalPrice = itemsPrice - discountPrice - couponDiscount;
+
+  useEffect(() => {
+    if (session?.user?._id && items.length > 0) {
+      const formattedItems = items.map((item) => ({
+        ...item,
+        _id: item._id,
+        productType: item.productType || "Product", // Adjust based on your store logic
+      }));
+
+      saveAbandonedCart({
+        userId: session.user._id,
+        cartItems: formattedItems,
+        totalPrice,
+      });
+    }
+  }, [items, session]);
 
   useEffect(() => {
     setMounted(true);
@@ -82,8 +99,6 @@ const CartDetails = () => {
 
   return (
     <div className="mt-4 p-4 sm:p-6 bg-white w-full sm:w-[90%] mx-auto rounded-md shadow-sm">
-
-
       <h1 className="mt-4 mb-8 text-2xl text-center font-semibold text-gray-900">
         Shopping Cart
       </h1>

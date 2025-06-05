@@ -15,6 +15,8 @@ import {
 } from "@/lib/models/OrderModel";
 import SignInPopup from "@/components/signin/SignIn";
 import { TextValidationHelper } from "../helpers/validationHelpers";
+import { FaSignInAlt, FaUserPlus } from "react-icons/fa";
+import toast from "react-hot-toast";
 
 type FormData = {
   personalInfo: PersonalInfo & { fullName?: string };
@@ -34,6 +36,9 @@ const Form = () => {
   const isEmailLocked = !!session?.user?.email;
   const isMobileLocked = !!session?.user?.mobileNumber;
   const isNameLocked = !!session?.user?.name;
+  const [mode, setMode] = useState<"none" | "register" | "login">("none");
+  const [isUserJustRegistered, setIsUserJustRegistered] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
 
   const getShippingStorageKey = () => {
     const mobile =
@@ -140,42 +145,76 @@ const Form = () => {
     }
   }, [sameAsShipping, setValue, watch]);
 
+  const handleRegister = async () => {
+    const formValues = watch();
+    const { fullName, email, mobileNumber, password } = formValues.personalInfo;
+
+    setIsRegistering(true); // Start loader
+
+    try {
+      await new Promise((resolve) => setTimeout(resolve, 2000)); // Optional delay for smoother UX
+
+      const res = await fetch("/api/checkout/create-user-or-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ fullName, email, mobileNumber, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        // 🔴 Show specific server error (like mobile already exists)
+        throw new Error(data.error || "Registration failed");
+      }
+
+      if (!data.newAccount) {
+        toast.error("Account already exists. Please login.");
+        setPrefillEmail(email);
+        setIsSignInPopupOpen(true);
+        return;
+      }
+
+      // ✅ Try logging in the new user
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (result?.ok) {
+        setIsUserJustRegistered(true);
+        setMode("none");
+      } else {
+        throw new Error("Account created, but auto-login failed.");
+      }
+    } catch (error: any) {
+      console.error("Registration error", error);
+      toast.error(error.message || "Something went wrong. Please try again.");
+    } finally {
+      setIsRegistering(false); // Stop loader
+    }
+  };
+
   const formSubmit: SubmitHandler<FormData> = async (form) => {
     try {
-      if (!session) {
-        const res = await fetch("/api/checkout/create-user-or-login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            fullName: form.personalInfo.fullName,
-            email: form.personalInfo.email,
-            mobileNumber: form.personalInfo.mobileNumber,
-            password: form.personalInfo.password,
-          }),
+      if (session && isUserJustRegistered) {
+        setPrefillEmail(form.personalInfo.email);
+        setIsSignInPopupOpen(true);
+        return;
+      } else {
+        const result = await signIn("credentials", {
+          email: form.personalInfo.email,
+          password: form.personalInfo.password || "guestpassword",
+          redirect: false,
         });
 
-        const { success, newAccount } = await res.json();
-        if (!success) throw new Error("Failed to create or check user.");
-
-        if (!newAccount) {
-          setPrefillEmail(form.personalInfo.email);
-          setIsSignInPopupOpen(true);
+        if (!result?.ok) {
+          alert("Login failed. Please try again manually.");
           return;
-        } else {
-          const result = await signIn("credentials", {
-            email: form.personalInfo.email,
-            password: form.personalInfo.password || "guestpassword",
-            redirect: false,
-          });
-
-          if (result?.ok) {
-            // window.location.reload(); // ✅ force page reload after login
-          } else {
-            alert("Login failed. Please try again manually.");
-          }
         }
       }
 
+      // Save data
       savePersonalInfo({
         email: form.personalInfo.email,
         mobileNumber: form.personalInfo.mobileNumber,
@@ -184,16 +223,16 @@ const Form = () => {
         hasGST: form.gstDetails.hasGST ?? false,
         companyName: form.gstDetails.companyName || "",
         gstNumber: form.gstDetails.gstNumber || "",
+        gstMobileNumber: form.gstDetails.gstMobileNumber || "",
+        gstEmail: form.gstDetails.gstEmail || "",
       });
       saveShippingAddress(form.shippingAddress);
-
       localStorage.setItem(
         getShippingStorageKey(),
         JSON.stringify(form.shippingAddress)
       );
-
       if (!sameAsShipping) {
-        saveShippingAddress(form.billingDetails); // <-- billing details if user entered different one
+        saveShippingAddress(form.billingDetails);
       }
 
       router.push("/payment");
@@ -219,6 +258,36 @@ const Form = () => {
 
   return (
     <div>
+      {isRegistering && (
+        <div className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-white p-8 rounded-xl shadow-lg flex flex-col items-center">
+            <svg
+              className="animate-spin h-8 w-8 text-pink-500 mb-4"
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+            >
+              <circle
+                className="opacity-25"
+                cx="12"
+                cy="12"
+                r="10"
+                stroke="currentColor"
+                strokeWidth="4"
+              />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8v8H4z"
+              />
+            </svg>
+            <p className="text-sm font-medium text-gray-700">
+              Registering your account...
+            </p>
+          </div>
+        </div>
+      )}
+
       <CheckoutSteps current={1} />
       <div className="max-w-6xl mx-auto my-8 p-6 bg-white shadow-md rounded-lg relative">
         <form
@@ -226,116 +295,179 @@ const Form = () => {
           className="grid md:grid-cols-2 gap-6"
         >
           {/* Left - Personal Info */}
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Personal Information</h2>
-            <div className="space-y-3">
+
+          {session || mode === "register" ? (
+            <div className="space-y-4">
+              <h2 className="text-lg font-semibold">Personal Information</h2>
               <div className="space-y-3">
-                {/* Full Name */}
-                <div>
-                  <label className="text-xs font-medium block mb-1">
-                    Full Name
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Full Name"
-                    disabled={isNameLocked}
-                    {...register("personalInfo.fullName", {
-                      required: "Full name is required",
-                      validate: TextValidationHelper.createNameValidator(3, 30),
-                    })}
-                    onBlur={(e) => {
-                      const cleaned = TextValidationHelper.sanitizeText(
-                        e.target.value
-                      );
-                      setValue("personalInfo.fullName", cleaned, {
-                        shouldValidate: true,
-                        shouldDirty: true,
-                      });
-                    }}
-                    className={`input input-bordered w-full text-sm ${isNameLocked ? "bg-gray-100" : ""}`}
-                  />
-                  {errors.personalInfo?.fullName && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.personalInfo.fullName.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Mobile Number */}
-                <div>
-                  <label className="text-xs font-medium block mb-1">
-                    Mobile Number
-                  </label>
-                  <div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
-                    <span className="px-3 text-gray-600 text-sm">+91</span>
-                    <input
-                      type="text"
-                      maxLength={10}
-                      placeholder="Enter 10 digit number"
-                      disabled={isMobileLocked}
-                      {...register("personalInfo.mobileNumber", {
-                        required: "Mobile number is required",
-                        pattern: {
-                          value: /^[6-9]\d{9}$/,
-                          message: "Enter valid 10 digit Indian mobile number",
-                        },
-                      })}
-                      className={`w-full px-2 py-2 outline-none text-sm ${isMobileLocked ? "bg-gray-100" : ""}`}
-                      inputMode="numeric"
-                    />
-                  </div>
-                  {errors.personalInfo?.mobileNumber && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.personalInfo.mobileNumber.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Email */}
-                <div>
-                  <label className="text-xs font-medium block mb-1">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    placeholder="Email Address"
-                    disabled={isEmailLocked}
-                    {...register("personalInfo.email", {
-                      required: "Email is required",
-                    })}
-                    className={`input input-bordered w-full text-sm ${isEmailLocked ? "bg-gray-100" : ""}`}
-                  />
-                  {errors.personalInfo?.email && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.personalInfo.email.message}
-                    </p>
-                  )}
-                </div>
-
-                {/* Password (only if user not logged in) */}
-                {!session && (
+                <div className="space-y-3">
+                  {/* Full Name */}
                   <div>
                     <label className="text-xs font-medium block mb-1">
-                      Create Password
+                      Full Name
                     </label>
                     <input
-                      type="password"
-                      placeholder="Password"
-                      {...register("personalInfo.password", {
-                        required: "Password is required",
+                      type="text"
+                      placeholder="Full Name"
+                      disabled={isNameLocked}
+                      {...register("personalInfo.fullName", {
+                        required: "Full name is required",
+                        validate: TextValidationHelper.createNameValidator(
+                          3,
+                          30
+                        ),
                       })}
-                      className="input input-bordered w-full text-sm"
+                      onBlur={(e) => {
+                        const cleaned = TextValidationHelper.sanitizeText(
+                          e.target.value
+                        );
+                        setValue("personalInfo.fullName", cleaned, {
+                          shouldValidate: true,
+                          shouldDirty: true,
+                        });
+                      }}
+                      className={`input input-bordered w-full text-sm ${isNameLocked ? "bg-gray-100" : ""}`}
                     />
-                    {errors.personalInfo?.password && (
+                    {errors.personalInfo?.fullName && (
                       <p className="text-red-500 text-sm mt-1">
-                        {errors.personalInfo.password.message}
+                        {errors.personalInfo.fullName.message}
                       </p>
                     )}
                   </div>
-                )}
+
+                  {/* Mobile Number */}
+                  <div>
+                    <label className="text-xs font-medium block mb-1">
+                      Mobile Number
+                    </label>
+                    <div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
+                      <span className="px-3 text-gray-600 text-sm">+91</span>
+                      <input
+                        type="text"
+                        maxLength={10}
+                        placeholder="Enter 10 digit number"
+                        disabled={isMobileLocked}
+                        {...register("personalInfo.mobileNumber", {
+                          required: "Mobile number is required",
+                          pattern: {
+                            value: /^[6-9]\d{9}$/,
+                            message:
+                              "Enter valid 10 digit Indian mobile number",
+                          },
+                        })}
+                        className={`w-full px-2 py-2 outline-none text-sm ${isMobileLocked ? "bg-gray-100" : ""}`}
+                        inputMode="numeric"
+                      />
+                    </div>
+                    {errors.personalInfo?.mobileNumber && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.personalInfo.mobileNumber.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Email */}
+                  <div>
+                    <label className="text-xs font-medium block mb-1">
+                      Email Address
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="Email Address"
+                      disabled={isEmailLocked}
+                      {...register("personalInfo.email", {
+                        required: "Email is required",
+                      })}
+                      className={`input input-bordered w-full text-sm ${isEmailLocked ? "bg-gray-100" : ""}`}
+                    />
+                    {errors.personalInfo?.email && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.personalInfo.email.message}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Password (only if user not logged in) */}
+                  {!session && (
+                    <div>
+                      <label className="text-xs font-medium block mb-1">
+                        Create Password
+                      </label>
+                      <input
+                        type="password"
+                        placeholder="Password"
+                        {...register("personalInfo.password", {
+                          required: "Password is required",
+                        })}
+                        className="input input-bordered w-full text-sm"
+                      />
+                      {errors.personalInfo?.password && (
+                        <p className="text-red-500 text-sm mt-1">
+                          {errors.personalInfo.password.message}
+                        </p>
+                      )}
+                    </div>
+                  )}
+                  {mode === "register" && (
+                    <button
+                      type="button"
+                      onClick={handleRegister}
+                      className="w-full py-2 px-4 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition"
+                    >
+                      Register
+                    </button>
+                  )}
+                  {(mode === "register" || mode === "login" || !session) && (
+                    <button
+                      onClick={() => setMode("none")}
+                      className="text-xs text-gray-500 underline mt-4 block mx-auto"
+                    >
+                      ← Go back
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-lg border">
+                <h3 className="font-medium text-gray-800 flex items-center gap-2">
+                  <FaUserPlus className="text-green-500" />
+                  New Customer
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Create an account to shop faster, track your orders, and view
+                  your order history.
+                </p>
+                <button
+                  onClick={() => setMode("register")}
+                  className="btn btn-primary btn-sm mt-3"
+                >
+                  Register
+                </button>
+              </div>
+
+              <div className="bg-gray-50 p-4 rounded-lg border">
+                <h3 className="font-medium text-gray-800 flex items-center gap-2">
+                  <FaSignInAlt className="text-blue-500" />
+                  Returning Customer
+                </h3>
+                <p className="text-sm text-gray-600 mt-1">
+                  Already have an account? Log in to continue.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setMode("login");
+                    setIsSignInPopupOpen(true);
+                  }}
+                  className="btn btn-outline btn-sm mt-3"
+                >
+                  Login
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Right - Shipping Address */}
           <div className="space-y-4">
@@ -843,12 +975,20 @@ const Form = () => {
         </div>
       </div>
 
-      <SignInPopup
+      {mode === "login" && !session && (
+        <SignInPopup
+          isOpen={isSignInPopupOpen}
+          setIsOpen={setIsSignInPopupOpen}
+          prefillEmail={prefillEmail}
+        />
+      )}
+
+      {/* <SignInPopup
         isOpen={isSignInPopupOpen}
         setIsOpen={setIsSignInPopupOpen}
         prefillEmail={prefillEmail}
         message="An account with this email already exists. Please log in to continue."
-      />
+      /> */}
     </div>
   );
 };
