@@ -18,14 +18,19 @@ export const saveAbandonedCart = async ({
       userId,
       items: cartItems.map((item) => ({
         productId: new Types.ObjectId(item._id),
-        productType: item.productType, // You must include this in the cart
+        productType: item.productType,
         name: item.name,
         image: item.image,
         price: item.price,
         qty: item.qty,
       })),
       totalPrice,
+      updatedAt: new Date(), // ✅ Ensure updatedAt is refreshed
     },
-    { upsert: true, new: true }
+    {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true, // ✅ Important for default fields like isRecovered, reminderCount
+    }
   );
 };
