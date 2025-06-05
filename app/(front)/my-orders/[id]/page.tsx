@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import {
   FaCheckCircle,
@@ -23,6 +23,7 @@ import InvoiceDownload from "./invoiceDownload";
 import { useReactToPrint } from "react-to-print";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import InvoicePDF from "./invoiceDownload";
+import ResponsiveStatusStepper from "./TimeLineSTepper";
 
 interface User {
   _id: string;
@@ -67,6 +68,10 @@ interface OrderDetail {
   paymentMethod: string;
   totalPrice: number;
   items: {
+    product: {
+      productCode: string;
+    };
+    productId: string;
     name: string;
     price: number;
     qty: number;
@@ -114,6 +119,7 @@ export default function SingleOrderPage() {
   const { id } = useParams();
   const [currentStep, setCurrentStep] = useState(0);
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchOrder() {
@@ -237,10 +243,10 @@ export default function SingleOrderPage() {
       <Card className="mb-8">
         <CardContent className="p-6 pt-2">
           <h2 className="text-xl font-semibold mb-4">Order Status</h2>
-          <TimelineStepper
+          <ResponsiveStatusStepper
             statuses={ORDER_STATUSES}
+            initialStep={currentStep} // currently "Shipped"
             statusHistory={order.statusHistory}
-            currentStep={currentStep}
           />
         </CardContent>
       </Card>
@@ -257,24 +263,36 @@ export default function SingleOrderPage() {
                 {order.items.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center gap-4 border-b pb-3 last:border-none"
+                    className="border-b last:border-none pb-5 transition hover:bg-gray-50 rounded-md px-2 cursor-pointer"
+                    onClick={() =>
+                      router.push(`/product/${item?.product?.productCode}`)
+                    }
                   >
-                    <div className="relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border border-gray-200">
-                      <Image
-                        src={item.image || "/placeholder.jpg"}
-                        alt={item.name}
-                        fill
-                        className="object-cover"
-                      />
+                    <div className="flex items-center gap-4">
+                      <div className="relative w-20 h-20 flex-shrink-0 rounded-md overflow-hidden border border-gray-200">
+                        <Image
+                          src={item.image || "/placeholder.jpg"}
+                          alt={item.name}
+                          fill
+                          className="object-cover"
+                        />
+                      </div>
+                      <div className="flex-grow">
+                        <p className="font-semibold">{item.name}</p>
+                        <p className="text-gray-600">Qty: {item.qty}</p>
+                        <p className="text-gray-600">
+                          Unit Price: ₹{item.price.toLocaleString("en-IN")}
+                        </p>
+                      </div>
                     </div>
-                    <div className="flex-grow">
-                      <p className="font-semibold">{item.name}</p>
-                      <p className="text-gray-600">
-                        Qty: {item.qty} × ₹{item.price.toLocaleString("en-IN")}
-                      </p>
-                    </div>
-                    <div className="text-right w-24 font-medium">
-                      ₹{(item.price * item.qty).toLocaleString("en-IN")}
+
+                    <div className="border-t border-dashed border-gray-300 mt-3 pt-2 text-right font-semibold text-lg">
+                      Total{" "}
+                      <span className="text-gray-600">
+                        {" "}
+                        ({item.qty} x ₹{item.price})
+                      </span>
+                      : ₹{(item.price * item.qty).toLocaleString("en-IN")}
                     </div>
                   </div>
                 ))}

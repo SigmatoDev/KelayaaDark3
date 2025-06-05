@@ -170,24 +170,23 @@ export default function SignInPopup({
                   Full Name
                 </label>
                 <input
-  id="fullName"
-  type="text"
-  aria-invalid={!!errors.fullName}
-  {...register("fullName", {
-    required: "Full name is required",
-    maxLength: {
-      value: 30,
-      message: "Full name cannot exceed 30 characters",
-    },
-    pattern: {
-      value: /^[A-Za-z\s]+$/,
-      message: "Only alphabets and spaces are allowed",
-    },
-  })}
-  placeholder="Full Name"
-  className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#e58aaa] focus:border-[#e58aaa]"
-/>
-
+                  id="fullName"
+                  type="text"
+                  aria-invalid={!!errors.fullName}
+                  {...register("fullName", {
+                    required: "Full name is required",
+                    maxLength: {
+                      value: 30,
+                      message: "Full name cannot exceed 30 characters",
+                    },
+                    pattern: {
+                      value: /^[A-Za-z\s]+$/,
+                      message: "Only alphabets and spaces are allowed",
+                    },
+                  })}
+                  placeholder="Full Name"
+                  className="w-full mt-1 p-2 border rounded-md text-sm bg-gray-100 focus:outline-none focus:ring-2 focus:ring-[#e58aaa] focus:border-[#e58aaa]"
+                />
 
                 {errors.fullName && (
                   <p className="text-red-500 text-xs mt-1">
@@ -201,29 +200,29 @@ export default function SignInPopup({
                   Mobile Number
                 </label>
                 <div className="flex mt-1">
-    <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-200 text-sm select-none">
-          +91
-        </span>
-                <input
-                  id="mobileNumber"
-                  type="tel"
-                  aria-invalid={!!errors.mobileNumber}
-                  {...register("mobileNumber", {
-                    required: "Mobile number is required",
-                    pattern: {
-                      value: /^[0-9]{10}$/,
-                      message: "Enter a valid 10-digit mobile number",
-                    },
-                  })}
-                  placeholder="Enter 10-digit number"
-                  className={`flex-1 min-w-0 block w-full rounded-r-md border border-gray-300 p-2 text-sm bg-gray-100 
+                  <span className="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-300 bg-gray-200 text-sm select-none">
+                    +91
+                  </span>
+                  <input
+                    id="mobileNumber"
+                    type="tel"
+                    aria-invalid={!!errors.mobileNumber}
+                    {...register("mobileNumber", {
+                      required: "Mobile number is required",
+                      pattern: {
+                        value: /^[0-9]{10}$/,
+                        message: "Enter a valid 10-digit mobile number",
+                      },
+                    })}
+                    placeholder="Enter 10-digit number"
+                    className={`flex-1 min-w-0 block w-full rounded-r-md border border-gray-300 p-2 text-sm bg-gray-100 
                     focus:outline-none focus:ring-2 focus:ring-[#e58aaa] focus:border-[#e58aaa] ${
                       errors.mobileNumber ? "border-red-500" : ""
                     }`}
-                />
+                  />
                 </div>
 
-{errors.mobileNumber && (
+                {errors.mobileNumber && (
                   <p className="text-red-500 text-xs mt-1">
                     {errors.mobileNumber.message}
                   </p>
@@ -231,9 +230,7 @@ export default function SignInPopup({
 
                 {/* Show any general error message (not linked to a field) */}
                 {error && (
-                  <div className="text-red-600 text-xs mb-3">
-                    {error}
-                  </div>
+                  <div className="text-red-600 text-xs mb-3">{error}</div>
                 )}
               </div>
             </>

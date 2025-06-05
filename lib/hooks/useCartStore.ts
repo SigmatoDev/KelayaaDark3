@@ -285,6 +285,8 @@ const useCartService = () => {
       hasGST: boolean;
       companyName: string;
       gstNumber: string;
+      gstMobileNumber: string;
+      gstEmail: string;
     }) => {
       cartStore.setState({ gstDetails: gst });
     },

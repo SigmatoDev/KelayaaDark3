@@ -5,30 +5,51 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const { email, mobileNumber, password, fullName } = await req.json(); // Accept fullName also
+    const { fullName, email, mobileNumber, password } = await req.json();
+
+    if (!email || !mobileNumber || !password || !fullName) {
+      return NextResponse.json(
+        { success: false, error: "All fields are required." },
+        { status: 400 }
+      );
+    }
 
     await dbConnect();
 
-    let user = await UserModel.findOne({ email });
-
-    if (!user) {
-      // No user, create a new account
-      const hashedPassword = await bcrypt.hash(password || "guestpassword", 10);
-
-      user = await UserModel.create({
-        name: fullName || mobileNumber || email, // Prefer fullName if available
-        email,
-        mobileNumber, // Save mobile separately
-        password: hashedPassword,
-      });
-
-      return NextResponse.json({ success: true, newAccount: true });
+    const existingEmail = await UserModel.findOne({ email });
+    if (existingEmail) {
+      return NextResponse.json(
+        { success: false, error: "Email already exists. Please log in." },
+        { status: 400 }
+      );
     }
 
-    // User exists already
-    return NextResponse.json({ success: true, newAccount: false });
+    const existingMobile = await UserModel.findOne({ mobileNumber });
+    if (existingMobile) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Mobile number already exists. Please log in.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await UserModel.create({
+      name: fullName,
+      email,
+      mobileNumber,
+      password: hashedPassword,
+    });
+
+    return NextResponse.json({ success: true, newAccount: true });
   } catch (error) {
-    console.error("User creation error", error);
-    return NextResponse.json({ success: false, error: "Something went wrong." }, { status: 500 });
+    console.error("User creation error:", error);
+    return NextResponse.json(
+      { success: false, error: "Something went wrong." },
+      { status: 500 }
+    );
   }
 }
