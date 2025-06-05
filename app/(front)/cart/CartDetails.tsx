@@ -49,13 +49,30 @@ const CartDetails = () => {
       const formattedItems = items.map((item) => ({
         ...item,
         _id: item._id,
-        productType: item.productType || "Product", // Adjust based on your store logic
+        productType: item.materialType, // Adjust based on your store logic
       }));
+
+      console.log("📦 Attempting to save abandoned cart:", {
+        userId: session.user._id,
+        totalPrice,
+        items: formattedItems,
+      });
 
       saveAbandonedCart({
         userId: session.user._id,
         cartItems: formattedItems,
         totalPrice,
+      })
+        .then(() => {
+          console.log("✅ Abandoned cart saved successfully");
+        })
+        .catch((error) => {
+          console.error("❌ Error saving abandoned cart:", error);
+        });
+    } else {
+      console.log("ℹ️ Skipped saving abandoned cart. Reason:", {
+        hasUser: !!session?.user?._id,
+        hasItems: items.length > 0,
       });
     }
   }, [items, session]);

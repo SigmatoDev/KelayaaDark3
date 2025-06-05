@@ -1,4 +1,7 @@
+"use server"; // ✅ Only if this is called from server actions, otherwise remove it
+
 import { Types } from "mongoose";
+import dbConnect from "@/lib/dbConnect"; // ✅ Ensure DB is connected before using Mongoose
 import AbandonedCart from "../models/AbondenCart";
 
 export const saveAbandonedCart = async ({
@@ -12,7 +15,11 @@ export const saveAbandonedCart = async ({
 }) => {
   if (!userId || cartItems.length === 0) return;
 
-  await AbandonedCart.findOneAndUpdate(
+  await dbConnect(); // ✅ Required to make MongoDB calls
+
+  console.log("🛒 Saving abandoned cart for user:", userId);
+
+  const result = await AbandonedCart.findOneAndUpdate(
     { userId, isRecovered: false },
     {
       userId,
@@ -25,12 +32,14 @@ export const saveAbandonedCart = async ({
         qty: item.qty,
       })),
       totalPrice,
-      updatedAt: new Date(), // ✅ Ensure updatedAt is refreshed
+      updatedAt: new Date(),
     },
     {
       upsert: true,
       new: true,
-      setDefaultsOnInsert: true, // ✅ Important for default fields like isRecovered, reminderCount
+      setDefaultsOnInsert: true,
     }
   );
+
+  console.log("✅ Abandoned cart saved:", result._id);
 };
