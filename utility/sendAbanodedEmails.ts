@@ -15,10 +15,19 @@ export const sendAbandonedCartEmail = async (cart: any) => {
   // Initialize the Brevo API client
   const apiInstance = new TransactionalEmailsApi();
   apiInstance.setApiKey(TransactionalEmailsApiApiKeys.apiKey, apiKey);
+  console.log("📡 Initialized Brevo API client with API key.");
 
+  // Fetch the user by userId
   const user = await UserModel.findById(cart.userId);
-  if (!user?.email) return;
 
+  if (!user?.email) {
+    console.error("❌ User email is missing or user not found");
+    return;
+  }
+
+  console.log(`✅ User found: ${user.name} (${user.email})`);
+
+  // Construct the email content
   const cartHTML = cart.items
     .map(
       (item: any) => `
@@ -45,8 +54,10 @@ export const sendAbandonedCartEmail = async (cart: any) => {
   };
 
   try {
-    await apiInstance.sendTransacEmail(email);
+    console.log("📬 Sending email...");
+    const response = await apiInstance.sendTransacEmail(email);
     console.log(`✅ Abandoned cart email sent to ${user.email}`);
+    console.log("📄 Email response:", response);
   } catch (err) {
     console.error("❌ Failed to send abandoned cart email", err);
   }

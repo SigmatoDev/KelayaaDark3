@@ -10,12 +10,12 @@ export async function GET() {
   const now = new Date();
 
   const reminderIntervals = [
-    { minutes: 1, count: 0 },
-    { minutes: 5, count: 1 },
-    { minutes: 30, count: 2 },
-    { hours: 6, count: 3 },
-    { hours: 24, count: 4 },
-    { days: 2, count: 5 },
+    { minutes: 5, count: 0 },
+    { minutes: 10, count: 1 },
+    { minutes: 15, count: 2 },
+    { minutes: 20, count: 3 },
+    { minutes: 25, count: 4 },
+    { minutes: 30, count: 5 },
   ];
 
   const remindersSent: string[] = [];
@@ -27,11 +27,7 @@ export async function GET() {
 
   for (const interval of reminderIntervals) {
     const threshold = new Date(now);
-    if (interval.minutes)
-      threshold.setMinutes(threshold.getMinutes() - interval.minutes);
-    if (interval.hours)
-      threshold.setHours(threshold.getHours() - interval.hours);
-    if (interval.days) threshold.setDate(threshold.getDate() - interval.days);
+    threshold.setMinutes(threshold.getMinutes() - interval.minutes);
 
     console.log(
       `⏰ Checking carts for reminderCount=${interval.count} before ${threshold.toISOString()}`
@@ -79,5 +75,5 @@ export async function GET() {
 
   console.log(`🎯 Total emails sent: ${remindersSent.length}`);
 
-  return NextResponse.json({ sent: remindersSent.length });
+  return NextResponse.json({ sent: remindersSent.length, remindersSent });
 }
