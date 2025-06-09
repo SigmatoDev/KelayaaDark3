@@ -18,7 +18,7 @@ declare global {
 }
 
 const Form = () => {
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
   const router = useRouter();
   const [phonePeLoaded, setPhonePeLoaded] = useState(false);
 
@@ -49,61 +49,61 @@ const Form = () => {
     router.push("/place-order");
   };
 
-  const handleRazorpayPayment = async () => {
-    try {
-      const razorpayLoaded = await loadScript(
-        "https://checkout.razorpay.com/v1/checkout.js"
-      );
-      if (!razorpayLoaded) {
-        toast.error("Razorpay SDK failed to load. Are you online?");
-        return;
-      }
+  // const handleRazorpayPayment = async () => {
+  //   try {
+  //     const razorpayLoaded = await loadScript(
+  //       "https://checkout.razorpay.com/v1/checkout.js"
+  //     );
+  //     if (!razorpayLoaded) {
+  //       toast.error("Razorpay SDK failed to load. Are you online?");
+  //       return;
+  //     }
 
-      const res = await fetch("/api/razorpay/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: totalPrice }),
-      });
+  //     const res = await fetch("/api/razorpay/create-order", {
+  //       method: "POST",
+  //       headers: { "Content-Type": "application/json" },
+  //       body: JSON.stringify({ amount: totalPrice }),
+  //     });
 
-      const data = await res.json();
-      if (!data.success) throw new Error("Failed to create Razorpay order");
+  //     const data = await res.json();
+  //     if (!data.success) throw new Error("Failed to create Razorpay order");
 
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: totalPrice * 100,
-        currency: "INR",
-        name: "Kelayaa Jewellery",
-        description: "Thank you for shopping with us",
-        order_id: data.order.id,
-        handler: async (response: any) => {
-          const verifyRes = await fetch("/api/checkout/verify-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(response),
-          });
+  //     const options = {
+  //       key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+  //       amount: totalPrice * 100,
+  //       currency: "INR",
+  //       name: "Kelayaa Jewellery",
+  //       description: "Thank you for shopping with us",
+  //       order_id: data.order.id,
+  //       handler: async (response: any) => {
+  //         const verifyRes = await fetch("/api/checkout/verify-payment", {
+  //           method: "POST",
+  //           headers: { "Content-Type": "application/json" },
+  //           body: JSON.stringify(response),
+  //         });
 
-          const verifyData = await verifyRes.json();
-          if (verifyData.success) {
-            savePaymentMethod("Razorpay");
-            router.push(`/payment/success/${verifyData.paymentIntentId}`);
-          } else {
-            toast.error("Payment verification failed.");
-          }
-        },
-        prefill: {
-          name: session?.user?.name,
-          email: session?.user?.email,
-          contact: session?.user?.mobileNumber,
-        },
-        theme: { color: "#EC4999" },
-      };
+  //         const verifyData = await verifyRes.json();
+  //         if (verifyData.success) {
+  //           savePaymentMethod("Razorpay");
+  //           router.push(`/payment/success/${verifyData.paymentIntentId}`);
+  //         } else {
+  //           toast.error("Payment verification failed.");
+  //         }
+  //       },
+  //       prefill: {
+  //         name: session?.user?.name,
+  //         email: session?.user?.email,
+  //         contact: session?.user?.mobileNumber,
+  //       },
+  //       theme: { color: "#EC4999" },
+  //     };
 
-      const paymentObject = new (window as any).Razorpay(options);
-      paymentObject.open();
-    } catch (error: any) {
-      toast.error(error?.message || "Razorpay payment failed.");
-    }
-  };
+  //     const paymentObject = new (window as any).Razorpay(options);
+  //     paymentObject.open();
+  //   } catch (error: any) {
+  //     toast.error(error?.message || "Razorpay payment failed.");
+  //   }
+  // };
 
   const handlePhonePePayment = async (): Promise<void> => {
     try {
@@ -153,7 +153,7 @@ const Form = () => {
       // Registered user - Normal flow with authentication
       if (selectedPaymentMethod === "CashOnDelivery") handleCOD();
       else if (selectedPaymentMethod === "PhonePe") handlePhonePePayment();
-      else if (selectedPaymentMethod === "Razorpay") handleRazorpayPayment();
+      // else if (selectedPaymentMethod === "Razorpay") handleRazorpayPayment();
     }
   };
 
