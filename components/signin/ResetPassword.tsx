@@ -183,7 +183,7 @@ export default function ResetPasswordPopup({
               <button
                 type="button"
                 onClick={sendOtp}
-                className="w-full py-2 bg-blue-600 text-white font-semibold text-sm rounded-md hover:bg-blue-700"
+                className="w-full py-2 bg-pink-600 text-white font-semibold text-sm rounded-md hover:bg-pink-700"
               >
                 Send OTP
               </button>

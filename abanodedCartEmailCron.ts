@@ -24,6 +24,7 @@ const runAbandonedCartReminder = async (interval: {
     console.error("❌ ABANDONED_CART_API_URL is not defined in .env");
     return;
   }
+  console.warn("CRON_ENDPOINT", CRON_ENDPOINT);
 
   try {
     const now = new Date();
