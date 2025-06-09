@@ -239,6 +239,10 @@ const Form = () => {
         setPrefillEmail(form.personalInfo.email);
         setIsSignInPopupOpen(true);
         return;
+      } else if (isGuestLoggedIn === "true") {
+        // Skip NextAuth.js redirection for guest users and directly navigate to payment
+        router.push("/payment");
+        return;
       } else {
         // Normal login for existing users
         const result = await signIn("credentials", {
@@ -274,6 +278,7 @@ const Form = () => {
         saveShippingAddress(form.billingDetails);
       }
 
+      // Redirect to payment page
       router.push("/payment");
     } catch (error: any) {
       console.error(error);
