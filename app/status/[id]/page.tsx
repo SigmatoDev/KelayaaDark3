@@ -5,7 +5,7 @@ import axios, { AxiosError } from "axios";
 import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import useCartService from "@/lib/hooks/useCartStore";
 import useSWRMutation from "swr/mutation";
 import { SparklesIcon } from "lucide-react";
@@ -185,10 +185,19 @@ const StatusPage = () => {
           toast.success("Order placed successfully!");
           await deleteGuestUser();
           sessionStorage.clear();
+
+          setTimeout(() => {
+            signOut({ redirect: false }); // 🔓 logout after 2 seconds
+            router.push("/"); // Optional: Redirect home after logout
+          }, 2000);
         } else {
           toast.error("Order failed. Payment was not successful.");
           await deleteGuestUser(); // ✅ Delete guest after success
           sessionStorage.clear();
+          setTimeout(() => {
+            signOut({ redirect: false });
+            router.push("/");
+          }, 2000);
         }
       }
     } catch (error) {
