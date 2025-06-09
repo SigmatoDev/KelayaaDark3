@@ -115,25 +115,38 @@ export default function Orders() {
         header: "ORDER STATUS",
         cell: ({ row }) => {
           const status = row.original.status;
+          console.log()
           return (
             <span
               className={`rounded-md px-2 py-1 text-xs ${
                 status === "pending" || status === "processing"
                   ? "bg-purple-100 text-purple-800"
-                  : status === "cancelled"
-                    ? "bg-red-100 text-red-800"
-                    : status === "completed"
-                      ? "bg-green-100 text-green-800"
-                      : "bg-gray-100"
+                  : status === "shipped"
+                    ? "bg-blue-100 text-blue-800"
+                    : status === "out-for-delivery"
+                      ? "bg-yellow-100 text-yellow-800"
+                      : status === "completed"
+                        ? "bg-green-100 text-green-800"
+                        : status === "cancelled"
+                          ? "bg-red-100 text-red-800"
+                          : status === "failed"
+                            ? "bg-gray-200 text-gray-800"
+                            : "bg-gray-100 text-gray-800"
               }`}
             >
               {status === "pending" || status === "processing"
                 ? "Processing"
-                : status === "cancelled"
-                  ? "Cancelled"
-                  : status === "completed"
-                    ? "Delivered"
-                    : "Unknown"}
+                : status === "shipped"
+                  ? "Shipped"
+                  : status === "out-for-delivery"
+                    ? "Out for Delivery"
+                    : status === "completed"
+                      ? "Delivered"
+                      : status === "cancelled"
+                        ? "Cancelled"
+                        : status === "failed"
+                          ? "Failed"
+                          : "Unknown"}
             </span>
           );
         },
