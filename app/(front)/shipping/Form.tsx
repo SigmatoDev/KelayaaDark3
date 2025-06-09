@@ -240,6 +240,7 @@ const Form = () => {
         setIsSignInPopupOpen(true);
         return;
       } else if (isGuestLoggedIn === "true") {
+        console.log("guest routing");
         // Skip NextAuth.js redirection for guest users and directly navigate to payment
         router.push("/payment");
         return;
