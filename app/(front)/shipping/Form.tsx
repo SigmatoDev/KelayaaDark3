@@ -407,171 +407,174 @@ const Form = () => {
         </div>
       )}
 
-      {(mode === "register" || mode === "guest") && !session && (
-        <div className=" mt-8 p-4">
-          <div className="space-y-6 max-w-md mx-auto">
-            <div>
-              <div className="space-y-4">
-                <h2 className="text-lg font-semibold">
-                  Personal Information
-                  {loggedInUserType === "guest" && (
-                    <span className="text-sm text-gray-500 ml-2">
-                      (Logged in as Guest)
-                    </span>
-                  )}
-                </h2>
-                <div className="space-y-3">
+      {(mode === "register" || mode === "guest") &&
+        !session &&
+        isGuestLoggedIn === "false" && (
+          <div className=" mt-8 p-4">
+            <div className="space-y-6 max-w-md mx-auto">
+              <div>
+                <div className="space-y-4">
+                  <h2 className="text-lg font-semibold">
+                    Personal Information
+                    {loggedInUserType === "guest" && (
+                      <span className="text-sm text-gray-500 ml-2">
+                        (Logged in as Guest)
+                      </span>
+                    )}
+                  </h2>
                   <div className="space-y-3">
-                    {/* Full Name */}
-                    <div>
-                      <label className="text-xs font-medium block mb-1">
-                        Full Name
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="Full Name"
-                        disabled={isNameLocked}
-                        {...register("personalInfo.fullName", {
-                          required: "Full name is required",
-                          validate: TextValidationHelper.createNameValidator(
-                            3,
-                            30
-                          ),
-                        })}
-                        onBlur={(e) => {
-                          const cleaned = TextValidationHelper.sanitizeText(
-                            e.target.value
-                          );
-                          setValue("personalInfo.fullName", cleaned, {
-                            shouldValidate: true,
-                            shouldDirty: true,
-                          });
-                        }}
-                        className={`input input-bordered w-full text-sm ${isNameLocked ? "bg-gray-100" : ""}`}
-                      />
-                      {errors.personalInfo?.fullName && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {errors.personalInfo.fullName.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Mobile Number */}
-                    <div>
-                      <label className="text-xs font-medium block mb-1">
-                        Mobile Number
-                      </label>
-                      <div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
-                        <span className="px-3 text-gray-600 text-sm">+91</span>
-                        <input
-                          type="text"
-                          maxLength={10}
-                          placeholder="Enter 10 digit number"
-                          disabled={isMobileLocked}
-                          {...register("personalInfo.mobileNumber", {
-                            required: "Mobile number is required",
-                            pattern: {
-                              value: /^[6-9]\d{9}$/,
-                              message:
-                                "Enter valid 10 digit Indian mobile number",
-                            },
-                          })}
-                          className={`w-full px-2 py-2 outline-none text-sm ${isMobileLocked ? "bg-gray-100" : ""}`}
-                          inputMode="numeric"
-                        />
-                      </div>
-                      {errors.personalInfo?.mobileNumber && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {errors.personalInfo.mobileNumber.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Email */}
-                    <div>
-                      <label className="text-xs font-medium block mb-1">
-                        Email Address
-                      </label>
-                      <input
-                        type="email"
-                        placeholder="Email Address"
-                        disabled={isEmailLocked}
-                        {...register("personalInfo.email", {
-                          required: "Email is required",
-                        })}
-                        className={`input input-bordered w-full text-sm ${isEmailLocked ? "bg-gray-100" : ""}`}
-                      />
-                      {errors.personalInfo?.email && (
-                        <p className="text-red-500 text-sm mt-1">
-                          {errors.personalInfo.email.message}
-                        </p>
-                      )}
-                    </div>
-
-                    {/* Password (only if user not logged in and not guest) */}
-                    {!session && mode !== "guest" && (
+                    <div className="space-y-3">
+                      {/* Full Name */}
                       <div>
                         <label className="text-xs font-medium block mb-1">
-                          Create Password
+                          Full Name
                         </label>
                         <input
-                          type="password"
-                          placeholder="Password"
-                          {...register("personalInfo.password", {
-                            required: "Password is required",
+                          type="text"
+                          placeholder="Full Name"
+                          disabled={isNameLocked}
+                          {...register("personalInfo.fullName", {
+                            required: "Full name is required",
+                            validate: TextValidationHelper.createNameValidator(
+                              3,
+                              30
+                            ),
                           })}
-                          className="input input-bordered w-full text-sm"
+                          onBlur={(e) => {
+                            const cleaned = TextValidationHelper.sanitizeText(
+                              e.target.value
+                            );
+                            setValue("personalInfo.fullName", cleaned, {
+                              shouldValidate: true,
+                              shouldDirty: true,
+                            });
+                          }}
+                          className={`input input-bordered w-full text-sm ${isNameLocked ? "bg-gray-100" : ""}`}
                         />
-                        {errors.personalInfo?.password && (
+                        {errors.personalInfo?.fullName && (
                           <p className="text-red-500 text-sm mt-1">
-                            {errors.personalInfo.password.message}
+                            {errors.personalInfo.fullName.message}
                           </p>
                         )}
                       </div>
-                    )}
 
-                    {/* Guest Continue Submit Button */}
-                    {mode === "guest" && isGuestLoggedIn === "false" && (
-                      <button
-                        type="button"
-                        onClick={handleRegisterGuest}
-                        className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
-                      >
-                        Continue as Guest
-                      </button>
-                    )}
+                      {/* Mobile Number */}
+                      <div>
+                        <label className="text-xs font-medium block mb-1">
+                          Mobile Number
+                        </label>
+                        <div className="flex items-center border rounded-md input input-bordered w-full overflow-hidden">
+                          <span className="px-3 text-gray-600 text-sm">
+                            +91
+                          </span>
+                          <input
+                            type="text"
+                            maxLength={10}
+                            placeholder="Enter 10 digit number"
+                            disabled={isMobileLocked}
+                            {...register("personalInfo.mobileNumber", {
+                              required: "Mobile number is required",
+                              pattern: {
+                                value: /^[6-9]\d{9}$/,
+                                message:
+                                  "Enter valid 10 digit Indian mobile number",
+                              },
+                            })}
+                            className={`w-full px-2 py-2 outline-none text-sm ${isMobileLocked ? "bg-gray-100" : ""}`}
+                            inputMode="numeric"
+                          />
+                        </div>
+                        {errors.personalInfo?.mobileNumber && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.personalInfo.mobileNumber.message}
+                          </p>
+                        )}
+                      </div>
 
-                    {/* Register Button */}
-                    {mode === "register" && (
-                      <button
-                        type="button"
-                        onClick={handleRegister}
-                        className="w-full py-2 px-4 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition"
-                      >
-                        Register
-                      </button>
-                    )}
+                      {/* Email */}
+                      <div>
+                        <label className="text-xs font-medium block mb-1">
+                          Email Address
+                        </label>
+                        <input
+                          type="email"
+                          placeholder="Email Address"
+                          disabled={isEmailLocked}
+                          {...register("personalInfo.email", {
+                            required: "Email is required",
+                          })}
+                          className={`input input-bordered w-full text-sm ${isEmailLocked ? "bg-gray-100" : ""}`}
+                        />
+                        {errors.personalInfo?.email && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors.personalInfo.email.message}
+                          </p>
+                        )}
+                      </div>
 
-                    {/* Back button */}
-                    {(mode === "register" ||
-                      mode === "login" ||
-                      session ||
-                      (mode === "guest" && isGuestLoggedIn === "false")) && (
-                      <button
-                        onClick={() => setMode("none")}
-                        className="text-xs text-gray-500 underline mt-4 block mx-auto"
-                        type="button"
-                      >
-                        ← Go back
-                      </button>
-                    )}
+                      {/* Password (only if user not logged in and not guest) */}
+                      {!session && mode !== "guest" && (
+                        <div>
+                          <label className="text-xs font-medium block mb-1">
+                            Create Password
+                          </label>
+                          <input
+                            type="password"
+                            placeholder="Password"
+                            {...register("personalInfo.password", {
+                              required: "Password is required",
+                            })}
+                            className="input input-bordered w-full text-sm"
+                          />
+                          {errors.personalInfo?.password && (
+                            <p className="text-red-500 text-sm mt-1">
+                              {errors.personalInfo.password.message}
+                            </p>
+                          )}
+                        </div>
+                      )}
+
+                      {/* Guest Continue Submit Button */}
+                      {mode === "guest" && isGuestLoggedIn === "false" && (
+                        <button
+                          type="button"
+                          onClick={handleRegisterGuest}
+                          className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
+                        >
+                          Continue as Guest
+                        </button>
+                      )}
+
+                      {/* Register Button */}
+                      {mode === "register" && (
+                        <button
+                          type="button"
+                          onClick={handleRegister}
+                          className="w-full py-2 px-4 bg-pink-600 text-white rounded-lg font-medium hover:bg-pink-700 transition"
+                        >
+                          Register
+                        </button>
+                      )}
+
+                      {/* Back button */}
+                      {(mode === "register" ||
+                        !session ||
+                        (mode === "guest" && isGuestLoggedIn === "false")) && (
+                        <button
+                          onClick={() => setMode("none")}
+                          className="text-xs text-gray-500 underline mt-4 block mx-auto"
+                          type="button"
+                        >
+                          ← Go back
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
       {(session ||
         (isGuestLoggedIn === "true" && loggedInUserType === "guest")) && (
