@@ -187,16 +187,30 @@ const StatusPage = () => {
           sessionStorage.clear();
 
           setTimeout(() => {
-            signOut({ redirect: false }); // 🔓 logout after 2 seconds
-            router.push("/"); // Optional: Redirect home after logout
+            // Optional extra cookie clearing (non-HTTPOnly only)
+            document.cookie.split(";").forEach((c) => {
+              document.cookie = c
+                .replace(/^ +/, "")
+                .replace(
+                  /=.*/,
+                  `=;expires=${new Date(0).toUTCString()};path=/`
+                );
+            });
+
+            signOut({
+              redirect: true,
+              callbackUrl: "/", // ✅ forces NextAuth to cleanup cookies and redirect
+            });
           }, 2000);
         } else {
           toast.error("Order failed. Payment was not successful.");
-          await deleteGuestUser(); // ✅ Delete guest after success
+          await deleteGuestUser();
           sessionStorage.clear();
           setTimeout(() => {
-            signOut({ redirect: false });
-            router.push("/");
+            signOut({
+              redirect: true,
+              callbackUrl: "/",
+            });
           }, 2000);
         }
       }
