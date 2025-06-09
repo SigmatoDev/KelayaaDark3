@@ -1,5 +1,3 @@
-"use client";
-
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import CheckoutSteps from "@/components/checkout/CheckoutSteps";
@@ -34,6 +32,9 @@ const Form = () => {
     items,
     totalPrice,
   } = useCartService();
+
+  // Check if guest is logged in using sessionStorage
+  const isGuestLoggedIn = sessionStorage.getItem("isGuestLoggedIn");
 
   useEffect(() => {
     if (!shippingAddress) {
@@ -132,8 +133,7 @@ const Form = () => {
         alert("PhonePe SDK not loaded yet.");
         return;
       }
-      // router.push(paymentRequest);
-      // Call PhonePe SDK with redirect URL (token-based payment)
+
       window.PhonePeCheckout.transact({ tokenUrl: paymentRequest });
     } catch (error) {
       console.error("Payment error:", error);
@@ -144,9 +144,16 @@ const Form = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (selectedPaymentMethod === "CashOnDelivery") handleCOD();
-    // else if (selectedPaymentMethod === "Razorpay") handleRazorpayPayment();
-    else if (selectedPaymentMethod === "PhonePe") handlePhonePePayment();
+    if (isGuestLoggedIn === "true") {
+      // Guest user - Skip authentication and directly proceed to payment
+      if (selectedPaymentMethod === "CashOnDelivery") handleCOD();
+      else if (selectedPaymentMethod === "PhonePe") handlePhonePePayment();
+    } else {
+      // Registered user - Normal flow with authentication
+      if (selectedPaymentMethod === "CashOnDelivery") handleCOD();
+      else if (selectedPaymentMethod === "PhonePe") handlePhonePePayment();
+      else if (selectedPaymentMethod === "Razorpay") handleRazorpayPayment();
+    }
   };
 
   return (
@@ -162,19 +169,6 @@ const Form = () => {
           <h1 className="card-title text-center mb-4">Choose Payment Method</h1>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              {/* <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  value="Razorpay"
-                  checked={selectedPaymentMethod === "Razorpay"}
-                  onChange={() => setSelectedPaymentMethod("Razorpay")}
-                  className="radio radio-primary"
-                />
-                <span className="text-sm font-medium">
-                  Pay Online (Razorpay)
-                </span>
-              </label> */}
-
               <label className="flex items-center gap-2">
                 <input
                   type="radio"
@@ -187,8 +181,6 @@ const Form = () => {
                   Pay via Credit Card / Debit Card / UPI
                 </span>
               </label>
-
-              {/* COD option disabled but you can add back if needed */}
             </div>
 
             <button
