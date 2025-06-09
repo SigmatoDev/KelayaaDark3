@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 
 interface OrderItem {
   productId: string;
@@ -28,6 +29,8 @@ interface OrderConfirmationProps {
 
 const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ order }) => {
   const router = useRouter();
+  const { data: session } = useSession(); // ✅ renamed session status
+
   const deliveryDate = new Date(
     new Date(order.createdAt).getTime() + 7 * 24 * 60 * 60 * 1000
   ).toLocaleDateString();
@@ -55,7 +58,7 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ order }) => {
         Payment Successful!
       </h2>
       <p className="text-gray-700 mt-1 text-md">
-        Thank you for your order. We’ve emailed your receipt.
+        Thank you for your order. We’ve emailed your order details.
       </p>
 
       <div className="mt-6 text-sm text-gray-600 border rounded-md p-4 bg-gray-50 text-left">
@@ -110,12 +113,17 @@ const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ order }) => {
       </div>
 
       <div className="flex flex-col gap-3 mt-8">
-        <button
-          onClick={() => router.push("/my-orders")}
-          className="w-full py-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white font-semibold rounded-md hover:opacity-90"
-        >
-          View My Orders
-        </button>
+        {session?.user.userType === "guest" || !session ? (
+          ""
+        ) : (
+          <button
+            onClick={() => router.push("/my-orders")}
+            className="w-full py-3 bg-gradient-to-r from-green-400 to-emerald-500 text-white font-semibold rounded-md hover:opacity-90"
+          >
+            View My Orders
+          </button>
+        )}
+
         <button
           onClick={() => router.push("/")}
           className="w-full py-3 border border-emerald-300 text-green-500 font-semibold rounded-md hover:bg-emerald-50"

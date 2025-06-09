@@ -594,9 +594,7 @@ const Form = () => {
                       )}
 
                       {/* Back button */}
-                      {(mode === "register" ||
-                        !session ||
-                        (mode === "guest" && isGuestLoggedIn === "false")) && (
+                      {!session && (
                         <button
                           onClick={() => setMode("none")}
                           className="text-xs text-gray-500 underline mt-4 block mx-auto"
@@ -776,11 +774,7 @@ const Form = () => {
                         )}
 
                         {/* Back button */}
-                        {(mode === "register" ||
-                          mode === "login" ||
-                          session ||
-                          (mode === "guest" &&
-                            isGuestLoggedIn === "false")) && (
+                        {!session && (
                           <button
                             onClick={() => setMode("none")}
                             className="text-xs text-gray-500 underline mt-4 block mx-auto"
