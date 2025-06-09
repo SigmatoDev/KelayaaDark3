@@ -235,16 +235,32 @@ const Form = () => {
 
   const formSubmit: SubmitHandler<FormData> = async (form) => {
     try {
+      if (isGuestLoggedIn === "true") {
+        console.log("Guest user, skipping NextAuth");
+
+        // Handle guest submission directly
+        const { fullName, email, mobileNumber } = form.personalInfo;
+        const guestData = { fullName, email, mobileNumber };
+
+        // Save guest data
+        savePersonalInfo(guestData);
+        saveShippingAddress(form.shippingAddress);
+        localStorage.setItem(
+          getShippingStorageKey(),
+          JSON.stringify(form.shippingAddress)
+        );
+
+        // Skip NextAuth and proceed directly to payment page for guests
+        router.push("/payment");
+        return;
+      }
+
+      // Normal registration or login process for existing users
       if (session && isUserJustRegistered) {
         setPrefillEmail(form.personalInfo.email);
         setIsSignInPopupOpen(true);
         return;
-      } else if (isGuestLoggedIn === "true") {
-        // Skip NextAuth.js redirection for guest users and directly navigate to payment
-        router.push("/payment");
-        return;
       } else {
-        // Normal login for existing users
         const result = await signIn("credentials", {
           email: form.personalInfo.email,
           password: form.personalInfo.password || "guestpassword",
@@ -257,7 +273,7 @@ const Form = () => {
         }
       }
 
-      // Save data
+      // Save data for registered users
       savePersonalInfo({
         email: form.personalInfo.email,
         mobileNumber: form.personalInfo.mobileNumber,
@@ -278,7 +294,7 @@ const Form = () => {
         saveShippingAddress(form.billingDetails);
       }
 
-      // Redirect to payment page
+      // Redirect to payment page for registered users
       router.push("/payment");
     } catch (error: any) {
       console.error(error);
