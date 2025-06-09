@@ -29,6 +29,7 @@ type FormData = {
 const Form = () => {
   const router = useRouter();
   const { data: session } = useSession();
+  console.log("session", session);
   const [sameAsShipping, setSameAsShipping] = useState(true);
   const [hasGST, setHasGST] = useState(false);
   const [isSignInPopupOpen, setIsSignInPopupOpen] = useState(false);
@@ -201,15 +202,50 @@ const Form = () => {
   };
 
   const handleRegisterGuest = async () => {
-    setIsGuestLoggingIn(true); // ⬅️ Start loader
+    setIsGuestLoggingIn(true); // Start loader
 
     try {
       const formValues = watch();
       const { fullName, email, mobileNumber } = formValues.personalInfo;
+      const password = "#kelayaa_guest"; // default password for guest
+
+      // 1. Register or get user
+      const res = await fetch("/api/checkout/create-user-or-login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          fullName,
+          email,
+          mobileNumber,
+          password,
+          userType: "guest",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.success) {
+        throw new Error(data.error || "Guest registration failed");
+      }
+
+      // 2. If user already exists, treat it as login
+      if (!data.newAccount) {
+        toast.success("Guest account exists. Logging in...");
+      }
+
+      // 3. Login with default guest password
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
+      });
+
+      if (!result?.ok) {
+        throw new Error("Login failed. Try again.");
+      }
+
+      // 4. Set sessionStorage flags and save guest info
       const guestData = { fullName, email, mobileNumber };
-
-      await new Promise((resolve) => setTimeout(resolve, 2000)); // Optional delay for smoother UX
-
       sessionStorage.setItem("userType", "guest");
       sessionStorage.setItem("isGuestLoggedIn", "true");
       sessionStorage.setItem("guestUser", JSON.stringify(guestData));
@@ -224,37 +260,17 @@ const Form = () => {
 
       savePersonalInfo(guestData);
 
-      toast.success("Guest user logged in");
-    } catch (error) {
-      console.error("Guest login failed", error);
-      toast.error("Failed to log in as guest. Please try again.");
+      toast.success("Guest login successful");
+    } catch (error: any) {
+      console.error("Guest login error", error);
+      toast.error(error.message || "Guest login failed");
     } finally {
-      setIsGuestLoggingIn(false); // ⬅️ Stop loader no matter what
+      setIsGuestLoggingIn(false); // Stop loader
     }
   };
 
   const formSubmit: SubmitHandler<FormData> = async (form) => {
     try {
-      if (isGuestLoggedIn === "true") {
-        console.log("Guest user, skipping NextAuth");
-
-        // Handle guest submission directly
-        const { fullName, email, mobileNumber } = form.personalInfo;
-        const guestData = { fullName, email, mobileNumber };
-
-        // Save guest data
-        savePersonalInfo(guestData);
-        saveShippingAddress(form.shippingAddress);
-        localStorage.setItem(
-          getShippingStorageKey(),
-          JSON.stringify(form.shippingAddress)
-        );
-
-        // Skip NextAuth and proceed directly to payment page for guests
-        router.push("/payment");
-        return;
-      }
-
       // Normal registration or login process for existing users
       if (session && isUserJustRegistered) {
         setPrefillEmail(form.personalInfo.email);
@@ -263,7 +279,7 @@ const Form = () => {
       } else {
         const result = await signIn("credentials", {
           email: form.personalInfo.email,
-          password: form.personalInfo.password || "guestpassword",
+          password: form.personalInfo.password,
           redirect: false,
         });
 
@@ -381,15 +397,15 @@ const Form = () => {
                   setIsSignInPopupOpen(true);
                 },
               },
-              // {
-              //   title: "Guest Checkout",
-              //   icon: "🛒",
-              //   description:
-              //     "Continue as a guest if you don’t want to create an account.",
-              //   btnText: "Continue as Guest",
-              //   btnClass: "bg-gray-800 hover:bg-gray-900 text-white",
-              //   onClick: () => setMode("guest"),
-              // },
+              {
+                title: "Guest Checkout",
+                icon: "🛒",
+                description:
+                  "Continue as a guest if you don’t want to create an account.",
+                btnText: "Continue as Guest",
+                btnClass: "bg-gray-800 hover:bg-gray-900 text-white",
+                onClick: () => setMode("guest"),
+              },
             ].map(
               ({ title, icon, description, btnText, btnClass, onClick }) => (
                 <div

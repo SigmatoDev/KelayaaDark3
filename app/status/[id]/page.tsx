@@ -133,6 +133,26 @@ const StatusPage = () => {
     }
   );
 
+  const deleteGuestUser = async () => {
+    try {
+      if (session?.user?.userType === "guest") {
+        await fetch("/api/auth/guest-user-delete", {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            mobileNumber: session.user.mobileNumber,
+            userId: session.user._id,
+          }),
+        });
+        console.log("Guest user deleted after order.");
+      }
+    } catch (err) {
+      console.error("Failed to delete guest user:", err);
+    }
+  };
+
   const fetchStatus = async () => {
     try {
       const response = await axios.post("/api/phonepe/status", {
@@ -163,8 +183,12 @@ const StatusPage = () => {
 
         if (paymentStatus === "COMPLETED") {
           toast.success("Order placed successfully!");
+          await deleteGuestUser();
+          sessionStorage.clear();
         } else {
           toast.error("Order failed. Payment was not successful.");
+          await deleteGuestUser(); // ✅ Delete guest after success
+          sessionStorage.clear();
         }
       }
     } catch (error) {

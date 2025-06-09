@@ -5,9 +5,10 @@ import bcrypt from "bcryptjs";
 
 export async function POST(req: Request) {
   try {
-    const { fullName, email, mobileNumber, password } = await req.json();
+    const { fullName, email, mobileNumber, password, userType } =
+      await req.json();
 
-    if (!email || !mobileNumber || !password || !fullName) {
+    if (!email || !mobileNumber || !password || !fullName || !userType) {
       return NextResponse.json(
         { success: false, error: "All fields are required." },
         { status: 400 }
@@ -16,23 +17,25 @@ export async function POST(req: Request) {
 
     await dbConnect();
 
-    const existingEmail = await UserModel.findOne({ email });
-    if (existingEmail) {
-      return NextResponse.json(
-        { success: false, error: "Email already exists. Please log in." },
-        { status: 400 }
-      );
-    }
+    if (userType !== "guest") {
+      const existingEmail = await UserModel.findOne({ email });
+      if (existingEmail) {
+        return NextResponse.json(
+          { success: false, error: "Email already exists. Please log in." },
+          { status: 400 }
+        );
+      }
 
-    const existingMobile = await UserModel.findOne({ mobileNumber });
-    if (existingMobile) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Mobile number already exists. Please log in.",
-        },
-        { status: 400 }
-      );
+      const existingMobile = await UserModel.findOne({ mobileNumber });
+      if (existingMobile) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: "Mobile number already exists. Please log in.",
+          },
+          { status: 400 }
+        );
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -42,6 +45,7 @@ export async function POST(req: Request) {
       email,
       mobileNumber,
       password: hashedPassword,
+      userType,
     });
 
     return NextResponse.json({ success: true, newAccount: true });

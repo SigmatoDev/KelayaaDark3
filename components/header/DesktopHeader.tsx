@@ -592,13 +592,25 @@ const DesktopHeader = () => {
                             <li className="list-none">
                               <div ref={dropdownRef} className="relative">
                                 <button
-                                  onClick={() => setMenuOpen(!menuOpen)}
-                                  className="flex items-center px-3 py-2 text-sm text-white bg-black rounded-lg hover:bg-gray-800 transition"
+                                  onClick={() => {
+                                    if (session.user.userType !== "guest") {
+                                      setMenuOpen(!menuOpen);
+                                    }
+                                  }}
+                                  className={`flex items-center px-3 py-2 text-sm text-white rounded-lg transition
+    ${session.user.userType === "guest" ? " cursor-not-allowed" : "bg-black hover:bg-gray-800"}
+  `}
+                                  disabled={session.user.userType === "guest"}
                                 >
-                                  <User className="h-4 w-4 mr-1" />{" "}
-                                  {session.user.name}
-                                  <ChevronDown className="ml-2 w-4 h-4" />
+                                  <User className="h-4 w-4 mr-1" />
+                                  {session.user.userType === "guest" ? null : (
+                                    <>
+                                      {session.user.name}
+                                      <ChevronDown className="ml-2 w-4 h-4" />
+                                    </>
+                                  )}
                                 </button>
+
                                 {/* Dropdown menu */}
                                 {menuOpen && (
                                   <ul className="absolute right-0 z-[9999] mt-2 w-52 rounded-lg bg-white backdrop-blur-md p-4 shadow-lg border border-white/20">
