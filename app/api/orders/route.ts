@@ -61,8 +61,8 @@ export const POST = auth(async (...request: any) => {
       paymentMethod,
       paymentIntentId,
       personalInfo,
-      isPaid: paymentStatus === "completed",
-      paidAt: paymentStatus === "completed" ? new Date() : undefined,
+      isPaid: paymentStatus === "COMPLETED",
+      paidAt: paymentStatus === "COMPLETED" ? new Date() : undefined,
       paymentResult,
       unique_txn_id,
     });
