@@ -7,9 +7,10 @@ import { sendOrderEmails } from "@/utility/sendOrderEmail";
 export const POST = auth(async (...request: any) => {
   const [req] = request;
 
-  if (!req.auth) {
-    return Response.json({ message: "Unauthorized" }, { status: 401 });
-  }
+  const isGuest = !req.auth?.user?._id;
+  const userId = isGuest
+    ? null
+    : new mongoose.Types.ObjectId(req.auth.user._id);
 
   try {
     await dbConnect();
@@ -32,24 +33,6 @@ export const POST = auth(async (...request: any) => {
       unique_txn_id,
     } = await req.json();
 
-    console.log(
-      "order Details",
-      status,
-      items,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalAmount,
-      shippingAddress,
-      billingDetails,
-      gstDetails,
-      paymentStatus,
-      paymentMethod,
-      paymentIntentId,
-      personalInfo,
-      paymentResult
-    );
-
     if (
       !items ||
       !totalAmount ||
@@ -64,7 +47,7 @@ export const POST = auth(async (...request: any) => {
     }
 
     const newOrder = await OrderModel.create({
-      user: new mongoose.Types.ObjectId(req?.auth?.user?._id), // ✅ converted
+      user: userId,
       status,
       items,
       itemsPrice,
@@ -84,11 +67,11 @@ export const POST = auth(async (...request: any) => {
       unique_txn_id,
     });
 
-    // ✅ Populate the user info after creation
-    const populatedOrder = await OrderModel.findById(newOrder._id).populate(
-      "user"
-    );
-    await sendOrderEmails(populatedOrder); // ✅ Send emails with user data
+    const populatedOrder = userId
+      ? await OrderModel.findById(newOrder._id).populate("user")
+      : newOrder;
+
+    await sendOrderEmails(populatedOrder);
 
     return Response.json({ success: true, order: newOrder }, { status: 201 });
   } catch (error: any) {
