@@ -1,3 +1,5 @@
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 import NextAuth from "next-auth";
 import type { NextAuthConfig } from "next-auth";
 
@@ -6,7 +8,6 @@ const authConfig = {
   callbacks: {
     async authorized({ request, auth }: any) {
       const protectedPaths = [
-        // /\/shipping/,
         /\/payment/,
         /\/place-order/,
         /\/profile/,
@@ -15,12 +16,26 @@ const authConfig = {
       ];
       const { pathname } = request.nextUrl;
 
-      // If auth exists, allow access to protected paths
-      if (protectedPaths.some((p) => p.test(pathname))) {
-        return !!auth?.user; // Make sure auth contains a user object
+      const isProtected = protectedPaths.some((p) => p.test(pathname));
+
+      if (isProtected && !auth?.user) {
+        return false; // Not authorized
       }
 
-      return true; // For non-protected paths, allow access
+      // ✅ DELETE the callback cookie if it exists
+      if (request.cookies.has("__Secure-authjs.callback-url")) {
+        const response = NextResponse.next();
+        response.cookies.set("__Secure-authjs.callback-url", "", {
+          path: "/",
+          expires: new Date(0),
+          httpOnly: true,
+          secure: true,
+          sameSite: "lax", // ✅ lowercase
+        });
+        return response;
+      }
+
+      return true;
     },
   },
 } satisfies NextAuthConfig;
@@ -28,14 +43,5 @@ const authConfig = {
 export const { auth: middleware } = NextAuth(authConfig);
 
 export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     */
-    "/((?!api|_next/static|_next/image|favicon.ico).*)",
-  ],
+  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
 };
