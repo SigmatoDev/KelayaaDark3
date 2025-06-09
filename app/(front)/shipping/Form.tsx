@@ -381,15 +381,15 @@ const Form = () => {
                   setIsSignInPopupOpen(true);
                 },
               },
-              {
-                title: "Guest Checkout",
-                icon: "🛒",
-                description:
-                  "Continue as a guest if you don’t want to create an account.",
-                btnText: "Continue as Guest",
-                btnClass: "bg-gray-800 hover:bg-gray-900 text-white",
-                onClick: () => setMode("guest"),
-              },
+              // {
+              //   title: "Guest Checkout",
+              //   icon: "🛒",
+              //   description:
+              //     "Continue as a guest if you don’t want to create an account.",
+              //   btnText: "Continue as Guest",
+              //   btnClass: "bg-gray-800 hover:bg-gray-900 text-white",
+              //   onClick: () => setMode("guest"),
+              // },
             ].map(
               ({ title, icon, description, btnText, btnClass, onClick }) => (
                 <div
