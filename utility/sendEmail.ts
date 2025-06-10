@@ -31,7 +31,7 @@ const sendAdminEmail = async (designData: any) => {
     { email: "bharat@metamorfs.com" },
     { email: "aryan@kelayaa.com" },
     { email: "arushi@kelayaa.com" },
-    { email: "nuthan@sigmato.com" },
+    // { email: "nuthan@sigmato.com" },
   ];
 
   // Format the appointment date to dd-mm-yyyy
