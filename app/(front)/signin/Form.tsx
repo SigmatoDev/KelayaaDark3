@@ -137,12 +137,12 @@ const Form = () => {
             </button>
           </div>
         </form>
-        <div>
+        {/* <div>
           Need an account?{" "}
           <Link className="link" href={`/register?callbackUrl=${callbackUrl}`}>
             Register
           </Link>
-        </div>
+        </div> */}
       </div>
     </div>
   );

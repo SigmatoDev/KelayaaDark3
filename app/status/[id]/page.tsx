@@ -5,7 +5,7 @@ import axios, { AxiosError } from "axios";
 import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { signOut, useSession } from "next-auth/react";
+import {  useSession } from "next-auth/react";
 import useCartService from "@/lib/hooks/useCartStore";
 import useSWRMutation from "swr/mutation";
 import { SparklesIcon } from "lucide-react";
@@ -183,35 +183,41 @@ const StatusPage = () => {
 
         if (paymentStatus === "COMPLETED") {
           toast.success("Order placed successfully!");
-          await deleteGuestUser();
-          sessionStorage.clear();
 
-          setTimeout(() => {
-            // Optional extra cookie clearing (non-HTTPOnly only)
-            document.cookie.split(";").forEach((c) => {
-              document.cookie = c
-                .replace(/^ +/, "")
-                .replace(
-                  /=.*/,
-                  `=;expires=${new Date(0).toUTCString()};path=/`
-                );
-            });
+          if (session?.user.userType === "guest") {
+            await deleteGuestUser();
+            sessionStorage.clear();
 
-            signOut({
-              redirect: true,
-              callbackUrl: "/", // ✅ forces NextAuth to cleanup cookies and redirect
-            });
-          }, 2000);
+            setTimeout(() => {
+              // Optional extra cookie clearing (non-HTTPOnly only)
+              document.cookie.split(";").forEach((c) => {
+                document.cookie = c
+                  .replace(/^ +/, "")
+                  .replace(
+                    /=.*/,
+                    `=;expires=${new Date(0).toUTCString()};path=/`
+                  );
+              });
+            }, 1000);
+          }
         } else {
           toast.error("Order failed. Payment was not successful.");
-          await deleteGuestUser();
-          sessionStorage.clear();
-          setTimeout(() => {
-            signOut({
-              redirect: true,
-              callbackUrl: "/",
-            });
-          }, 2000);
+          if (session?.user.userType === "guest") {
+            await deleteGuestUser();
+            sessionStorage.clear();
+
+            setTimeout(() => {
+              // Optional extra cookie clearing (non-HTTPOnly only)
+              document.cookie.split(";").forEach((c) => {
+                document.cookie = c
+                  .replace(/^ +/, "")
+                  .replace(
+                    /=.*/,
+                    `=;expires=${new Date(0).toUTCString()};path=/`
+                  );
+              });
+            }, 1000);
+          }
         }
       }
     } catch (error) {

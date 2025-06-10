@@ -15,7 +15,7 @@ import {
 } from "@/lib/models/OrderModel";
 import SignInPopup from "@/components/signin/SignIn";
 import { TextValidationHelper } from "../helpers/validationHelpers";
-import { FaSignInAlt, FaUserPlus } from "react-icons/fa";
+import { FaShoppingCart, FaSignInAlt, FaUserPlus } from "react-icons/fa";
 import toast from "react-hot-toast";
 import { GuestLoaderOverlay } from "./loader";
 
@@ -259,11 +259,9 @@ const Form = () => {
       setValue("personalInfo.mobileNumber", mobileNumber);
 
       savePersonalInfo(guestData);
-
-      toast.success("Guest login successful");
     } catch (error: any) {
       console.error("Guest login error", error);
-      toast.error(error.message || "Guest login failed");
+      toast.error("Login failed");
     } finally {
       setIsGuestLoggingIn(false); // Stop loader
     }
@@ -374,72 +372,72 @@ const Form = () => {
       <CheckoutSteps current={1} />
       {mode === "none" && !session && (
         <div className="mt-8 p-4">
-          <div className="space-y-6 max-w-md mx-auto">
-            {[
-              {
-                title: "New Customer",
-                icon: <FaUserPlus className="text-green-500" />,
-                description:
-                  "Create an account to shop faster, track your orders, and view your order history.",
-                btnText: "Register",
-                btnClass: "bg-green-600 hover:bg-green-700 text-white",
-                onClick: () => setMode("register"),
-              },
-              {
-                title: "Returning Customer",
-                icon: <FaSignInAlt className="text-pink-500" />,
-                description: "Already have an account? Log in to continue.",
-                btnText: "Login",
-                btnClass:
-                  "border border-pink-500 text-pink-600 hover:bg-pink-50",
-                onClick: () => {
-                  setMode("login");
-                  setIsSignInPopupOpen(true);
+          <div className="max-w-3xl mx-auto space-y-6">
+            {/* Two cards side by side on desktop, stacked on mobile */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                {
+                  title: "New Customer",
+                  icon: <FaUserPlus className="text-green-500" />,
+                  description:
+                    "Create an account to shop faster, track your orders, and view your order history.",
+                  btnText: "Register",
+                  btnClass: "bg-green-600 hover:bg-green-700 text-white",
+                  onClick: () => setMode("register"),
                 },
-              },
-              {
-                title: "Guest Checkout",
-                icon: "🛒",
-                description:
-                  "Continue as a guest if you don’t want to create an account.",
-                btnText: "Continue as Guest",
-                btnClass: "bg-gray-800 hover:bg-gray-900 text-white",
-                onClick: () => setMode("guest"),
-              },
-            ].map(
-              ({ title, icon, description, btnText, btnClass, onClick }) => (
-                <div
-                  key={title}
-                  tabIndex={0}
-                  role="button"
-                  onClick={onClick}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" || e.key === " ") onClick();
-                  }}
-                  className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm cursor-pointer transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-                >
-                  <h3 className="font-semibold text-gray-900 flex items-center gap-3 text-lg mb-2 select-none">
-                    {typeof icon === "string" ? (
-                      <span className="text-2xl">{icon}</span>
-                    ) : (
-                      icon
-                    )}
-                    {title}
-                  </h3>
-                  <p className="text-gray-600 mb-4">{description}</p>
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      e.stopPropagation(); // prevent parent div onClick
-                      onClick();
+                {
+                  title: "Returning Customer",
+                  icon: <FaSignInAlt className="text-pink-500" />,
+                  description: "Already have an account? Log in to continue.",
+                  btnText: "Login",
+                  btnClass:
+                    "border border-pink-500 text-pink-600 hover:bg-pink-50",
+                  onClick: () => {
+                    setMode("login");
+                    setIsSignInPopupOpen(true);
+                  },
+                },
+              ].map(
+                ({ title, icon, description, btnText, btnClass, onClick }) => (
+                  <div
+                    key={title}
+                    tabIndex={0}
+                    role="button"
+                    onClick={onClick}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") onClick();
                     }}
-                    className={`btn btn-sm px-5 py-2 rounded-md font-semibold transition-colors duration-300 ${btnClass}`}
+                    className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm cursor-pointer transition-shadow hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
                   >
-                    {btnText}
-                  </button>
-                </div>
-              )
-            )}
+                    <h3 className="font-semibold text-gray-900 flex items-center gap-3 text-lg mb-2 select-none">
+                      {icon}
+                      {title}
+                    </h3>
+                    <p className="text-gray-600 mb-4">{description}</p>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onClick();
+                      }}
+                      className={`btn btn-sm px-5 py-2 rounded-md font-semibold transition-colors duration-300 ${btnClass}`}
+                    >
+                      {btnText}
+                    </button>
+                  </div>
+                )
+              )}
+            </div>
+
+            {/* Guest Checkout Button */}
+            <button
+              type="button"
+              onClick={() => setMode("guest")}
+              className="w-full bg-black text-white py-3 rounded-md font-semibold hover:bg-gray-900 transition-colors flex items-center justify-center gap-2"
+            >
+              <FaShoppingCart className="text-white text-lg" />
+              Continue as Guest
+            </button>
           </div>
         </div>
       )}
@@ -576,7 +574,7 @@ const Form = () => {
                         <button
                           type="button"
                           onClick={handleRegisterGuest}
-                          className="w-full py-2 px-4 bg-indigo-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
+                          className="w-full py-2 px-4 bg-pink-600 text-white rounded-lg font-medium hover:bg-indigo-700 transition"
                         >
                           Continue as Guest
                         </button>
@@ -1374,7 +1372,12 @@ const Form = () => {
       {mode === "login" && !session && (
         <SignInPopup
           isOpen={isSignInPopupOpen}
-          setIsOpen={setIsSignInPopupOpen}
+          setIsOpen={(open: boolean) => {
+            setIsSignInPopupOpen(open);
+            if (!open) {
+              setMode("none");
+            }
+          }}
           prefillEmail={prefillEmail}
         />
       )}
