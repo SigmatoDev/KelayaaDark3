@@ -5,7 +5,7 @@ import axios, { AxiosError } from "axios";
 import Link from "next/link";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import {  useSession } from "next-auth/react";
+import { signOut, useSession } from "next-auth/react";
 import useCartService from "@/lib/hooks/useCartStore";
 import useSWRMutation from "swr/mutation";
 import { SparklesIcon } from "lucide-react";
@@ -117,7 +117,7 @@ const StatusPage = () => {
           clear();
           setOrderId(data?.order?._id);
           setOrderData(data?.order);
-          toast.success("Order placed successfully!");
+          // toast.success("Order placed successfully!");
           // setTimeout(() => {
           //   router.push("/");
           // }, 1000);
@@ -198,6 +198,8 @@ const StatusPage = () => {
                     `=;expires=${new Date(0).toUTCString()};path=/`
                   );
               });
+              // ✅ Sign out internally without redirect
+              signOut({ redirect: false });
             }, 1000);
           }
         } else {
@@ -216,6 +218,8 @@ const StatusPage = () => {
                     `=;expires=${new Date(0).toUTCString()};path=/`
                   );
               });
+              // ✅ Sign out internally without redirect
+              signOut({ redirect: false });
             }, 1000);
           }
         }
