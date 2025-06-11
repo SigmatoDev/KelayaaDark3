@@ -7,6 +7,7 @@ import {
 
 import dbConnect from "@/lib/dbConnect";
 import PasswordOtpModel from "@/lib/models/PasswordOtpModel";
+import UserModel from "@/lib/models/UserModel"; // Import your user model
 
 export const POST = async (req: Request) => {
   try {
@@ -19,13 +20,27 @@ export const POST = async (req: Request) => {
       );
     }
 
-    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
-    const expiry = new Date(Date.now() + 10 * 60 * 1000); // Expires in 10 minutes
-
     await dbConnect();
-    await PasswordOtpModel.deleteMany({ email }); // Remove existing OTPs for this email
+
+    // ✅ Check if email exists in the User collection
+    const existingUser = await UserModel.findOne({ email });
+    if (!existingUser) {
+      return NextResponse.json(
+        { message: "Email not registered with any account" },
+        { status: 404 }
+      );
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit OTP
+    const expiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes validity
+
+    // Remove any existing OTPs for this email
+    await PasswordOtpModel.deleteMany({ email });
+
+    // Store new OTP
     await PasswordOtpModel.create({ email, otp, expiresAt: expiry });
 
+    // Configure Brevo
     const apiInstance = new TransactionalEmailsApi();
     apiInstance.setApiKey(
       TransactionalEmailsApiApiKeys.apiKey,
@@ -79,7 +94,10 @@ export const POST = async (req: Request) => {
 
     await apiInstance.sendTransacEmail(emailData);
 
-    return NextResponse.json({ message: "OTP sent" }, { status: 200 });
+    return NextResponse.json(
+      { message: "OTP sent successfully" },
+      { status: 200 }
+    );
   } catch (error) {
     console.error("Send OTP error:", error);
     return NextResponse.json(
