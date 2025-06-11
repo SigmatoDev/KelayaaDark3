@@ -106,10 +106,10 @@ export const sendAbandonedCartEmail = async (cart: any) => {
 
     .resume-btn {
       display: inline-block;
-      background: #e688a2;
-      color: white;
+      color: #e688a2;
       text-decoration: none;
       padding: 12px 24px;
+      border:1px solid #e688a2;
       border-radius: 6px;
       font-weight: bold;
       font-size: 14px;
