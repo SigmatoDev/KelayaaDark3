@@ -3,6 +3,7 @@ import dbConnect from "@/lib/dbConnect";
 import mongoose from "mongoose"; // ✅ IMPORTANT
 import OrderModel from "@/lib/models/OrderModel";
 import { sendOrderEmails } from "@/utility/sendOrderEmail";
+import AbandonedCart from "@/lib/models/AbondenCart";
 
 export const POST = auth(async (...request: any) => {
   const [req] = request;
@@ -70,6 +71,14 @@ export const POST = auth(async (...request: any) => {
     const populatedOrder = userId
       ? await OrderModel.findById(newOrder._id).populate("user")
       : newOrder;
+
+    // Recover Abandoned Cart entries if the user had any
+    if (userId) {
+      await AbandonedCart.updateMany(
+        { userId, isRecovered: false },
+        { $set: { isRecovered: true, updatedAt: new Date() } }
+      );
+    }
 
     await sendOrderEmails(populatedOrder);
 
