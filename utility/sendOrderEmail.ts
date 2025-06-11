@@ -36,7 +36,7 @@ export const sendOrderEmails = async (order: any) => {
       (item: any, index: number) => `
       <li style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
         <span style="font-weight: bold; color: #555;">${index + 1}.</span>
-        <img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;" />
+        <img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px; margin-right:10px" />
         <div>
           <div style="font-size: 14px; font-weight: 600; color: #333;">${item.name}</div>
           <div style="font-size: 13px; color: #777;">Qty: ${item.qty} — ${formatter.format(item.price)}</div>
@@ -89,7 +89,7 @@ export const sendOrderEmails = async (order: any) => {
 
     body {
       font-family: 'Segoe UI', Tahoma, sans-serif;
-      background-color: #f4f4f4;
+      background-color: #ffffff;
       margin: 0;
       padding: 30px 0;
       color: #333;
