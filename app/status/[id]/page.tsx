@@ -105,6 +105,7 @@ const StatusPage = () => {
             paymentResult,
             personalInfo: {
               ...personalInfo,
+              userType: session.user.userType,
               createAccountAfterCheckout: false,
             },
             unique_txn_id: params?.id,
@@ -114,7 +115,6 @@ const StatusPage = () => {
         const data = await res.json();
 
         if (res.ok) {
-          clear();
           setOrderId(data?.order?._id);
           setOrderData(data?.order);
           // toast.success("Order placed successfully!");
@@ -183,7 +183,7 @@ const StatusPage = () => {
 
         if (paymentStatus === "COMPLETED") {
           toast.success("Order placed successfully!");
-
+          clear();
           if (session?.user.userType === "guest") {
             await deleteGuestUser();
             sessionStorage.clear();

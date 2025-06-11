@@ -107,13 +107,26 @@ export default function RetryPaymentPage() {
           ) : (
             <>
               <div className="mb-4">
-                <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-2">
+                <h3 className="text-sm font-semibold text-gray-600 dark:text-gray-300 mb-3">
                   Items in your order:
                 </h3>
-                <ul className="text-sm text-gray-700 dark:text-gray-300 space-y-1 pl-4 list-disc">
+                <ul className="space-y-4">
                   {order.items.map((item: any, i: number) => (
-                    <li key={i}>
-                      {item.name} (Qty: {item.qty})
+                    <li key={i} className="flex items-center gap-3">
+                      <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">
+                        {i + 1}.
+                      </span>
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-12 h-12 rounded-md object-cover border border-gray-200 dark:border-gray-700"
+                      />
+                      <div className="text-sm text-gray-800 dark:text-gray-200">
+                        <div className="font-medium">{item.name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">
+                          Qty: {item.qty}
+                        </div>
+                      </div>
                     </li>
                   ))}
                 </ul>
