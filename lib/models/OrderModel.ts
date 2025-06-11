@@ -61,6 +61,7 @@ const orderSchema = new mongoose.Schema(
       fullName: { type: String, required: false },
       email: { type: String, required: false },
       mobileNumber: { type: String, required: false },
+      userType: { type: String, default: "registered" },
       createAccountAfterCheckout: { type: Boolean, default: false },
     },
     shippingAddress: {

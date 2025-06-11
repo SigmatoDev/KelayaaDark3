@@ -33,8 +33,16 @@ export const sendOrderEmails = async (order: any) => {
 
   const formattedItems = items
     .map(
-      (item: any) =>
-        `<li>${item.name} (Qty: ${item.qty}) - ${formatter.format(item.price)}</li>`
+      (item: any, index: number) => `
+      <li style="display: flex; align-items: center; gap: 12px; margin-bottom: 14px;">
+        <span style="font-weight: bold; color: #555;">${index + 1}.</span>
+        <img src="${item.image}" alt="${item.name}" style="width: 50px; height: 50px; object-fit: cover; border-radius: 6px;" />
+        <div>
+          <div style="font-size: 14px; font-weight: 600; color: #333;">${item.name}</div>
+          <div style="font-size: 13px; color: #777;">Qty: ${item.qty} — ${formatter.format(item.price)}</div>
+        </div>
+      </li>
+    `
     )
     .join("");
 
@@ -52,7 +60,7 @@ export const sendOrderEmails = async (order: any) => {
           : "Thank You for Your Order 💖";
 
     const actionSection =
-      isFailed && recipient === "user"
+      isFailed && recipient === "user" && personalInfo?.userType !== "guest"
         ? `<div style="text-align: center; margin: 30px 0;">
             <a href="${retryUrl}" style="
               background-color: #e74c3c;
@@ -78,38 +86,22 @@ export const sendOrderEmails = async (order: any) => {
     :root {
       color-scheme: light dark;
     }
-    @media (prefers-color-scheme: dark) {
-      body {
-        background-color: #1e1e1e;
-        color: #e4e4e4;
-      }
-      .email-wrapper {
-        background-color: #2a2a2a;
-      }
-      .section-title {
-        color: #ccc;
-      }
-      .footer {
-        background-color: #1a1a1a;
-        color: #999;
-      }
-    }
 
     body {
       font-family: 'Segoe UI', Tahoma, sans-serif;
       background-color: #f4f4f4;
       margin: 0;
-      padding: 0;
+      padding: 30px 0;
       color: #333;
     }
 
     .email-wrapper {
       max-width: 600px;
-      margin: 40px auto;
+      margin: 0 auto;
       background-color: #ffffff;
       border-radius: 10px;
       overflow: hidden;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
 
     .header {
@@ -119,12 +111,12 @@ export const sendOrderEmails = async (order: any) => {
     }
 
     .header img {
-      max-width: 150px;
+      max-width: 140px;
     }
 
     .title {
       color: #e688a2;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: bold;
       margin-top: 12px;
     }
@@ -138,32 +130,35 @@ export const sendOrderEmails = async (order: any) => {
     }
 
     .section-title {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 600;
       margin-bottom: 10px;
-      color: #666;
+      color: #444;
     }
 
     .details p {
       margin: 6px 0;
       font-size: 14px;
+      color: #555;
     }
 
     ul.items {
-      padding-left: 20px;
+      padding-left: 0;
+      list-style: none;
       margin: 0;
     }
 
-    ul.items li {
-      font-size: 14px;
-      margin-bottom: 5px;
+    .footer {
+      background-color: #f0f0f0;
+      text-align: center;
+      padding: 18px;
+      font-size: 13px;
+      color: #666;
     }
 
-    .footer {
-      font-size: 12px;
-      color: #999;
-      text-align: center;
-      padding: 16px;
+    .footer a {
+      color: #e688a2;
+      text-decoration: none;
     }
   </style>
 </head>
@@ -212,7 +207,8 @@ export const sendOrderEmails = async (order: any) => {
     </div>
 
     <div class="footer">
-      &copy; ${new Date().getFullYear()} Kelayaa. All rights reserved.
+      <p>Need help with your order? Contact us at <a href="mailto:support@kelayaa.com">support@kelayaa.com</a></p>
+      <p>&copy; ${new Date().getFullYear()} Kelayaa. All rights reserved.</p>
     </div>
   </div>
 </body>
