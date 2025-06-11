@@ -433,9 +433,9 @@ const Form = () => {
             <button
               type="button"
               onClick={() => setMode("guest")}
-              className="w-full bg-black text-white py-3 rounded-md font-semibold hover:bg-gray-900 transition-colors flex items-center justify-center gap-2"
+              className="w-fit px-4 py-2 mx-auto mt-4 bg-white text-gray-700 text-sm rounded-md flex items-center justify-center gap-2 border border-gray-300 shadow-sm hover:bg-gray-100 transition-colors"
             >
-              <FaShoppingCart className="text-white text-lg" />
+              <FaShoppingCart className="text-gray-500 text-base" />
               Continue as Guest
             </button>
           </div>
