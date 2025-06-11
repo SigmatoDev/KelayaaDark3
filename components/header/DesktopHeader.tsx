@@ -329,6 +329,7 @@ const DesktopHeader = () => {
   const { totalCartQuantity } = useCartService();
   const [menuOpen, setMenuOpen] = useState(false);
   const [hoveredMaterialType, setHoveredMaterialType] = useState<string>("");
+  const isSignInPage = pathname?.endsWith("/signin");
 
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -340,7 +341,11 @@ const DesktopHeader = () => {
   const signOutHandler = async () => {
     setMenuOpen(false); // Close menu first
     await signOut({ redirect: false }); // Sign out without auto-redirect
-    router.push("/"); // Manual redirect to home page
+    if (session?.user?.isAdmin) {
+      router.push("/signin");
+    } else {
+      router.push("/");
+    }
   };
 
   const handleClick = () => setMenuOpen(false); // Close menu on link click
@@ -471,7 +476,7 @@ const DesktopHeader = () => {
     setIsOpen(false);
   };
 
-  if (session?.user?.isAdmin) {
+  if (session?.user?.isAdmin || isSignInPage) {
     return (
       <header>
         <nav>
@@ -486,7 +491,21 @@ const DesktopHeader = () => {
                 }}
               />
             </div>
-            <Menu />
+            <div>
+              {session && (
+                <div className="mr-4">
+                  <button
+                    onClick={() => signOutHandler()}
+                    className="w-full flex items-center justify-start  text-red-500 bg-gray-700 hover:text-red-500 hover:bg-gray-700 p-3 rounded-md transition-colors"
+                  >
+                    <LogOut className="w-5 h-5 mr-2" />
+                    Logout
+                  </button>
+                </div>
+              )}
+
+              <Menu />
+            </div>
           </div>
         </nav>
       </header>

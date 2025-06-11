@@ -1,5 +1,3 @@
-// lib/emails/sendOrderEmails.ts
-
 import {
   TransactionalEmailsApi,
   SendSmtpEmail,
@@ -24,6 +22,7 @@ export const sendOrderEmails = async (order: any) => {
     shippingAddress,
     orderNumber,
     _id: orderId,
+    paymentStatus,
   } = order;
 
   const formatter = new Intl.NumberFormat("en-IN", {
@@ -39,151 +38,210 @@ export const sendOrderEmails = async (order: any) => {
     )
     .join("");
 
-  const htmlContent = (recipient: "user" | "admin") => `
+  const htmlContent = (recipient: "user" | "admin") => {
+    const isFailed = paymentStatus === "FAILED";
+    const retryUrl = `https://kelayaa.com/retry-payment?orderId=${orderId}`;
+
+    const title =
+      recipient === "admin"
+        ? isFailed
+          ? "Order Payment Failed 🚫"
+          : "New Order Alert 🚀"
+        : isFailed
+          ? "Payment Failed for Your Order 💳"
+          : "Thank You for Your Order 💖";
+
+    const actionSection =
+      isFailed && recipient === "user"
+        ? `<div style="text-align: center; margin: 30px 0;">
+            <a href="${retryUrl}" style="
+              background-color: #e74c3c;
+              color: #fff;
+              padding: 12px 24px;
+              border-radius: 6px;
+              font-weight: bold;
+              text-decoration: none;
+              display: inline-block;
+            ">Retry Payment</a>
+            <p style="margin-top: 10px; font-size: 13px; color: #888;">
+              If you continue facing issues, contact <a href="mailto:support@kelayaa.com">support@kelayaa.com</a>
+            </p>
+          </div>`
+        : "";
+
+    return `
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <style>
+<head>
+  <meta charset="UTF-8" />
+  <style>
+    :root {
+      color-scheme: light dark;
+    }
+    @media (prefers-color-scheme: dark) {
       body {
-        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-        background-color: #f9f9f9;
-        margin: 0;
-        padding: 0;
-        color: #333;
+        background-color: #1e1e1e;
+        color: #e4e4e4;
       }
       .email-wrapper {
-        max-width: 600px;
-        margin: 0 auto;
-        background-color: #ffffff;
-        border-radius: 8px;
-        overflow: hidden;
-        box-shadow: 0 0 10px rgba(0,0,0,0.05);
-      }
-      .header {
-        background-color: #ffe4ec;
-        text-align: center;
-        padding: 20px;
-      }
-      .header img {
-        max-width: 160px;
-      }
-      .content {
-        padding: 20px 30px;
-      }
-      .title {
-        color: #e688a2;
-        font-size: 22px;
-        margin-top: 10px;
-      }
-      .section {
-        margin: 20px 0;
+        background-color: #2a2a2a;
       }
       .section-title {
-        font-weight: bold;
-        margin-bottom: 10px;
-        font-size: 16px;
-        color: #555;
-      }
-      .details p {
-        margin: 5px 0;
-        font-size: 14px;
-      }
-      ul.items {
-        padding-left: 20px;
-        margin: 0;
-      }
-      ul.items li {
-        font-size: 14px;
-        margin-bottom: 5px;
+        color: #ccc;
       }
       .footer {
-        background-color: #f4f4f4;
-        text-align: center;
-        font-size: 12px;
-        color: #888;
-        padding: 15px;
+        background-color: #1a1a1a;
+        color: #999;
       }
-    </style>
-  </head>
-  <body>
-    <div class="email-wrapper">
-      <div class="header">
-        <img src="https://kelayaa.com/Kelayaa%20-%20logo.webp" alt="Kelayaa Logo" />
-        <div class="title">
-          ${recipient === "admin" ? "New Order Alert 🚀" : "Thank You for Your Order 💖"}
-        </div>
-      </div>
+    }
 
-      <div class="content">
-        <div class="section">
-          <div class="section-title">Order Summary</div>
-          <div class="details">
-            <p><strong>Order ID:</strong> ${orderNumber}</p>
-            <p><strong>Total Amount:</strong> ${formatter.format(totalPrice)}</p>
-            <p><strong>Payment Status:</strong> ${order.paymentStatus}</p>
-          </div>
-        </div>
+    body {
+      font-family: 'Segoe UI', Tahoma, sans-serif;
+      background-color: #f4f4f4;
+      margin: 0;
+      padding: 0;
+      color: #333;
+    }
 
-        <div class="section">
-          <div class="section-title">Customer Info</div>
-          <div class="details">
-            <p><strong>Name:</strong> ${user?.name}</p>
-            <p><strong>Email:</strong> ${personalInfo?.email}</p>
-            <p><strong>Phone:</strong> ${personalInfo?.mobileNumber}</p>
-          </div>
-        </div>
+    .email-wrapper {
+      max-width: 600px;
+      margin: 40px auto;
+      background-color: #ffffff;
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
 
-        <div class="section">
-          <div class="section-title">Shipping Address</div>
-          <div class="details">
-            <p>${shippingAddress?.address},</p>
-            <p>${shippingAddress?.city}, ${shippingAddress?.state} - ${shippingAddress?.postalCode}</p>
-          </div>
-        </div>
+    .header {
+      background-color: #ffe4ec;
+      text-align: center;
+      padding: 24px 20px;
+    }
 
-        <div class="section">
-          <div class="section-title">Items Ordered</div>
-          <ul class="items">
-            ${formattedItems}
-          </ul>
-        </div>
+    .header img {
+      max-width: 150px;
+    }
 
-        ${
-          recipient === "user"
-            ? `<p>We’ll notify you when your order is on its way. 🎁</p>
-               <p>Questions? Reach out anytime at <a href="mailto:support@kelayaa.com">support@kelayaa.com</a></p>`
-            : `<p><strong>Note:</strong> This is a new order from the website. Please check the admin dashboard for full details.</p>`
-        }
-      </div>
+    .title {
+      color: #e688a2;
+      font-size: 20px;
+      font-weight: bold;
+      margin-top: 12px;
+    }
 
-      <div class="footer">
-        &copy; ${new Date().getFullYear()} Kelayaa. All rights reserved.<br/>
-      </div>
+    .content {
+      padding: 24px 32px;
+    }
+
+    .section {
+      margin-bottom: 24px;
+    }
+
+    .section-title {
+      font-size: 15px;
+      font-weight: 600;
+      margin-bottom: 10px;
+      color: #666;
+    }
+
+    .details p {
+      margin: 6px 0;
+      font-size: 14px;
+    }
+
+    ul.items {
+      padding-left: 20px;
+      margin: 0;
+    }
+
+    ul.items li {
+      font-size: 14px;
+      margin-bottom: 5px;
+    }
+
+    .footer {
+      font-size: 12px;
+      color: #999;
+      text-align: center;
+      padding: 16px;
+    }
+  </style>
+</head>
+<body>
+  <div class="email-wrapper">
+    <div class="header">
+      <img src="https://kelayaa.com/Kelayaa%20-%20logo.webp" alt="Kelayaa Logo" />
+      <div class="title">${title}</div>
     </div>
-  </body>
-</html>
-`;
 
-  // Email to User
+    <div class="content">
+      <div class="section">
+        <div class="section-title">Order Summary</div>
+        <div class="details">
+          <p><strong>Order ID:</strong> ${orderNumber}</p>
+          <p><strong>Total:</strong> ${formatter.format(totalPrice)}</p>
+          <p><strong>Payment Status:</strong> ${paymentStatus}</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Customer Info</div>
+        <div class="details">
+          <p><strong>Name:</strong> ${user?.name}</p>
+          <p><strong>Email:</strong> ${personalInfo?.email}</p>
+          <p><strong>Phone:</strong> ${personalInfo?.mobileNumber}</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Shipping Address</div>
+        <div class="details">
+          <p>${shippingAddress?.address}</p>
+          <p>${shippingAddress?.city}, ${shippingAddress?.state} - ${shippingAddress?.postalCode}</p>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="section-title">Items Ordered</div>
+        <ul class="items">
+          ${formattedItems}
+        </ul>
+      </div>
+
+      ${actionSection}
+    </div>
+
+    <div class="footer">
+      &copy; ${new Date().getFullYear()} Kelayaa. All rights reserved.
+    </div>
+  </div>
+</body>
+</html>`;
+  };
+
+  const subjectPrefix = `Order #${orderNumber}`;
+
   const userEmail: SendSmtpEmail = {
     sender: { email: "orders@kelayaa.com" },
     to: [{ email: personalInfo?.email }],
-    subject: "Your Kelayaa Order Confirmation",
+    subject:
+      paymentStatus === "FAILED"
+        ? `${subjectPrefix} - Payment Failed`
+        : `${subjectPrefix} - Order Confirmation`,
     htmlContent: htmlContent("user"),
   };
 
-  // Email to Admin(s)
   const adminEmail: SendSmtpEmail = {
     sender: { email: "orders@kelayaa.com" },
     to: [
       { email: "bharat@metamorfs.com" },
       { email: "aryan@kelayaa.com" },
       { email: "arushi@kelayaa.com" },
-      // { email: "nuthan@sigmato.com" },
-      // { email: "dineshbhukta.sigmato@gmail.com" },
     ],
-    subject: `New Order Received 🎉`,
+    subject:
+      paymentStatus === "FAILED"
+        ? `${subjectPrefix} - Payment Failure Alert`
+        : `${subjectPrefix} - New Order Received 🎉`,
     htmlContent: htmlContent("admin"),
   };
 
@@ -195,5 +253,3 @@ export const sendOrderEmails = async (order: any) => {
     console.error("❌ Email sending failed:", error);
   }
 };
-
-// Designed with ❤️ by Kelayaa Team.

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { signIn, useSession } from "next-auth/react";
 import { useEffect } from "react";
 import { SubmitHandler, useForm } from "react-hook-form";
+import toast from "react-hot-toast";
 
 type Inputs = {
   email: string;
@@ -56,23 +57,44 @@ const Form = () => {
   const formSubmit: SubmitHandler<any> = async (form) => {
     const { email, password } = form;
     console.log("Form submitted with email:", email, "and password:", password);
+    toast.loading("Logging in...");
 
     const result = await signIn("credentials", {
       email,
       password,
-      callbackUrl: session?.user?.isAdmin ? "/admin/dashboard" : "/", // Pass the callback URL to the signIn function
+      redirect: false, // manual redirection
     });
 
-    // Log the result of the signIn call
     console.log("SignIn result:", result);
 
-    // Check if there was an error during sign-in
     if (result?.error) {
       console.log("SignIn failed:", result.error);
+      toast.error("Login failed: " + result.error);
     } else {
-      console.log("SignIn successful, redirecting...");
+      console.log("SignIn successful, fetching session...");
+
+      // Fetch latest session data
+      const res = await fetch("/api/auth/session");
+      const sessionData = await res.json();
+
+      console.log("Fetched session:", sessionData);
+
+      // Store relevant session data
+      if (sessionData?.user) {
+        sessionStorage.setItem("userSession", JSON.stringify(sessionData.user));
+      }
+
+      // Show success and delay navigation
+      toast.success("Login successful, redirecting...");
+
+      setTimeout(() => {
+        const isAdmin = sessionData?.user?.isAdmin;
+        const redirectTo = isAdmin ? "/admin" : "/";
+        window.location.href = redirectTo;
+      }, 2000);
     }
   };
+
   return (
     <div className="card mx-auto my-4 max-w-sm bg-base-300">
       <div className="card-body">
