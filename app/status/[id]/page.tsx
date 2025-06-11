@@ -174,8 +174,12 @@ const StatusPage = () => {
 
       setTransactionStatus(paymentStatus);
       setTransactionDetails(response?.data?.result);
-      if (!hasPlacedOrder.current) {
-        hasPlacedOrder.current = true;
+      const alreadyPlaced = sessionStorage.getItem(
+        `order_placed_${params?.id}`
+      );
+
+      if (!alreadyPlaced) {
+        sessionStorage.setItem(`order_placed_${params?.id}`, "true");
         await placeOrder({
           paymentResult: fullPaymentData,
           paymentMode: paymentModes,
@@ -184,12 +188,12 @@ const StatusPage = () => {
         if (paymentStatus === "COMPLETED") {
           toast.success("Order placed successfully!");
           clear();
+
           if (session?.user.userType === "guest") {
             await deleteGuestUser();
             sessionStorage.clear();
 
             setTimeout(() => {
-              // Optional extra cookie clearing (non-HTTPOnly only)
               document.cookie.split(";").forEach((c) => {
                 document.cookie = c
                   .replace(/^ +/, "")
@@ -198,7 +202,6 @@ const StatusPage = () => {
                     `=;expires=${new Date(0).toUTCString()};path=/`
                   );
               });
-              // ✅ Sign out internally without redirect
               signOut({ redirect: false });
             }, 1000);
           }
@@ -209,7 +212,6 @@ const StatusPage = () => {
             sessionStorage.clear();
 
             setTimeout(() => {
-              // Optional extra cookie clearing (non-HTTPOnly only)
               document.cookie.split(";").forEach((c) => {
                 document.cookie = c
                   .replace(/^ +/, "")
@@ -218,7 +220,6 @@ const StatusPage = () => {
                     `=;expires=${new Date(0).toUTCString()};path=/`
                   );
               });
-              // ✅ Sign out internally without redirect
               signOut({ redirect: false });
             }, 1000);
           }
