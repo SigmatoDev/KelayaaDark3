@@ -165,7 +165,7 @@ export const sendOrderEmails = async (order: any) => {
 <body>
   <div class="email-wrapper">
     <div class="header">
-      <img src="https://kelayaaimages.s3.ap-south-1.amazonaws.com/kelayaa-assets/kelayaa-email-logo.jpg" alt="Kelayaa Logo" />
+      <img src="https://kelayaaimages.s3.ap-south-1.amazonaws.com/kelayaa-assets/Kelayaa-mail.png" alt="Kelayaa Logo" />
       <div class="title">${title}</div>
     </div>
 
