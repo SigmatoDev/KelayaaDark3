@@ -148,7 +148,7 @@ export const sendAbandonedCartEmail = async (cart: any) => {
             <img src="${item.image}" alt="${item.name}" />
             <div class="details">
               <strong>${item.name}</strong><br />
-              Qty: ${item.qty} — ₹${item.price}
+              Qty: ${item.qty} — ₹${item.price.toFixed(2)}
             </div>
           </li>`
           )
