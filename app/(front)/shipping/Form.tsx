@@ -453,7 +453,7 @@ const Form = () => {
                     Personal Information
                     {loggedInUserType === "guest" && (
                       <span className="text-sm text-gray-500 ml-2">
-                        (Logged in as Guest)
+                        (You are continuing as a guest)
                       </span>
                     )}
                   </h2>
@@ -635,7 +635,7 @@ const Form = () => {
                       Personal Information
                       {loggedInUserType === "guest" && (
                         <span className="text-sm text-gray-500 ml-2">
-                          (Logged in as Guest)
+                          (You are continuing as a guest)
                         </span>
                       )}
                     </h2>
