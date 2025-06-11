@@ -48,7 +48,7 @@ export const sendOrderEmails = async (order: any) => {
 
   const htmlContent = (recipient: "user" | "admin") => {
     const isFailed = paymentStatus === "FAILED";
-    const retryUrl = `https://kelayaa.com/retry-payment?orderId=${orderId}`;
+    const retryUrl = `https://kelayaa.com/cart`;
 
     const title =
       recipient === "admin"
@@ -70,7 +70,7 @@ export const sendOrderEmails = async (order: any) => {
               font-weight: bold;
               text-decoration: none;
               display: inline-block;
-            ">Retry Payment</a>
+            ">Retry Order</a>
             <p style="margin-top: 10px; font-size: 13px; color: #888;">
               If you continue facing issues, contact <a href="mailto:support@kelayaa.com">support@kelayaa.com</a>
             </p>
@@ -249,3 +249,5 @@ export const sendOrderEmails = async (order: any) => {
     console.error("❌ Email sending failed:", error);
   }
 };
+
+// const retryUrl = `https://kelayaa.com/retry-payment?orderId=${orderId}`;
