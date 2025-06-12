@@ -134,7 +134,11 @@ export const sendOrderStatusUpdateEmail = async ({
 <body>
   <div class="email-container">
     <div class="header">
-      <img src="https://kelayaaimages.s3.ap-south-1.amazonaws.com/kelayaa-assets/Kelayaa-mail.png" alt="Kelayaa Logo" />
+      <img
+        src="https://kelayaaimages.s3.ap-south-1.amazonaws.com/kelayaa-assets/Kelayaa-mail.png"
+        alt="Kelayaa Logo"
+        style="width: 230px;"
+      />      
       <div class="title">Order Status Updated</div>
     </div>
 
