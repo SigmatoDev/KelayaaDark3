@@ -206,19 +206,27 @@ export default function SignInPopup({
                   <input
                     id="mobileNumber"
                     type="tel"
-                    aria-invalid={!!errors.mobileNumber}
+                    maxLength={10}
                     {...register("mobileNumber", {
                       required: "Mobile number is required",
                       pattern: {
-                        value: /^[0-9]{10}$/,
-                        message: "Enter a valid 10-digit mobile number",
+                        value: /^[6-9][0-9]{9}$/,
+                        message: "Enter a valid Indian mobile number",
+                      },
+                      minLength: {
+                        value: 10,
+                        message: "Mobile number must be 10 digits",
+                      },
+                      maxLength: {
+                        value: 10,
+                        message: "Mobile number must be 10 digits",
                       },
                     })}
                     placeholder="Enter 10-digit number"
-                    className={`flex-1 min-w-0 block w-full rounded-r-md border border-gray-300 p-2 text-sm bg-gray-100 
-                    focus:outline-none focus:ring-2 focus:ring-[#e58aaa] focus:border-[#e58aaa] ${
-                      errors.mobileNumber ? "border-red-500" : ""
-                    }`}
+                    className={`flex-1 min-w-0 block w-full rounded-r-md border p-2 text-sm bg-gray-100
+    focus:outline-none focus:ring-2 focus:ring-[#e58aaa] focus:border-[#e58aaa]
+    ${errors.mobileNumber ? "border-red-500" : "border-gray-300"}
+  `}
                   />
                 </div>
 

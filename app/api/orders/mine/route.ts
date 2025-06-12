@@ -1,37 +1,35 @@
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/dbConnect";
 import OrderModel from "@/lib/models/OrderModel";
-import BanglesProductModel from "@/lib/models/BanglesProductSchema";
-import BeadsProductModel from "@/lib/models/BeadsProductModel";
-import ProductModel from "@/lib/models/ProductModel";
-import SetsProductModel from "@/lib/models/SetsProductsModel";
+import mongoose from "mongoose";
 
 export const GET = auth(async (req: any) => {
   if (!req.auth) {
-    return Response.json(
-      { message: "unauthorized" },
-      {
-        status: 401,
-      }
-    );
+    return Response.json({ message: "unauthorized" }, { status: 401 });
   }
 
   const { user } = req.auth;
   await dbConnect();
 
-  // Fetch orders for the authenticated user
+  // Ensure user._id is a valid ObjectId
+  const userId =
+    typeof user._id === "string"
+      ? new mongoose.Types.ObjectId(user._id)
+      : user._id;
+
+  // Fetch orders for the authenticated user using `user` field
   const orders = await OrderModel.aggregate([
     {
       $match: {
-        "personalInfo.mobileNumber": user.mobileNumber,
+        user: userId,
       },
     },
     {
-      $unwind: "$items", // Unwind items to process each item individually
+      $unwind: "$items",
     },
     {
       $lookup: {
-        from: "setsproducts", // Join SetsProductModel
+        from: "setsproducts",
         localField: "items.product",
         foreignField: "_id",
         as: "itemProductSets",
@@ -39,7 +37,7 @@ export const GET = auth(async (req: any) => {
     },
     {
       $lookup: {
-        from: "banglesproducts", // Join BanglesProductModel
+        from: "banglesproducts",
         localField: "items.product",
         foreignField: "_id",
         as: "itemProductBangles",
@@ -47,7 +45,7 @@ export const GET = auth(async (req: any) => {
     },
     {
       $lookup: {
-        from: "beadsproducts", // Join BeadsProductModel
+        from: "beadsproducts",
         localField: "items.product",
         foreignField: "_id",
         as: "itemProductBeads",
@@ -55,7 +53,7 @@ export const GET = auth(async (req: any) => {
     },
     {
       $lookup: {
-        from: "products", // Join default ProductModel
+        from: "products",
         localField: "items.product",
         foreignField: "_id",
         as: "itemProductDefault",
@@ -65,19 +63,17 @@ export const GET = auth(async (req: any) => {
       $addFields: {
         "items.product": {
           $cond: {
-            if: { $gt: [{ $size: "$itemProductSets" }, 0] }, // If SetsProduct found
+            if: { $gt: [{ $size: "$itemProductSets" }, 0] },
             then: { $arrayElemAt: ["$itemProductSets", 0] },
             else: {
               $cond: {
-                if: { $gt: [{ $size: "$itemProductBangles" }, 0] }, // If BanglesProduct found
+                if: { $gt: [{ $size: "$itemProductBangles" }, 0] },
                 then: { $arrayElemAt: ["$itemProductBangles", 0] },
                 else: {
                   $cond: {
-                    if: { $gt: [{ $size: "$itemProductBeads" }, 0] }, // If BeadsProduct found
+                    if: { $gt: [{ $size: "$itemProductBeads" }, 0] },
                     then: { $arrayElemAt: ["$itemProductBeads", 0] },
-                    else: {
-                      $arrayElemAt: ["$itemProductDefault", 0], // Default to ProductModel
-                    },
+                    else: { $arrayElemAt: ["$itemProductDefault", 0] },
                   },
                 },
               },
@@ -86,7 +82,6 @@ export const GET = auth(async (req: any) => {
         },
       },
     },
-    // ✅ Sort before grouping
     {
       $sort: {
         createdAt: -1,
