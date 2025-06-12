@@ -139,7 +139,15 @@ export default function OrderHistory() {
                       Order #{order.orderNumber} ·{" "}
                       {new Date(order.createdAt).toLocaleDateString()}
                     </p>
-                    <p className="text-xs text-green-600 font-medium mt-1">
+                    <p
+                      className={`text-xs font-medium mt-1 ${
+                        order.isDelivered
+                          ? "text-green-600"
+                          : order.isPaid
+                            ? "text-purple-600"
+                            : "text-red-500"
+                      }`}
+                    >
                       {order.isDelivered
                         ? `Delivered on ${new Date(order.deliveredAt).toLocaleDateString()}`
                         : order.isPaid
