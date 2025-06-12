@@ -133,7 +133,11 @@ export const sendAbandonedCartEmail = async (cart: any) => {
 <body>
   <div class="email-wrapper">
     <div class="header">
-      <img src="https://kelayaaimages.s3.ap-south-1.amazonaws.com/kelayaa-assets/Kelayaa-mail.png" alt="Kelayaa Logo" />
+      <img
+        src="https://kelayaaimages.s3.ap-south-1.amazonaws.com/kelayaa-assets/Kelayaa-mail.png"
+        alt="Kelayaa Logo"
+        style="width: 230px;"
+      />      
       <h2>Still thinking it over?</h2>
     </div>
     <div class="content">

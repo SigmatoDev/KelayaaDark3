@@ -25,7 +25,6 @@ export const POST = async (request: NextRequest) => {
 
     return NextResponse.json({ message: "Password reset successful" });
   } catch (error) {
-    console.log("error_reset_password", error);
     return NextResponse.json(
       { message: "Something went wrong" },
       { status: 500 }
