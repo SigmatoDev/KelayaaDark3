@@ -144,7 +144,7 @@ export default function OrderHistory() {
                         ? `Delivered on ${new Date(order.deliveredAt).toLocaleDateString()}`
                         : order.isPaid
                           ? "Processing"
-                          : "Pending Payment"}
+                          : "Payment Failed"}
                     </p>
                   </div>
 
@@ -221,7 +221,7 @@ export default function OrderHistory() {
                         <div className="flex items-center gap-1">
                           Payment:
                           <StatusBadge
-                            status={order.isPaid ? "completed" : "pending"}
+                            status={order.isPaid ? "completed" : "failed"}
                           />
                         </div>
                         <div className="flex items-center gap-1">
@@ -232,7 +232,7 @@ export default function OrderHistory() {
                                 ? "delivered"
                                 : order.isPaid
                                   ? "processing"
-                                  : "pending"
+                                  : "failed"
                             }
                           />
                         </div>

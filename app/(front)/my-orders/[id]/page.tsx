@@ -58,6 +58,7 @@ interface ShippingAddress {
 }
 
 interface OrderDetail {
+  paymentStatus: string;
   unique_txn_id: string;
   statusHistory: [];
   _id: string;
@@ -219,35 +220,46 @@ export default function SingleOrderPage() {
           </p>
         </div>
 
-        <div className="w-full flex justify-end">
-          <PDFDownloadLink
-            document={<InvoicePDF order={order} />}
-            fileName={`Invoice_Order_${order.orderNumber}.pdf`}
-            className="btn btn-primary flex items-center space-x-2"
-          >
-            {({ loading }) =>
-              loading ? (
-                "Preparing PDF..."
-              ) : (
-                <>
-                  <FaFileDownload size={18} />
-                  <span>Download Invoice</span>
-                </>
-              )
-            }
-          </PDFDownloadLink>
-        </div>
+        {order?.paymentStatus === "FAILED" ? (
+          ""
+        ) : (
+          <div className="w-full flex justify-end">
+            <PDFDownloadLink
+              document={<InvoicePDF order={order} />}
+              fileName={`Invoice_Order_${order.orderNumber}.pdf`}
+              className="btn btn-primary flex items-center space-x-2"
+            >
+              {({ loading }) =>
+                loading ? (
+                  "Preparing PDF..."
+                ) : (
+                  <>
+                    <FaFileDownload size={18} />
+                    <span>Download Invoice</span>
+                  </>
+                )
+              }
+            </PDFDownloadLink>
+          </div>
+        )}
       </div>
 
       {/* Timeline */}
       <Card className="mb-8">
         <CardContent className="p-6 pt-2">
           <h2 className="text-xl font-semibold mb-4">Order Status</h2>
-          <ResponsiveStatusStepper
-            statuses={ORDER_STATUSES}
-            initialStep={currentStep} // currently "Shipped"
-            statusHistory={order.statusHistory}
-          />
+          {order?.paymentStatus === "FAILED" ? (
+            <h3 className="text-sm mb-4 text-red-500">
+              We couldn't complete your order, due to payment failure. Please try
+              again.
+            </h3>
+          ) : (
+            <ResponsiveStatusStepper
+              statuses={ORDER_STATUSES}
+              initialStep={currentStep} // currently "Shipped"
+              statusHistory={order.statusHistory}
+            />
+          )}
         </CardContent>
       </Card>
 
@@ -325,12 +337,18 @@ export default function SingleOrderPage() {
               {/* Separator should be outside the grid */}
               <Separator className="my-2" />
 
-              <div className="grid grid-cols-2 gap-2">
-                <span>Payment Method:</span>
-                <span className="text-right">{order.paymentMethod}</span>
-                <span>Transaction ID:</span>
-                <span className="text-right">{order.unique_txn_id}</span>
-              </div>
+              {order?.paymentStatus === "FAILED" ? (
+                <span className="text-red-500 text-center">
+                  ! Payment Failed
+                </span>
+              ) : (
+                <div className="grid grid-cols-2 gap-2">
+                  <span>Payment Method:</span>
+                  <span className="text-right">{order.paymentMethod}</span>
+                  <span>Transaction ID:</span>
+                  <span className="text-right">{order.unique_txn_id}</span>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -35,7 +35,15 @@ const Form = () => {
   } = useCartService();
 
   // Check if guest is logged in using sessionStorage
-  const isGuestLoggedIn = sessionStorage.getItem("isGuestLoggedIn");
+  const [isGuestLoggedIn, setIsGuestLoggedIn] = useState(false);
+
+  // ✅ Safe sessionStorage access for guest detection
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const guest = sessionStorage.getItem("isGuestLoggedIn");
+      setIsGuestLoggedIn(guest === "true");
+    }
+  }, []);
 
   useEffect(() => {
     if (!shippingAddress) {
@@ -145,7 +153,7 @@ const Form = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (isGuestLoggedIn === "true") {
+    if (isGuestLoggedIn) {
       // Guest user - Skip authentication and directly proceed to payment
       if (selectedPaymentMethod === "CashOnDelivery") handleCOD();
       else if (selectedPaymentMethod === "PhonePe") handlePhonePePayment();
@@ -186,7 +194,7 @@ const Form = () => {
 
             <button
               type="submit"
-              disabled={!phonePeLoaded}
+              // disabled={!phonePeLoaded}
               className="btn bg-gradient-to-r from-pink-500 to-red-500 text-white w-full font-semibold"
             >
               {selectedPaymentMethod === "CashOnDelivery"

@@ -93,12 +93,21 @@ const Form = () => {
 
     const key = getShippingStorageKey();
     const stored = localStorage.getItem(key);
-
     const source = shippingAddress || (stored ? JSON.parse(stored) : null);
+
     if (source) {
-      Object.entries(source).forEach(([key, value]) => {
-        setValue(`shippingAddress.${key as keyof ShippingAddress}`, value);
-      });
+      const current = watch("shippingAddress");
+      const shouldSet =
+        !current?.address ||
+        Object.keys(current).every(
+          (key) => !current[key as keyof ShippingAddress]
+        );
+
+      if (shouldSet) {
+        Object.entries(source).forEach(([key, value]) => {
+          setValue(`shippingAddress.${key as keyof ShippingAddress}`, value);
+        });
+      }
     }
   }, [shippingAddress, session, setValue]);
 
@@ -142,12 +151,23 @@ const Form = () => {
 
   useEffect(() => {
     if (sameAsShipping) {
-      setValue("billingDetails", {
-        ...watch("shippingAddress"),
-        landmark: watch("shippingAddress.landmark") || "",
-        sameAsShipping: true,
-        country: "India",
-      });
+      const billing = watch("billingDetails");
+      const shipping = watch("shippingAddress");
+
+      const shouldUpdate =
+        !billing?.address ||
+        !billing?.city ||
+        !billing?.state ||
+        !billing?.postalCode;
+
+      if (shouldUpdate) {
+        setValue("billingDetails", {
+          ...shipping,
+          landmark: shipping.landmark || "",
+          sameAsShipping: true,
+          country: "India",
+        });
+      }
     }
   }, [sameAsShipping, setValue, watch]);
 
@@ -273,7 +293,8 @@ const Form = () => {
       if (session && isUserJustRegistered) {
         setPrefillEmail(form.personalInfo.email);
         setIsSignInPopupOpen(true);
-        return;
+        // return;
+        await new Promise((r) => setTimeout(r, 1000)); // wait 1s for session update
       } else {
         const result = await signIn("credentials", {
           email: form.personalInfo.email,
