@@ -105,6 +105,7 @@ export default function CustomDesignForm() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [orderNumber, setOrderNumber] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const [subtypes, setSubtypes] = useState<
     Array<{ name: string; image: string }>
   >([]);
@@ -112,37 +113,53 @@ export default function CustomDesignForm() {
   const [file, setFile] = useState<File | null>(null); // For file upload
   const router = useRouter();
 
-  // Handle file change from the input
+  const MAX_SIZE_MB = 1;
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const selectedFile = event.target.files?.[0];
-    if (selectedFile) {
-      console.log("Original file selected:", selectedFile);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string); // Preview image as base64
-      };
-      reader.readAsDataURL(selectedFile);
-      setFile(selectedFile); // Store the selected file for upload
+    if (!selectedFile) return;
+
+    if (selectedFile.size > MAX_SIZE_MB * 1024 * 1024) {
+      setError("Image must be less than 1MB.");
+      setImage(null);
+      setFile(null);
+      return;
     }
+
+    console.log("Original file selected:", selectedFile);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result as string);
+      setError(null);
+    };
+    reader.readAsDataURL(selectedFile);
+    setFile(selectedFile);
   };
 
-  // Handle drag and drop event
   const handleDrop = (event: React.DragEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const droppedFile = event.dataTransfer.files[0];
-    if (droppedFile) {
-      console.log("Dropped file:", droppedFile);
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImage(reader.result as string); // Preview image as base64
-      };
-      reader.readAsDataURL(droppedFile);
-      setFile(droppedFile); // Store the dropped file for upload
+    const droppedFile = event.dataTransfer.files?.[0];
+    if (!droppedFile) return;
+
+    if (droppedFile.size > MAX_SIZE_MB * 1024 * 1024) {
+      setError("Image must be less than 1MB.");
+      setImage(null);
+      setFile(null);
+      return;
     }
 
-    // Update the hidden file input so it gets included in FormData
+    console.log("Dropped file:", droppedFile);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      setImage(reader.result as string);
+      setError(null);
+    };
+    reader.readAsDataURL(droppedFile);
+    setFile(droppedFile);
+
+    // Update hidden input for FormData (optional)
     const dataTransfer = new DataTransfer();
-    dataTransfer.items.add(event.dataTransfer.files[0]);
+    dataTransfer.items.add(droppedFile);
     const fileInput = document.getElementById(
       "file-upload"
     ) as HTMLInputElement;
@@ -599,12 +616,13 @@ export default function CustomDesignForm() {
 
               <div className="mb-8">
                 <label className="block text-sm font-medium text-gray-700 mb-1">
-                  Upload Image
+                  Upload Image ({" "}
+                  <span className="text-xs text-red-500">Max size: ≤ 1 MB</span>)
                 </label>
                 <div
                   className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center"
                   onDrop={handleDrop}
-                  onDragOver={(event) => event.preventDefault()} // Prevent default behavior for drag-over
+                  onDragOver={(event) => event.preventDefault()}
                 >
                   <p className="mb-2 text-gray-500">
                     Drag & drop your image here or
@@ -616,12 +634,19 @@ export default function CustomDesignForm() {
                     className="hidden"
                     id="file-upload"
                   />
-                  <label
-                    htmlFor="file-upload"
-                    className="bg-gray-100 px-4 py-2 rounded text-sm hover:bg-gray-200 transition cursor-pointer"
-                  >
-                    Browse Files
-                  </label>
+                  <div className="flex flex-col items-center gap-1 mt-2">
+                    <label
+                      htmlFor="file-upload"
+                      className="bg-gray-100 px-4 py-2 rounded text-sm hover:bg-gray-200 transition cursor-pointer"
+                    >
+                      Browse Files
+                    </label>
+                  </div>
+
+                  {/* Error message */}
+                  {error && (
+                    <p className="mt-2 text-sm text-red-500">{error}</p>
+                  )}
 
                   {/* Image Preview */}
                   {image && (

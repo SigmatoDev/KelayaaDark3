@@ -4,6 +4,10 @@ import mongoose from "mongoose"; // ✅ IMPORTANT
 import OrderModel from "@/lib/models/OrderModel";
 import { sendOrderEmails } from "@/utility/sendOrderEmail";
 import AbandonedCart from "@/lib/models/AbondenCart";
+import ProductModel from "@/lib/models/ProductModel";
+import SetsProductModel from "@/lib/models/SetsProductsModel";
+import BanglesProductModel from "@/lib/models/BanglesProductSchema";
+import BeadsProductModel from "@/lib/models/BeadsProductModel";
 
 export const POST = auth(async (...request: any) => {
   const [req] = request;
@@ -47,6 +51,7 @@ export const POST = auth(async (...request: any) => {
       );
     }
 
+    // Create a new order in the database
     const newOrder = await OrderModel.create({
       user: userId,
       status,
@@ -80,6 +85,61 @@ export const POST = auth(async (...request: any) => {
       );
     }
 
+    // Loop through the ordered items and update stock for each product
+    for (const item of items) {
+      // Get the productId from the order item and the ordered quantity (qty)
+      const { productId, qty } = item;
+
+      // Determine which model to use based on its productId
+      let productModel;
+      let product;
+
+      // Try to find the product in ProductModel, SetsProductModel, BanglesProductModel, or BeadsProductModel
+      product = await ProductModel.findById(productId);
+      if (!product) {
+        product = await SetsProductModel.findById(productId);
+      }
+      if (!product) {
+        product = await BanglesProductModel.findById(productId);
+      }
+      if (!product) {
+        product = await BeadsProductModel.findById(productId); // Added BeadsProductModel
+      }
+
+      if (product) {
+        if (product.materialType === "Beads") {
+          // For beads, we need to update both countInStock and inventory_no_of_line
+          const newStock = product.countInStock - qty;
+          const newLines = product.inventory_no_of_line - qty;
+
+          // Check if stock and lines are sufficient
+          if (newStock < 0 || newLines < 0) {
+            throw new Error(`Insufficient stock or lines for ${product.name}`);
+          }
+
+          // Update the product's stock and lines
+          product.countInStock = newStock;
+          product.inventory_no_of_line = newLines;
+          await product.save();
+        } else {
+          // For other products, we just update countInStock
+          const newStock = product.countInStock - qty;
+
+          // Check if stock is sufficient
+          if (newStock < 0) {
+            throw new Error(`Insufficient stock for ${product.name}`);
+          }
+
+          // Update the product's stock
+          product.countInStock = newStock;
+          await product.save();
+        }
+      } else {
+        console.error(`Product with ID ${productId} not found.`);
+      }
+    }
+
+    // Send order confirmation emails
     await sendOrderEmails(populatedOrder);
 
     return Response.json({ success: true, order: newOrder }, { status: 201 });

@@ -45,7 +45,7 @@ export default function RingDetails({ product }: { product: ProductType }) {
           <div className="flex-1 px-4 py-2">
             <p className="text-xs text-gray-500 mb-1">Diamond</p>
             <div className="flex items-center justify-center h-auto sm:h-5">
-            <p className="font-semibold text-[0.7rem]">
+              <p className="font-semibold text-[0.7rem]">
                 {product?.gemCut || "FG-SI"}
               </p>
             </div>
@@ -65,7 +65,9 @@ export default function RingDetails({ product }: { product: ProductType }) {
       <div className="relative bg-purple-100 text-purple-700 px-4 py-3 ">
         <div className="absolute -top-2 left-6 w-4 h-4 bg-purple-100 rotate-45"></div>
         <div className="flex justify-between items-center">
-          <p className="text-sm font-medium">Not sure about your ring size?</p>
+          <p className="text-[10px] sm:text-sm  font-medium">
+            Not sure about your ring size?
+          </p>
           <a
             href="/ring-bangle-size-guide"
             className="text-pink-500 text-sm font-semibold flex items-center gap-1"
