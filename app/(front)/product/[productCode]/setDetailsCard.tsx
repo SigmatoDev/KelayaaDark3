@@ -1,3 +1,4 @@
+import { Separator } from "@/components/ui/separator";
 import { GiCutDiamond, GiGoldBar } from "react-icons/gi";
 
 interface Item {
@@ -37,25 +38,22 @@ export default function SetPriceBreakupCard({ product }: { product: Product }) {
   const items = product?.items || [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 my-2">
       {items.map((item, index) => (
-        <div
-          key={index}
-          className="rounded-xl border border-gray-200  shadow-md p-6"
-        >
+        <div key={index} className="rounded-xl border border-gray-200 p-4 sm:p-6">
           {/* Product Category / Item Name */}
-          <h2 className="text-lg font-bold text-[#Dd91a6] mb-4">
+          <h2 className="text-lg font-bold text-[#Dd91a6] mb-2 sm:mb-4">
             {item?.productCategory || `Item ${index + 1}`}
           </h2>
 
-          {/* Combined Card */}
-          <div className="flex flex-col md:flex-row md:divide-x md:divide-gray-300 gap-6">
+          {/* Combined Card - Flex row layout */}
+          <div className="flex justify-between gap-6">
             {/* Gold Details */}
-            <div className="md:w-1/2">
-              <h3 className="text-md font-semibold text-yellow-600 flex items-center mb-2">
+            <div className="flex-1">
+              <h3 className="text-[12px] sm:text-md font-semibold text-yellow-600 flex items-center mb-2">
                 {goldIcon} Gold Details
               </h3>
-              <div className="text-sm space-y-1 text-gray-700">
+              <div className="text-[10px] sm:text-sm space-y-1 text-gray-700">
                 <p>
                   Purity:{" "}
                   <span className="font-medium">
@@ -64,7 +62,9 @@ export default function SetPriceBreakupCard({ product }: { product: Product }) {
                 </p>
                 <p>
                   Weight:{" "}
-                  <span className="font-medium">{item?.pricing.grossWeight} g</span>
+                  <span className="font-medium">
+                    {item?.pricing.grossWeight} g
+                  </span>
                 </p>
                 <p>
                   Rate: ₹
@@ -77,12 +77,15 @@ export default function SetPriceBreakupCard({ product }: { product: Product }) {
               </div>
             </div>
 
+            {/* Vertical Separator for all screen sizes */}
+            <div className="block w-[1px] bg-gray-300 sm:mx-6" />
+
             {/* Diamond Details */}
-            <div className="md:w-1/2 md:pl-6">
-              <h3 className="text-md font-semibold text-blue-600 flex items-center mb-2">
+            <div className="flex-1">
+              <h3 className="text-[12px] sm:text-md font-semibold text-blue-600 flex items-center mb-2">
                 {diamondIcon} Diamond Details
               </h3>
-              <div className="text-sm space-y-1 text-gray-700">
+              <div className="text-[10px] sm:text-sm space-y-1 text-gray-700">
                 <p>Cut: {item.gemCut || "Brilliant Round"}</p>
                 <p>
                   Carats:{" "}

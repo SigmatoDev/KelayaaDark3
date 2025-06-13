@@ -53,7 +53,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
       {/* Gold and Diamond Info */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Gold Section */}
-        <div className="border border-yellow-200 rounded-lg p-4 shadow bg-gradient-to-br from-yellow-50 to-yellow-100">
+        <div className="border border-yellow-200 rounded-lg p-4 bg-gradient-to-br from-yellow-50 to-yellow-100">
           <h3 className="text-md font-semibold text-yellow-600 flex items-center">
             {goldIcon} Gold Details
           </h3>
@@ -79,7 +79,7 @@ export default function PriceBreakupCard({ product }: { product: Product }) {
         </div>
 
         {/* Diamond Section */}
-        <div className="border border-blue-200 rounded-lg p-4 shadow bg-gradient-to-br from-blue-50 to-blue-100">
+        <div className="border border-blue-200 rounded-lg p-4 bg-gradient-to-br from-blue-50 to-blue-100">
           <h3 className="text-md font-semibold text-blue-600 flex items-center">
             {diamondIcon} Diamond Details
           </h3>

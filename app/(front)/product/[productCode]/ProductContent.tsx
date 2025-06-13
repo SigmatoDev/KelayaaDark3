@@ -425,8 +425,8 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
         </div>
 
         {/* Right Section - Product Details */}
-        <div className="flex flex-col gap-4">
-          <h1 className="text-2xl font-semibold text-gray-800">
+        <div className="flex flex-col gap-2">
+          <h1 className="text-xl sm:text-2xl font-semibold text-gray-800">
             {product?.name}
           </h1>
           <div className="space-y-1 my-2">
@@ -460,7 +460,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
                 </div>
               </>
             ) : (
-              <div className="text-[26px] font-bold text-[#bb5683] leading-snug">
+              <div className="text-[20px] sm:text-[26px] font-bold text-[#bb5683] leading-snug">
                 ₹
                 {product.price
                   ? product.price.toLocaleString("en-IN", {
@@ -593,11 +593,13 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
           </div>
           {/* Buttons Grid */}
           <div
-            className={`grid ${existItem ? "grid-cols-3" : "grid-cols-2"} gap-4 w-full`}
+            className={`grid ${existItem ? "grid-cols-1 sm:grid-cols-3" : "grid-cols-2"} gap-4 w-full`}
           >
             <button
               onClick={toggleWishlist}
-              className="bg-[#FFF] text-[#Dd91a6] border text-[12px] font-bold px-6 py-3 rounded-none w-full flex items-center justify-center gap-2"
+              className={`bg-[#FFF] text-[#Dd91a6] border ${
+                existItem ? "text-[12px]" : "text-[10px] sm:text-sm"
+              } font-bold px-6 py-3 rounded-none w-full flex items-center justify-center gap-2`}
             >
               <FaHeart
                 className={`text-[14px] ${isWishlisted ? "text-red-500" : "text-[#Dd91a6]"}`}
@@ -620,7 +622,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
 
             {existItem && (
               <button
-                className="text-white px-6 py-3 rounded-none text-[12px] font-bold w-full flex items-center justify-center"
+                className="text-white px-6 py-3 rounded-none text-[10px] sm:text-sm font-bold w-full flex items-center justify-center"
                 onClick={() => router.push("/cart")}
                 style={{
                   background:
