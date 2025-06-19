@@ -2,11 +2,11 @@
 
 import { useSession } from "next-auth/react";
 import { useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import AddToCart from "@/components/products/AddToCart";
 import { convertDocToObj } from "@/lib/utils";
-import { Heart } from "lucide-react";
-import { usePathname } from "next/navigation";
+import { Heart, TrashIcon } from "lucide-react";
+import { MdOutlineDeleteOutline } from "react-icons/md";
 
 interface Product {
   productCode: string;
@@ -21,7 +21,7 @@ interface Product {
 interface WishlistResponse {
   status?: boolean;
   message?: string;
-  products?: Product[]; // made optional
+  products?: Product[];
 }
 
 const Wishlist = () => {
@@ -33,7 +33,12 @@ const Wishlist = () => {
   const router = useRouter();
   const pathname = usePathname();
   const hasFetchedRef = useRef(false);
-  console.log("userId", userId);
+
+  const isMyAccountWishlist =
+    typeof window !== "undefined" &&
+    pathname === "/my-account" &&
+    new URLSearchParams(window.location.search).get("tab") === "wishlist";
+
   useEffect(() => {
     const fetchWishlist = async () => {
       if (!userId || hasFetchedRef.current) return;
@@ -43,7 +48,6 @@ const Wishlist = () => {
       try {
         const res = await fetch(`/api/wishlist?userId=${userId}`);
         const data = await res.json();
-        console.log("Fetched wishlist data:", data);
         setWishlistData(data);
       } catch (err) {
         console.error("Error fetching wishlist:", err);
@@ -51,8 +55,14 @@ const Wishlist = () => {
       }
     };
 
-    if (pathname === "/wishlist" && userId) {
-      fetchWishlist();
+    if (
+      (pathname === "/wishlist" || pathname === "/my-account") &&
+      typeof window !== "undefined"
+    ) {
+      const tab = new URLSearchParams(window.location.search).get("tab");
+      if (tab === "wishlist" || pathname === "/wishlist") {
+        fetchWishlist();
+      }
     }
   }, [userId, pathname]);
 
@@ -84,7 +94,7 @@ const Wishlist = () => {
     }
   };
 
-  // Show loading state
+  // Loading
   if (!wishlistData) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -93,7 +103,7 @@ const Wishlist = () => {
     );
   }
 
-  // Show error state
+  // Error
   if (wishlistData.status === false) {
     return (
       <div className="flex justify-center items-center h-screen">
@@ -107,8 +117,12 @@ const Wishlist = () => {
   const products = wishlistData.products || [];
 
   return (
-    <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
-      <h2 className="text-3xl mb-8 text-center flex items-center justify-center font-bold text-gray-800">
+    <div
+      className={`container mx-auto px-4 sm:px-6 lg:px-8 ${
+        isMyAccountWishlist ? "" : "py-8"
+      }`}
+    >
+      <h2 className="text-2xl mb-8 text-center flex items-center justify-center font-bold text-gray-800">
         Your Wishlist <Heart className="ml-2 w-7 h-7 stroke-pink-700" />
       </h2>
 
@@ -117,16 +131,20 @@ const Wishlist = () => {
           Your wishlist is empty
         </p>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          className={`grid grid-cols-1 sm:grid-cols-2 ${
+            isMyAccountWishlist ? "lg:grid-cols-3" : "lg:grid-cols-4"
+          } gap-6`}
+        >
           {products.map((product) => (
             <div
               key={product._id}
-              className="flex flex-col bg-white shadow rounded-lg p-4 hover:shadow-lg transition-shadow duration-300"
+              className="flex flex-col bg-white shadow p-4 hover:shadow-lg transition-shadow duration-300"
             >
               <img
                 src={product.image}
                 alt={product.name}
-                className="w-full h-48 object-cover rounded-md mb-4 cursor-pointer"
+                className="w-full h-48 object-cover mb-4 cursor-pointer"
                 onClick={() => handleNavigateToProduct(product?.productCode)}
               />
               <div
@@ -148,21 +166,39 @@ const Wishlist = () => {
                 </p>
               </div>
 
-              <div className="mt-4 flex flex-col sm:flex-row gap-2">
-                <AddToCart
-                  item={{
-                    ...convertDocToObj(product),
-                    qty: 0,
-                    color: "",
-                    size: "",
-                  }}
-                />
-                <button
-                  onClick={() => handleRemoveFromWishlist(product._id)}
-                  className="px-4 py-2 text-sm text-white bg-red-500 hover:bg-red-600 rounded-md transition-all duration-200"
-                >
-                  Remove
-                </button>
+              <div className="mt-4 flex justify-end">
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <div className="text-xs">
+                    <AddToCart
+                      item={{
+                        ...convertDocToObj(product),
+                        qty: 0,
+                        color: "",
+                        size: "",
+                      }}
+                    />
+                  </div>
+                  <button
+                    onClick={() => handleRemoveFromWishlist(product._id)}
+                    className="p-2 bg-red-50 hover:bg-red-100 text-red-600 border border-red-200 transition"
+                    title="Remove from Wishlist"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    >
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6L18.5 19a2 2 0 01-2 2H7.5a2 2 0 01-2-2L5 6M10 11v6M14 11v6" />
+                      <path d="M9 6V4a1 1 0 011-1h4a1 1 0 011 1v2" />
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           ))}

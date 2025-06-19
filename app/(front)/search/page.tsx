@@ -132,7 +132,6 @@ export default async function SearchPage({
     <div className="w-full overflow-x-hidden">
       <div className="grid md:grid-cols-5 gap-6 p-6">
         {/* Filters Section */}
-        {/* Filters Section */}
         <div className="hidden md:sticky md:top-6 md:max-h-[calc(100vh-3rem)] md:overflow-y-auto md:pr-2 md:space-y-4 md:block">
           <div>
             <span className="flex items-center justify-between">

@@ -109,7 +109,7 @@ const AddToCart = ({ item }: { item: OrderItem }) => {
           Select Lines
         </div>
       ) : (
-        <div className="relative flex items-center justify-center">
+        <div className="relative flex items-center justify-center text-xs">
           <ShoppingCartIcon className="w-4 h-4 mr-4" />
           ADD TO CART
         </div>

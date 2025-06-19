@@ -90,10 +90,10 @@ interface OrderDetail {
 
 const ORDER_STATUSES = [
   "Processing",
-  // "Payment",
   "Shipped",
   "Out for Delivery",
   "Completed",
+  "Cancelled"
 ];
 
 interface StatusStep {
