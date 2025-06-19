@@ -45,38 +45,29 @@ const ProductItem = ({ product }: { product: Product }) => {
   }, []);
 
   useEffect(() => {
-    if (!userId || !product._id || hasFetchedRef.current) {
-      setLoading(false);
-      return;
-    }
+    if (!userId || !product._id) return;
 
-    const debounceTimer = setTimeout(() => {
-      hasFetchedRef.current = true;
+    if (hasFetchedRef.current) return;
+    hasFetchedRef.current = true;
 
-      const fetchWishlistStatus = async () => {
-        try {
-          const res = await axios.get(`/api/wishlist?userId=${userId}`);
-          const data = res?.data;
-          console.log("ress", res);
+    const fetchWishlistStatus = async () => {
+      try {
+        const res = await axios.get(`/api/wishlist?userId=${userId}`);
+        const data = res?.data;
 
-          const isInWishlist = data?.products.some(
-            (item: Product) => item._id === product._id
-          );
-          console.log("isInWishlist", isInWishlist);
+        const isInWishlist = data?.products?.some(
+          (item: Product) => item._id === product._id
+        );
 
-          setIsWishlisted(isInWishlist);
-        } catch (error) {
-          console.error("Error fetching wishlist status:", error);
-        } finally {
-          setLoading(false);
-        }
-      };
+        setIsWishlisted(isInWishlist);
+      } catch (error) {
+        console.error("Error fetching wishlist status:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      fetchWishlistStatus();
-    }, 300); // Debounce delay in milliseconds (300ms is common)
-
-    // Cleanup to prevent overlapping calls
-    return () => clearTimeout(debounceTimer);
+    fetchWishlistStatus();
   }, [userId, product._id]);
 
   // Optimistic Wishlist Toggle

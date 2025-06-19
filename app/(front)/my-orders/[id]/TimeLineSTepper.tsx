@@ -1,18 +1,18 @@
+"use client";
+
 import * as React from "react";
 import {
   Box,
   Stepper,
   Step,
   StepLabel,
-  StepContent,
-  Button,
-  Paper,
   Typography,
   useMediaQuery,
   StepIconProps,
 } from "@mui/material";
 import { useTheme } from "@mui/material/styles";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import CancelIcon from "@mui/icons-material/Cancel";
 
 interface StatusHistoryItem {
   status: string;
@@ -22,26 +22,35 @@ interface StatusHistoryItem {
 
 interface Props {
   statuses: string[];
-  initialStep?: number; // zero-based index
+  initialStep?: number;
   statusHistory?: StatusHistoryItem[];
 }
 
-function ColorStepIcon(props: StepIconProps & { completedStep: boolean }) {
-  const { active, completedStep, className, icon } = props;
+function CustomStepIcon(
+  props: StepIconProps & { showCancel: boolean; completedStep: boolean }
+) {
+  const { active, showCancel, completedStep, className, icon } = props;
+  const theme = useTheme();
+
+  if (showCancel) {
+    return (
+      <CancelIcon color="error" className={className} sx={{ fontSize: 28 }} />
+    );
+  }
 
   if (completedStep) {
-    // Completed: green check icon with bigger size
     return (
       <CheckCircleIcon
         color="success"
         className={className}
-        sx={{ fontSize: 30 }}
+        sx={{ fontSize: 28 }}
       />
     );
   }
 
-  // Active or inactive step: show circle with step number
-  const color = active ? "#1976d2" : "#bdbdbd"; // blue or grey
+  const color = active
+    ? theme.palette.primary.main
+    : theme.palette.text.disabled;
 
   return (
     <Box
@@ -73,9 +82,6 @@ export default function ResponsiveStatusStepper({
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-  const [activeStep, setActiveStep] = React.useState(initialStep);
-
-  // Map for quick lookup of note and changedAt by normalized status
   const historyMap = React.useMemo(() => {
     const map = new Map<string, { note: string; changedAt: string }>();
     statusHistory.forEach(({ status, note, changedAt }) => {
@@ -84,109 +90,73 @@ export default function ResponsiveStatusStepper({
     return map;
   }, [statusHistory]);
 
-  const handleNext = () => {
-    setActiveStep((prev) => Math.min(prev + 1, statuses.length));
-  };
+  const getHistory = (status: string) =>
+    historyMap.get(status.toLowerCase().replace(/[\s-]/g, ""));
 
-  const handleBack = () => {
-    setActiveStep((prev) => Math.max(prev - 1, 0));
-  };
+  const cancelledIndex = statusHistory.findIndex(
+    (s) => s.status.toLowerCase() === "cancelled"
+  );
 
-  const handleReset = () => {
-    setActiveStep(0);
-  };
+  const renderDate = (dateStr?: string) =>
+    dateStr
+      ? new Date(dateStr).toLocaleString("en-IN", {
+          timeZone: "Asia/Kolkata",
+          hour12: true,
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "numeric",
+          minute: "numeric",
+        })
+      : "";
 
-  // Helper to get note & changedAt for a status
-  const getHistory = (status: string) => {
-    return historyMap.get(status.toLowerCase().replace(/[\s-]/g, ""));
-  };
-
-  if (isMobile) {
-    return (
-      <Box sx={{ maxWidth: 400 }}>
-        <Stepper activeStep={activeStep} orientation="vertical" nonLinear>
-          {statuses.map((status, index) => {
-            const history = getHistory(status);
-            const completedStep = index < activeStep;
-            const isActive = index === activeStep;
-
-            return (
-              <Step key={status} completed={completedStep}>
-                <StepLabel
-                  StepIconProps={{
-                    sx: {
-                      color: completedStep
-                        ? "success.main"
-                        : isActive
-                          ? "primary.main"
-                          : "text.disabled",
-                      "&.Mui-completed": {
-                        color: "success.main",
-                      },
-                      svg: {
-                        color: completedStep ? "success.main" : undefined,
-                      },
-                    },
-                  }}
-                  sx={{
-                    "& .MuiStepLabel-label": {
-                      color: completedStep
-                        ? "success.main"
-                        : isActive
-                          ? "primary.main"
-                          : "text.disabled",
-                      fontWeight: isActive ? "bold" : "normal",
-                    },
-                  }}
-                >
-                  <Box>
-                    <Typography>{status}</Typography>
-                    {history && (
-                      <>
-                        <Typography
-                          sx={{ fontStyle: "italic", fontSize: "0.875rem" }}
-                          color="text.secondary"
-                        >
-                          {history.note}
-                        </Typography>
-                        <Typography
-                          variant="caption"
-                          color="text.secondary"
-                          sx={{ display: "block" }}
-                        >
-                          {new Date(history.changedAt).toLocaleString("en-IN", {
-                            timeZone: "Asia/Kolkata",
-                            hour12: true, // 12-hour format with AM/PM
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                            hour: "numeric",
-                            minute: "numeric",
-                          })}
-                        </Typography>
-                      </>
-                    )}
-                  </Box>
-                </StepLabel>
-              </Step>
-            );
-          })}
-        </Stepper>
-      </Box>
-    );
-  }
-
-  // Horizontal Stepper with alternative labels for desktop
-  return (
-    <Box sx={{ width: "100%" }}>
-      <Stepper activeStep={activeStep} alternativeLabel>
-        {statuses.map((status, index) => {
+  const renderStepper = (orientation: "horizontal" | "vertical") => (
+    <Stepper
+      activeStep={initialStep}
+      alternativeLabel={orientation === "horizontal"}
+      orientation={orientation}
+    >
+      {statuses
+        .filter((status) => {
+          const isCancelled = status.toLowerCase() === "cancelled";
+          if (isCancelled) {
+            return cancelledIndex !== -1; // only show if cancelled in history
+          }
+          return true;
+        })
+        .map((status, index) => {
+          const normalized = status.toLowerCase().replace(/[\s-]/g, "");
           const history = getHistory(status);
-          const completedStep = index < activeStep;
+
+          const isCancelledStatus =
+            status.toLowerCase() === "cancelled" && cancelledIndex !== -1;
+
+          const isCompleted = !!history && !isCancelledStatus;
+          const isAfterCancelled =
+            cancelledIndex !== -1 &&
+            statuses.findIndex(
+              (s) => s.toLowerCase() === status.toLowerCase()
+            ) > cancelledIndex;
+
+          const showCancelIcon = isCancelledStatus || isAfterCancelled;
+
+          const labelColor =
+            isCancelledStatus || isAfterCancelled
+              ? theme.palette.text.disabled
+              : isCompleted
+                ? theme.palette.success.main
+                : theme.palette.text.disabled;
 
           return (
-            <Step key={status} completed={completedStep}>
+            <Step key={status} completed={isCompleted}>
               <StepLabel
+                StepIconComponent={(stepIconProps) => (
+                  <CustomStepIcon
+                    {...stepIconProps}
+                    completedStep={isCompleted}
+                    showCancel={showCancelIcon}
+                  />
+                )}
                 optional={
                   history ? (
                     <>
@@ -201,42 +171,29 @@ export default function ResponsiveStatusStepper({
                         color="text.secondary"
                         sx={{ display: "block" }}
                       >
-                        {new Date(history.changedAt).toLocaleString("en-IN", {
-                          timeZone: "Asia/Kolkata",
-                          hour12: true, // 12-hour format with AM/PM
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "numeric",
-                        })}
+                        {renderDate(history.changedAt)}
                       </Typography>
                     </>
                   ) : null
                 }
-                StepIconComponent={(stepIconProps) => (
-                  <ColorStepIcon
-                    {...stepIconProps}
-                    completedStep={completedStep}
-                  />
-                )}
                 sx={{
                   "& .MuiStepLabel-label": {
-                    color: completedStep
-                      ? theme.palette.success.main
-                      : index === activeStep
-                        ? theme.palette.primary.main
-                        : theme.palette.text.disabled,
-                    fontWeight: index === activeStep ? "bold" : "normal",
+                    color: labelColor,
+                    fontWeight: isCancelledStatus ? "bold" : "normal",
                   },
                 }}
               >
-                {status}
+                {isCancelledStatus ? "Cancelled" : status}
               </StepLabel>
             </Step>
           );
         })}
-      </Stepper>
+    </Stepper>
+  );
+
+  return (
+    <Box sx={{ width: "100%" }}>
+      {isMobile ? renderStepper("vertical") : renderStepper("horizontal")}
     </Box>
   );
 }

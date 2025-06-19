@@ -26,6 +26,7 @@ import CardGrid from "../category-box/CategoryBox";
 import SignInPopup from "../signin/SignIn";
 import useCartService from "@/lib/hooks/useCartStore";
 import HeroSectionCustomDesign from "../hero-section-customdesign/heroSectionCustomDesign";
+import { MdOutlineAccountCircle } from "react-icons/md";
 
 const keywords = ["Gold", "Diamond", "Silver", "Special"];
 const promotions = [
@@ -633,6 +634,18 @@ const DesktopHeader = () => {
                                 {/* Dropdown menu */}
                                 {menuOpen && (
                                   <ul className="absolute right-0 z-[9999] mt-2 w-52 rounded-lg bg-white backdrop-blur-md p-4 shadow-lg border border-white/20">
+                                    <li
+                                      onClick={handleClick}
+                                      className="flex items-center z-[9999] px-3 py-2 hover:bg-white/20 rounded-md"
+                                    >
+                                      <MdOutlineAccountCircle className="w-4 h-4 text-pink-500" />
+                                      <Link
+                                        href="/my-account"
+                                        className="text-pink-500 ml-2 text-xs"
+                                      >
+                                        My Account
+                                      </Link>
+                                    </li>
                                     <li
                                       onClick={handleClick}
                                       className="flex items-center z-[9999] px-3 py-2 hover:bg-white/20 rounded-md"

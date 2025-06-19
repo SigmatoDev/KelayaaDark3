@@ -111,6 +111,7 @@ export const POST = auth(async (...request: any) => {
           // For beads, we need to update both countInStock and inventory_no_of_line
           const newStock = product.countInStock - qty;
           const newLines = product.inventory_no_of_line - qty;
+          
 
           // Check if stock and lines are sufficient
           if (newStock < 0 || newLines < 0) {

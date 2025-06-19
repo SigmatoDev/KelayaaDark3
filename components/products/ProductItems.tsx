@@ -25,7 +25,7 @@ const ProductItems = async () => {
       </p>
       <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-4 gap-x-6 gap-y-8 mt-6 items-center justify-center justify-items-center">
       {latestProducts?.map((product) => (
-          <ProductItem key={product.slug} product={convertDocToObj(product)} />
+          <ProductItem key={product.slug} product={convertDocToObj(product)}  />
         ))}
       </div>
 

@@ -1,6 +1,10 @@
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/dbConnect";
+import BanglesProductModel from "@/lib/models/BanglesProductSchema";
+import BeadsProductModel from "@/lib/models/BeadsProductModel";
 import OrderModel from "@/lib/models/OrderModel";
+import ProductModel from "@/lib/models/ProductModel";
+import SetsProductModel from "@/lib/models/SetsProductsModel";
 import mongoose from "mongoose";
 
 export const GET = auth(async (req: any) => {
@@ -8,110 +12,52 @@ export const GET = auth(async (req: any) => {
     return Response.json({ message: "unauthorized" }, { status: 401 });
   }
 
-  const { user } = req.auth;
   await dbConnect();
 
-  // Ensure user._id is a valid ObjectId
   const userId =
-    typeof user._id === "string"
-      ? new mongoose.Types.ObjectId(user._id)
-      : user._id;
+    typeof req.auth.user._id === "string"
+      ? new mongoose.Types.ObjectId(req.auth.user._id)
+      : req.auth.user._id;
 
-  // Fetch orders for the authenticated user using `user` field
-  const orders = await OrderModel.aggregate([
-    {
-      $match: {
-        user: userId,
-      },
-    },
-    {
-      $unwind: "$items",
-    },
-    {
-      $lookup: {
-        from: "setsproducts",
-        localField: "items.product",
-        foreignField: "_id",
-        as: "itemProductSets",
-      },
-    },
-    {
-      $lookup: {
-        from: "banglesproducts",
-        localField: "items.product",
-        foreignField: "_id",
-        as: "itemProductBangles",
-      },
-    },
-    {
-      $lookup: {
-        from: "beadsproducts",
-        localField: "items.product",
-        foreignField: "_id",
-        as: "itemProductBeads",
-      },
-    },
-    {
-      $lookup: {
-        from: "products",
-        localField: "items.product",
-        foreignField: "_id",
-        as: "itemProductDefault",
-      },
-    },
-    {
-      $addFields: {
-        "items.product": {
-          $cond: {
-            if: { $gt: [{ $size: "$itemProductSets" }, 0] },
-            then: { $arrayElemAt: ["$itemProductSets", 0] },
-            else: {
-              $cond: {
-                if: { $gt: [{ $size: "$itemProductBangles" }, 0] },
-                then: { $arrayElemAt: ["$itemProductBangles", 0] },
-                else: {
-                  $cond: {
-                    if: { $gt: [{ $size: "$itemProductBeads" }, 0] },
-                    then: { $arrayElemAt: ["$itemProductBeads", 0] },
-                    else: { $arrayElemAt: ["$itemProductDefault", 0] },
-                  },
-                },
-              },
-            },
-          },
-        },
-      },
-    },
-    {
-      $sort: {
-        createdAt: -1,
-      },
-    },
-    {
-      $group: {
-        _id: "$_id",
-        items: { $push: "$items" },
-        personalInfo: { $first: "$personalInfo" },
-        shippingAddress: { $first: "$shippingAddress" },
-        gstDetails: { $first: "$gstDetails" },
-        billingDetails: { $first: "$billingDetails" },
-        paymentMethod: { $first: "$paymentMethod" },
-        itemsPrice: { $first: "$itemsPrice" },
-        shippingPrice: { $first: "$shippingPrice" },
-        taxPrice: { $first: "$taxPrice" },
-        totalPrice: { $first: "$totalPrice" },
-        isPaid: { $first: "$isPaid" },
-        isDelivered: { $first: "$isDelivered" },
-        paidAt: { $first: "$paidAt" },
-        paymentIntentId: { $first: "$paymentIntentId" },
-        createdAt: { $first: "$createdAt" },
-        updatedAt: { $first: "$updatedAt" },
-        orderNumber: { $first: "$orderNumber" },
-        deliveredAt: { $first: "$deliveredAt" },
-        paymentStatus: { $first: "$paymentStatus" },
-      },
-    },
-  ]);
+  const { searchParams } = new URL(req.url);
+  const page = parseInt(searchParams.get("page") || "1");
+  const limit = parseInt(searchParams.get("limit") || "10");
 
-  return Response.json(orders);
+  const skip = (page - 1) * limit;
+
+  // Step 1: Total count
+  const totalOrders = await OrderModel.countDocuments({ user: userId });
+
+  // Step 2: Fetch paginated orders
+  let orders = await OrderModel.find({ user: userId })
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
+    .lean();
+
+  console.log("📦 Paginated Orders found:", orders.length);
+
+  // Step 3: Populate product for each item
+  for (const order of orders) {
+    for (const item of order.items) {
+      const productId = item.productId;
+
+      let product =
+        (await SetsProductModel.findOne({ _id: productId }).lean()) ||
+        (await BanglesProductModel.findOne({ _id: productId }).lean()) ||
+        (await BeadsProductModel.findOne({ _id: productId }).lean()) ||
+        (await ProductModel.findOne({ _id: productId }).lean());
+
+      item.product = product || null;
+    }
+  }
+
+  const totalPages = Math.ceil(totalOrders / limit);
+
+  return Response.json({
+    orders,
+    totalOrders,
+    totalPages,
+    currentPage: page,
+  });
 });
