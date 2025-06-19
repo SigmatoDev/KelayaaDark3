@@ -167,7 +167,7 @@ const Wishlist = () => {
               </div>
 
               <div className="mt-4 flex justify-end">
-                <div className="flex flex-col sm:flex-row gap-2">
+                <div className="flex flex-row gap-2">
                   <div className="text-xs">
                     <AddToCart
                       item={{
