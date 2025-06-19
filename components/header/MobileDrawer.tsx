@@ -23,7 +23,7 @@ import {
   FaSignOutAlt,
 } from "react-icons/fa";
 import { HiOutlineSparkles } from "react-icons/hi";
-import { Heart, HeartIcon, ReceiptTextIcon } from "lucide-react";
+import { Heart, HeartIcon, ReceiptTextIcon, User } from "lucide-react";
 import SignInPopup from "../signin/SignIn";
 
 const MobileDrawer = ({ closeDrawer }: { closeDrawer: () => void }) => {
@@ -139,7 +139,12 @@ const MobileDrawer = ({ closeDrawer }: { closeDrawer: () => void }) => {
     {
       label: "My Wishlist",
       href: "/wishlist",
-      icon: <HeartIcon className="w-5 h-5 text-pink-500" />,
+      icon: <HeartIcon className="w-5 h-5 text-pink-500 fill-pink-500" />,
+    },
+    {
+      label: "My Profile",
+      href: "/profile",
+      icon: <User className="w-5 h-5 text-pink-500 fill-pink-500" />,
     },
   ];
 

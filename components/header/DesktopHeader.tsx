@@ -636,7 +636,7 @@ const DesktopHeader = () => {
                                   <ul className="absolute right-0 z-[9999] mt-2 w-52 rounded-lg bg-white backdrop-blur-md p-4 shadow-lg border border-white/20">
                                     <li
                                       onClick={handleClick}
-                                      className="flex items-center z-[9999] px-3 py-2 hover:bg-white/20 rounded-md"
+                                      className="hidden lg:flex items-center z-[9999] px-3 py-2 hover:bg-white/20 rounded-md"
                                     >
                                       <MdOutlineAccountCircle className="w-4 h-4 text-pink-500" />
                                       <Link
@@ -646,6 +646,7 @@ const DesktopHeader = () => {
                                         My Account
                                       </Link>
                                     </li>
+
                                     <li
                                       onClick={handleClick}
                                       className="flex items-center z-[9999] px-3 py-2 hover:bg-white/20 rounded-md"
