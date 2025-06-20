@@ -3,8 +3,10 @@
 import React, { useState } from "react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const ProductCreateForm = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState<any>({
     name: "",
     productCode: "",
@@ -45,6 +47,15 @@ const ProductCreateForm = () => {
 
   const handleInputChange = (e: any) => {
     const { name, value } = e.target;
+
+    // Navigate to another page if "G&D Sets" is selected
+    if (value === "sets") {
+      console.log("check", name, value);
+      router.push("/admin/sets-product-upload"); // 👈 Replace with your actual route
+      return;
+    }
+
+    // Update form data
     setFormData((prev: any) => ({ ...prev, [name]: value }));
   };
 
@@ -207,6 +218,7 @@ const ProductCreateForm = () => {
           <option value="">Select Material Type</option>
           <option value="gold">Gold</option>
           <option value="silver">Silver</option>
+          {/* <option value="sets">G&D Sets</option> */}
         </select>
 
         {[
@@ -279,13 +291,13 @@ const ProductCreateForm = () => {
               placeholder="Price per gram"
               className="px-4 py-2 border rounded w-full"
             />
-            <input
+            {/* <input
               name="info"
               value={formData.info || ""}
               onChange={handleInputChange}
               placeholder="Info"
               className="px-4 py-2 border rounded w-full"
-            />
+            /> */}
           </>
         )}
       </div>
