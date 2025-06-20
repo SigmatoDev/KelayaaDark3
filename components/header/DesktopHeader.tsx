@@ -569,7 +569,7 @@ const DesktopHeader = () => {
                   {/* Navigation Links */}
                   <div className="relative z-50">
                     <div
-                      className="hidden md:flex justify-center items-center space-x-4 uppercase px-1 py-2 relative items-center xl:py-[30px]"
+                      className="hidden md:flex justify-center space-x-4 uppercase px-1 py-2 relative items-center xl:py-[30px]"
                       onMouseLeave={() => setIsOpen(false)}
                     >
                       <div className="flex items-center space-x-1">

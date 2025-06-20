@@ -1,364 +1,3 @@
-// import { auth } from "@/lib/auth";
-// import dbConnect from "@/lib/dbConnect";
-// import ProductModel from "@/lib/models/ProductModel";
-
-// export const GET = auth(async (req: any) => {
-//   if (!req.auth || !req.auth.user?.isAdmin) {
-//     return Response.json(
-//       { message: "unauthorized" },
-//       {
-//         status: 401,
-//       }
-//     );
-//   }
-//   await dbConnect();
-//   const products = await ProductModel.find();
-//   return Response.json(products);
-// }) as any;
-
-// export const POST = auth(async (req: any) => {
-//   if (!req.auth || !req.auth.user?.isAdmin) {
-//     return Response.json({ message: "Unauthorized" }, { status: 401 });
-//   }
-
-//   await dbConnect();
-
-//   try {
-//     const body = await req.json();
-//     console.log("bodyApi", body);
-
-//     // Create and save the product
-//     const product = new ProductModel({
-//       ...body,
-//       image: body.image || "", // Default to empty if not provided
-//     });
-
-//     await product.save();
-
-//     return Response.json(
-//       {
-//         message: "Product created successfully",
-//         product,
-//       },
-//       { status: 201 }
-//     );
-//   } catch (err: any) {
-//     return Response.json(
-//       { message: err.message || "Internal Server Error" },
-//       { status: 500 }
-//     );
-//   }
-// }) as any;
-
-// import { auth } from "@/lib/auth";
-// import dbConnect from "@/lib/dbConnect";
-// import ProductModel from "@/lib/models/ProductModel";
-
-// export const GET = auth(async (req: any) => {
-//   if (!req.auth || !req.auth.user?.isAdmin) {
-//     return Response.json(
-//       { message: "Unauthorized" },
-//       {
-//         status: 401,
-//       }
-//     );
-//   }
-
-//   await dbConnect();
-//   const products = await ProductModel.find();
-//   return Response.json(products);
-// }) as any;
-
-// export const POST = auth(async (req: any) => {
-//   if (!req.auth || !req.auth.user?.isAdmin) {
-//     return Response.json({ message: "Unauthorized" }, { status: 401 });
-//   }
-
-//   await dbConnect();
-
-//   try {
-//     const body = await req.text(); // Use `req.text()` to handle raw data
-//     const parsedBody = JSON.parse(body); // Parse the raw JSON string into an object
-
-//     console.log("Received products:", parsedBody); // Log to check the format
-
-//     // Check if the body contains an array of products
-//     if (
-//       !Array.isArray(parsedBody.products) ||
-//       parsedBody.products.length === 0
-//     ) {
-//       return Response.json(
-//         { message: "Invalid input, expected an array of products." },
-//         { status: 400 }
-//       );
-//     }
-
-//     // Define required fields (based on your schema)
-//     const requiredFields = [
-//       "name",
-//       "productCode",
-//       "weight",
-//       "price_per_gram",
-//       "info",
-//       "slug",
-//       "productCategory",
-//       "price",
-//       "description",
-//       "countInStock",
-//     ];
-
-//     // Ensure each product in the array has required fields (basic validation)
-//     const productsToSave = parsedBody.products.map((product: any) => {
-//       // Ensure missing required fields are given dummy data or defaults
-//       const processedProduct: any = {};
-
-//       requiredFields.forEach((field) => {
-//         if (!product[field]) {
-//           // Add a fallback for the missing required fields
-//           if (field === "slug") {
-//             processedProduct[field] = product.name
-//               ? product.name.replace(/\s+/g, "-").toLowerCase() // Generate slug from name
-//               : "default-slug";
-//           } else if (field === "productCategory") {
-//             processedProduct[field] =
-//               product.productCategory || "Uncategorized"; // Default to 'Uncategorized'
-//           } else if (field === "countInStock") {
-//             processedProduct[field] = 0; // Default numeric field to 0
-//           } else if (field === "price") {
-//             processedProduct[field] = 0; // Default price field to 0
-//           } else {
-//             processedProduct[field] =
-//               `Dummy ${field.charAt(0).toUpperCase() + field.slice(1)}`; // Adding "Dummy" as a prefix to the missing field
-//           }
-//         } else {
-//           // Ensure numeric fields are handled correctly
-//           if (field === "countInStock" || field === "price") {
-//             processedProduct[field] = Number(product[field]) || 0; // Ensure it's treated as a number
-//           } else {
-//             processedProduct[field] = product[field];
-//           }
-//         }
-//       });
-
-//       // Handling optional fields like category, image, and isFeatured
-//       processedProduct.category = product.category || "Uncategorized"; // Default to 'Uncategorized' if not provided
-//       processedProduct.image = product.image || ""; // Default to empty string if image is not provided
-//       processedProduct.isFeatured = product.isFeatured || false; // Default to 'false' if not provided
-
-//       return new ProductModel(processedProduct); // Return the product with all required and other fields
-//     });
-
-//     // Insert all products at once
-//     const savedProducts = await ProductModel.insertMany(productsToSave);
-
-//     return Response.json(
-//       {
-//         message: `${savedProducts.length} products created successfully.`,
-//         products: savedProducts,
-//       },
-//       { status: 201 }
-//     );
-//   } catch (err: any) {
-//     console.error("Error creating products:", err);
-//     return Response.json(
-//       { message: err.message || "Internal Server Error" },
-//       { status: 500 }
-//     );
-//   }
-// }) as any;
-
-// export const DELETE = auth(async (req: any) => {
-//   if (!req.auth || !req.auth.user?.isAdmin) {
-//     return Response.json({ message: "Unauthorized" }, { status: 401 });
-//   }
-
-//   await dbConnect();
-
-//   try {
-//     const body = await req.json();
-//     const { productIds } = body; // Expecting an array of product IDs
-//     console.log("productIds", productIds);
-//     if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
-//       return Response.json(
-//         { message: "No valid product IDs provided." },
-//         { status: 400 }
-//       );
-//     }
-
-//     // Delete all selected products in one go
-//     const deletedProducts = await ProductModel.deleteMany({
-//       _id: { $in: productIds },
-//     });
-
-//     return Response.json({
-//       message: `${deletedProducts.deletedCount} products deleted successfully.`,
-//     });
-//   } catch (error: any) {
-//     console.error("Error deleting products:", error);
-//     return Response.json(
-//       { message: error.message || "Internal Server Error" },
-//       { status: 500 }
-//     );
-//   }
-// }) as any;
-
-// export const GET = auth(async (req: any) => {
-//   if (!req.auth || !req.auth.user?.isAdmin) {
-//     return Response.json({ message: "Unauthorized" }, { status: 401 });
-//   }
-
-//   await dbConnect();
-
-//   console.log("🔄 Connecting to DB and fetching products...");
-//   const products = await ProductModel.find().sort({ createdAt: -1 });
-//   console.log(`✅ Fetched ${products.length} products.`);
-
-//   console.log("🔄 Fetching latest gold prices...");
-//   const goldPrices = await GoldPrice.find({});
-//   console.log(`✅ Fetched ${goldPrices.length} gold prices.`);
-
-//   // Filter only gold products whose productCode starts with "KD"
-//   const goldProducts = products.filter(
-//     (p) =>
-//       p.materialType?.toLowerCase() === "gold" &&
-//       p.productCode?.toUpperCase().startsWith("KD")
-//   );
-//   const goldProductCodes = goldProducts.map((p) => p.productCode);
-
-//   // Fetch all pricing data for these gold products
-//   const pricingDetailsList = await GoldDiamondProductPricingModel.find({
-//     productCode: { $in: goldProductCodes },
-//   });
-
-//   const pricingDetailsMap = Object.fromEntries(
-//     pricingDetailsList.map((item) => [item.productCode, item])
-//   );
-
-//   // Process all products
-//   const updatedProducts = await Promise.all(
-//     products.map(async (product) => {
-//       const isGoldKD =
-//         product.materialType?.toLowerCase() === "gold" &&
-//         product.productCode?.toUpperCase().startsWith("KD");
-
-//       if (!isGoldKD) {
-//         return product.toObject(); // No processing for non-gold or KS series
-//       }
-
-//       const pricingDetails = pricingDetailsMap[product.productCode];
-//       if (!pricingDetails) {
-//         return product.toObject(); // No pricing info found
-//       }
-
-//       const goldPriceData = goldPrices.find(
-//         (g) => g.goldPurity === product.goldPurity
-//       );
-//       const goldPrice = goldPriceData
-//         ? goldPriceData.price
-//         : pricingDetails.goldPrice;
-
-//       const finalPrice =
-//         pricingDetails.grossWeight * goldPrice +
-//         pricingDetails.makingCharge +
-//         pricingDetails.diamondTotal;
-
-//       await ProductModel.findByIdAndUpdate(product._id, {
-//         price_per_gram: pricingDetails.pricePerGram,
-//         goldPrice,
-//         weight: pricingDetails.grossWeight,
-//         totalPrice: finalPrice,
-//         ring_size: pricingDetails?.ringSize,
-//         size: pricingDetails?.size,
-//       });
-
-//       return {
-//         ...product.toObject(),
-//         pricePerGram: pricingDetails.pricePerGram,
-//         goldPrice,
-//         grossWeight: pricingDetails.grossWeight,
-//         totalPrice: finalPrice,
-//       };
-//     })
-//   );
-
-//   // const sortedProducts = updatedProducts.sort((a, b) => {
-//   //   const hasImageA = a.image && a.image.startsWith("http");
-//   //   const hasImageB = b.image && b.image.startsWith("http");
-//   //   return Number(hasImageB) - Number(hasImageA);
-//   // });
-
-//   console.log("✅ Final sorted products list ready to be sent.");
-//   return Response.json(updatedProducts);
-// }) as any;
-
-// export const POST = auth(async (req: any) => {
-//   if (!req.auth || !req.auth.user?.isAdmin) {
-//     return Response.json({ message: "Unauthorized" }, { status: 401 });
-//   }
-
-//   await dbConnect();
-
-//   try {
-//     const body = await req.text();
-//     const parsedBody = JSON.parse(body);
-
-//     console.log("parsedBody", parsedBody);
-//     if (
-//       !Array.isArray(parsedBody.products) ||
-//       parsedBody.products.length === 0
-//     ) {
-//       return Response.json(
-//         { message: "Invalid input, expected an array of products." },
-//         { status: 400 }
-//       );
-//     }
-
-//     const productsToSave = parsedBody.products.map((product: any) => {
-//       const processedProduct: any = { ...product };
-
-//       // Automatically create slug if missing
-//       if (!processedProduct.slug && product.name) {
-//         processedProduct.slug = product.name
-//           .replace(/\s+/g, "-") // Replace spaces with hyphens
-//           .toLowerCase(); // Convert to lowercase
-//       }
-
-//       // Ensure `countInStock` and `price` default to 0 if missing
-//       processedProduct.countInStock = Number(product.countInStock) || 0;
-//       processedProduct.price = Number(product.price) || 0;
-
-//       // Ensure `images` is an array
-//       processedProduct.images = Array.isArray(product.images)
-//         ? product.images
-//         : product.image
-//           ? product.image.split(",").map((img: string) => img.trim())
-//           : [];
-
-//       // Set the first image as `image`
-//       processedProduct.image =
-//         processedProduct.images.length > 0 ? processedProduct.images[0] : "";
-
-//       return new ProductModel(processedProduct);
-//     });
-
-//     const savedProducts = await ProductModel.insertMany(productsToSave);
-
-//     return Response.json(
-//       {
-//         message: `${savedProducts.length} products created successfully.`,
-//         products: savedProducts,
-//       },
-//       { status: 201 }
-//     );
-//   } catch (err: any) {
-//     console.error("Error creating products:", err);
-//     return Response.json(
-//       { message: err.message || "Internal Server Error" },
-//       { status: 500 }
-//     );
-//   }
-// }) as any;
-
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/dbConnect";
 import BanglesProductModel from "@/lib/models/BanglesProductSchema";
@@ -400,15 +39,16 @@ export const GET = auth(async (req: any) => {
   return Response.json(sortedProducts);
 }) as any;
 
-// Utility to safely parse numbers
+// Utility to clean number strings
 const cleanNumber = (val: any) =>
   typeof val === "string"
     ? Number(val.replace(/[^0-9.]/g, "").trim())
     : Number(val || 0);
 
-// Function to calculate price components with GST
+// Utility to calculate gold totals
 const calculateTotals = (pricing: any, goldRate: number) => {
-  const diamondTotal = cleanNumber(pricing.diamondPrice) * pricing?.carats;
+  const diamondTotal =
+    cleanNumber(pricing.diamondPrice) * cleanNumber(pricing.carats);
   const goldTotal = goldRate * cleanNumber(pricing.grossWeight);
   const makingCharges = cleanNumber(pricing.makingCharge);
   const baseTotal = diamondTotal + goldTotal + makingCharges;
@@ -420,10 +60,10 @@ const calculateTotals = (pricing: any, goldRate: number) => {
     diamondTotal,
     goldTotal,
     makingCharges,
-    totalPrice: totalPriceWithGst,
     baseTotal,
     gst,
     gstAmount,
+    totalPrice: totalPriceWithGst,
   };
 };
 
@@ -451,6 +91,7 @@ export const POST = auth(async (req: any) => {
         productData;
 
       const isGold = (materialType || "").toLowerCase() === "gold";
+      const isSilver = (materialType || "").toLowerCase() === "silver";
 
       if (isGold && !pricingDetails?.goldPurity) {
         return Response.json(
@@ -460,8 +101,19 @@ export const POST = auth(async (req: any) => {
       }
 
       let goldRate = 0;
+      let totalPrice = 0;
+
+      // Clean numeric inputs
+      const weight = cleanNumber(
+        productData.weight || pricingDetails?.grossWeight
+      );
+
+      let pricePerGram = isGold
+        ? cleanNumber(pricingDetails?.pricePerGram)
+        : cleanNumber(productData?.price_per_gram);
 
       if (isGold) {
+        // Fetch gold rate
         const goldPriceDoc = await GoldPrice.findOne({
           karat: pricingDetails.goldPurity,
         });
@@ -476,54 +128,30 @@ export const POST = auth(async (req: any) => {
         }
 
         goldRate = goldPriceDoc.price;
-      }
+        pricePerGram = goldRate;
 
-      const {
-        diamondTotal,
-        goldTotal,
-        makingCharges,
-        totalPrice,
-        baseTotal,
-        gst,
-        gstAmount,
-      } = calculateTotals(pricingDetails || {}, goldRate);
+        const {
+          diamondTotal,
+          goldTotal,
+          makingCharges,
+          baseTotal,
+          gst,
+          gstAmount,
+          totalPrice: goldTotalPrice,
+        } = calculateTotals(pricingDetails || {}, goldRate);
 
-      if (isNaN(totalPrice)) {
-        return Response.json(
-          {
-            message: `Invalid price values for product ${productCode}`,
-          },
-          { status: 400 }
-        );
-      }
+        totalPrice = goldTotalPrice;
 
-      const images = Array.isArray(productData.images)
-        ? productData.images
-        : productData.image
-          ? productData.image.split(",").map((img: string) => img.trim())
-          : [];
+        if (isNaN(totalPrice)) {
+          return Response.json(
+            {
+              message: `Invalid price values for product ${productCode}`,
+            },
+            { status: 400 }
+          );
+        }
 
-      const product = new ProductModel({
-        name,
-        productCode,
-        materialType,
-        ...rest,
-        weight: pricingDetails?.grossWeight,
-        price_per_gram: isGold ? goldRate : pricingDetails?.pricePerGram,
-        slug: name?.toLowerCase().replace(/\s+/g, "-"),
-        countInStock: Number(productData.countInStock) || 0,
-        price: isGold
-          ? totalPrice
-          : pricingDetails?.pricePerGram * pricingDetails?.grossWeight || 0,
-        images,
-      });
-
-      product.image = images?.[0] || "";
-
-      const savedProduct = await product.save();
-      createdProducts.push(savedProduct);
-
-      if (isGold) {
+        // Save gold pricing document
         const pricingDoc = new GoldDiamondProductPricingModel({
           ...pricingDetails,
           productCode,
@@ -538,7 +166,47 @@ export const POST = auth(async (req: any) => {
         });
 
         await pricingDoc.save();
+      } else {
+        // Silver price = weight * price_per_gram
+        totalPrice = weight * pricePerGram;
+
+        if (isNaN(totalPrice) || totalPrice <= 0) {
+          return Response.json(
+            {
+              message: `Invalid price values for product ${productCode}`,
+            },
+            { status: 400 }
+          );
+        }
       }
+
+      let images: string[] = [];
+
+      if (Array.isArray(productData.images) && productData.images.length > 0) {
+        images = productData.images;
+      } else if (
+        typeof productData.image === "string" &&
+        productData.image.trim()
+      ) {
+        images = [productData.image.trim()];
+      }
+
+      const product = new ProductModel({
+        name,
+        productCode,
+        materialType,
+        ...rest,
+        weight,
+        price_per_gram: pricePerGram,
+        slug: name?.toLowerCase().replace(/\s+/g, "-"),
+        countInStock: Number(productData.countInStock) || 0,
+        price: totalPrice,
+        images,
+        image: images?.[0] || "",
+      });
+
+      const savedProduct = await product.save();
+      createdProducts.push(savedProduct);
     }
 
     return Response.json(
