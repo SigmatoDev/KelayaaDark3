@@ -15,7 +15,9 @@ export const GET = auth(async (...request: any) => {
 
   await dbConnect();
 
-  const ordersCount = await OrderModel.countDocuments();
+  const ordersCount = await OrderModel.countDocuments({
+    paymentMethod: { $ne: "Razorpay" },
+  });
   const [productCount, setsCount, banglesCount, beadsCount] = await Promise.all(
     [
       ProductModel.countDocuments(),
@@ -28,7 +30,28 @@ export const GET = auth(async (...request: any) => {
   const productsCount = productCount + setsCount + banglesCount + beadsCount;
   const usersCount = await UserModel.countDocuments();
 
+  // Count successful orders (paid and completed)
+  const successfulOrdersCount = await OrderModel.countDocuments({
+    isPaid: true,
+    paymentStatus: "COMPLETED",
+    paymentMethod: { $ne: "Razorpay" },
+  });
+
+  // Count unsuccessful orders (not paid or not completed)
+  const unsuccessfulOrdersCount = await OrderModel.countDocuments({
+    $or: [{ isPaid: false }, { paymentStatus: { $ne: "COMPLETED" } }],
+    paymentMethod: { $ne: "Razorpay" },
+  });
+
+  // Aggregation for total sales, only including paid and completed orders
   const ordersPriceGroup = await OrderModel.aggregate([
+    {
+      $match: {
+        isPaid: true, // Only include orders where isPaid is true
+        paymentStatus: "COMPLETED", // Only include orders with paymentStatus "COMPLETED"
+        paymentMethod: { $ne: "Razorpay" }, // Exclude orders with paymentMethod "Razorpay"
+      },
+    },
     {
       $group: {
         _id: null,
@@ -47,6 +70,9 @@ export const GET = auth(async (...request: any) => {
   const salesData = await OrderModel.aggregate([
     {
       $match: {
+        isPaid: true, // Only include orders where isPaid is true
+        paymentStatus: "COMPLETED", // Only include orders with paymentStatus "COMPLETED"
+        paymentMethod: { $ne: "Razorpay" },
         createdAt: {
           $gte: new Date(sevenDaysAgo.setHours(0, 0, 0, 0)),
           $lte: new Date(now.setHours(23, 59, 59, 999)),
@@ -148,5 +174,7 @@ export const GET = auth(async (...request: any) => {
     salesData,
     productsData,
     usersData,
+    successfulOrdersCount, // Add successful orders count
+    unsuccessfulOrdersCount, // Add unsuccessful orders count
   });
 });

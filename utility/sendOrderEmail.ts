@@ -1,3 +1,4 @@
+import AdminSettings from "@/lib/models/AdminSettings";
 import {
   TransactionalEmailsApi,
   SendSmtpEmail,
@@ -24,6 +25,13 @@ export const sendOrderEmails = async (order: any) => {
     _id: orderId,
     paymentStatus,
   } = order;
+
+  const settings = await AdminSettings.findOne();
+  const senderEmail = settings?.brevo?.orderStatusEmail;
+  const recieverEmails = settings?.brevo?.adminOrderEmails;
+
+  // Prepare email data with multiple recipients
+  const toList = recieverEmails.map((email: any) => ({ email }));
 
   const formatter = new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -221,7 +229,7 @@ export const sendOrderEmails = async (order: any) => {
   const subjectPrefix = `Order #${orderNumber}`;
 
   const userEmail: SendSmtpEmail = {
-    sender: { email: "orders@kelayaa.com" },
+    sender: { email: senderEmail },
     to: [{ email: personalInfo?.email }],
     subject:
       paymentStatus === "FAILED"
@@ -231,12 +239,8 @@ export const sendOrderEmails = async (order: any) => {
   };
 
   const adminEmail: SendSmtpEmail = {
-    sender: { email: "orders@kelayaa.com" },
-    to: [
-      { email: "bharat@metamorfs.com" },
-      { email: "aryan@kelayaa.com" },
-      { email: "arushi@kelayaa.com" },
-    ],
+    sender: { email: senderEmail },
+    to: toList,
     subject:
       paymentStatus === "FAILED"
         ? `${subjectPrefix} - Payment Failure Alert`

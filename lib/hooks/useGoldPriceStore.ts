@@ -28,6 +28,7 @@ const useGoldPriceStore = create<GoldPriceState>((set) => ({
           price: number;
           previousPrice: number;
           percentageChange: number;
+          updatedAt: string;
         }[];
       }>("/api/gold-price");
 
@@ -47,6 +48,7 @@ const useGoldPriceStore = create<GoldPriceState>((set) => ({
       set({
         goldPrices: pricesWithDirection,
         highLow: { highest, lowest },
+        lastUpdated: res.data.data[0]?.updatedAt ?? null,
       });
     } catch (error) {
       console.error("❌ Failed to fetch gold prices:", error);

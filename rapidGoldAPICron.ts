@@ -115,8 +115,7 @@ console.log(
 const scheduleTimes = [
   { minute: 30, hour: 9 }, // 9:30 AM IST
   { minute: 0, hour: 14 }, // 2:00 PM IST
-  { minute: 15, hour: 15 }, // 3:15 PM IST
-  { minute: 30, hour: 15 }, // 3:30 PM IST
+  { minute: 0, hour: 18 }, // 6:00 PM IST
 ];
 
 scheduleTimes.forEach(({ minute, hour }) => {

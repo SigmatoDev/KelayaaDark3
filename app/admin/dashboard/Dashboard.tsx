@@ -24,7 +24,7 @@ import {
   CubeIcon,
   CurrencyRupeeIcon,
 } from "@heroicons/react/20/solid";
-import { IndianRupeeIcon, ShoppingCartIcon, UsersIcon } from "lucide-react";
+import { IndianRupeeIcon, ShoppingCartIcon, SquareCheck, SquareX, UsersIcon } from "lucide-react";
 
 function getLast7Days() {
   const days: string[] = [];
@@ -242,6 +242,18 @@ const Dashboard = () => {
             value: summary.usersCount,
             link: "/admin/users",
             icon: <UsersIcon className="h-8 w-8 text-purple-600" />,
+          },
+          {
+            title: "Successful Orders",
+            value: summary.successfulOrdersCount,
+            link: "/admin/orders",
+            icon: <SquareCheck className="h-8 w-8 text-green-600" />,
+          },
+          {
+            title: "Unsuccessful Orders",
+            value: summary.unsuccessfulOrdersCount,
+            link: "/admin/orders",
+            icon: <SquareX className="h-8 w-8 text-red-600" />,
           },
         ].map((stat, index) => (
           <div

@@ -217,12 +217,23 @@ export default function Products() {
       {
         accessorKey: "productCategory",
         header: "CATEGORY",
+        cell: ({ row }) =>
+          row?.original?.productCategory || row?.original?.productType || "-",
+      },
+      {
+        accessorKey: "materialType", // New column for MATERIAL_TYPE
+        header: "MATERIAL_TYPE",
+        cell: ({ row }) => row?.original?.materialType || "-",
       },
       {
         accessorKey: "subCategories",
         header: "Type",
         cell: ({ row }) =>
-          `${row?.original?.subCategories?.length === 0 ? row?.original?.category : row?.original?.subCategories || "-"}`,
+          `${
+            row?.original?.subCategories?.length === 0
+              ? row?.original?.category
+              : row?.original?.subCategories || "-"
+          }`,
       },
       {
         accessorKey: "weight",
@@ -235,7 +246,7 @@ export default function Products() {
       {
         accessorKey: "price",
         header: "PRICE",
-        cell: ({ row }) => `₹${row?.original.price.toLocaleString("en-IN")}`,
+        cell: ({ row }) => `₹${row?.original?.price?.toLocaleString("en-IN")}`,
       },
       {
         accessorKey: "image",

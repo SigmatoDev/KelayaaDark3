@@ -1,5 +1,10 @@
 import { auth } from "@/lib/auth";
 import AdminMenu from "./AdminMenu";
+import dynamic from "next/dynamic";
+
+const ForceLogoutGuard = dynamic(() => import("./ForceLogoutGuard"), {
+  ssr: false,
+});
 
 const AdminLayout = async ({
   activeItem = "dashboard",
@@ -18,8 +23,8 @@ const AdminLayout = async ({
       </div>
 
       {/* Main content - scrollable */}
-      <div className="ml-[250px] flex-1 overflow-y-auto p-2  pt-[60px]">
-        {children}
+      <div className="ml-[250px] flex-1 overflow-y-auto p-2 pt-[60px]">
+        <ForceLogoutGuard>{children}</ForceLogoutGuard>
       </div>
     </div>
   );

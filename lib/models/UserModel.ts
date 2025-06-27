@@ -26,7 +26,7 @@ const UserSchema = new mongoose.Schema(
     mobileNumber: {
       type: String,
       required: function (this: any) {
-        return this.userType !== "guest";
+        return this.userType !== "guest" && !this.isAdmin;
       },
     },
     password: {

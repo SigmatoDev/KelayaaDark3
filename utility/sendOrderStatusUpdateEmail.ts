@@ -1,5 +1,6 @@
 // lib/emails/sendOrderStatusUpdateEmails.ts
 
+import AdminSettings from "@/lib/models/AdminSettings";
 import {
   TransactionalEmailsApi,
   SendSmtpEmail,
@@ -27,6 +28,9 @@ export const sendOrderStatusUpdateEmail = async ({
   changedAt: Date;
 }) => {
   const { personalInfo, orderNumber, items, totalPrice, user } = order;
+
+  const settings = await AdminSettings.findOne();
+  const senderEmail = settings?.brevo?.orderStatusEmail;
 
   const formatter = new Intl.NumberFormat("en-IN", {
     style: "currency",
@@ -178,7 +182,7 @@ export const sendOrderStatusUpdateEmail = async ({
 `;
 
   const email: SendSmtpEmail = {
-    sender: { email: "orders@kelayaa.com" },
+    sender: { email: senderEmail },
     to: [{ email: personalInfo?.email }],
     subject: `Your Order #${orderNumber} is now ${statusLabels[status]}`,
     htmlContent,
