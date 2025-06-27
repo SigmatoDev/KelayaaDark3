@@ -232,7 +232,6 @@ export const DELETE = auth(async (req: any) => {
   try {
     const body = await req.json();
     const { productIds } = body;
-    console.log("productIds", productIds);
 
     if (!productIds || !Array.isArray(productIds) || productIds.length === 0) {
       return Response.json(
@@ -241,12 +240,21 @@ export const DELETE = auth(async (req: any) => {
       );
     }
 
-    const deletedProducts = await ProductModel.deleteMany({
-      _id: { $in: productIds },
-    });
+    const [products, sets, bangles, beads] = await Promise.all([
+      ProductModel.deleteMany({ _id: { $in: productIds } }),
+      SetsProductModel.deleteMany({ _id: { $in: productIds } }),
+      BanglesProductModel.deleteMany({ _id: { $in: productIds } }),
+      BeadsProductModel.deleteMany({ _id: { $in: productIds } }),
+    ]);
+
+    const totalDeleted =
+      products.deletedCount +
+      sets.deletedCount +
+      bangles.deletedCount +
+      beads.deletedCount;
 
     return Response.json({
-      message: `${deletedProducts.deletedCount} products deleted successfully.`,
+      message: `Deleted ${totalDeleted} products: ${products.deletedCount} normal, ${sets.deletedCount} sets, ${bangles.deletedCount} bangles, ${beads.deletedCount} beads.`,
     });
   } catch (error: any) {
     console.error("Error deleting products:", error);

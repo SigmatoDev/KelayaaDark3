@@ -1,3 +1,4 @@
+import AdminSettings from "@/lib/models/AdminSettings";
 import UserModel from "@/lib/models/UserModel";
 import {
   TransactionalEmailsApi,
@@ -24,6 +25,9 @@ export const sendAbandonedCartEmail = async (cart: any) => {
   }
 
   console.log(`✅ User found: ${user.name} (${user.email})`);
+
+  const settings = await AdminSettings.findOne();
+  const senderEmail = settings?.brevo?.abandonedCartEmail;
 
   const resumeLink = `https://kelayaa.com/cart`;
 
@@ -177,7 +181,7 @@ export const sendAbandonedCartEmail = async (cart: any) => {
 
   const email: SendSmtpEmail = {
     to: [{ email: user.email }],
-    sender: { name: "Kelayaa", email: "orders@kelayaa.com" },
+    sender: { name: "Kelayaa", email: senderEmail },
     subject: "Your Kelayaa cart is waiting for you 💝",
     htmlContent,
   };

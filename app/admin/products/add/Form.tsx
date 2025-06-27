@@ -218,7 +218,7 @@ const ProductCreateForm = () => {
           <option value="">Select Material Type</option>
           <option value="gold">Gold</option>
           <option value="silver">Silver</option>
-          {/* <option value="sets">G&D Sets</option> */}
+          <option value="sets">G&D Sets</option>
         </select>
 
         {[

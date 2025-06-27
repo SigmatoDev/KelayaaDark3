@@ -11,7 +11,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { useState } from "react";
-import { PencilIcon, Trash2Icon, OctagonAlertIcon } from "lucide-react";
+import { PencilIcon, Trash2Icon, OctagonAlertIcon, Search } from "lucide-react";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import useSWRMutation from "swr/mutation";
@@ -137,12 +137,18 @@ export function UserTable({ users, mutate }: UserTableProps) {
       <h1 className="text-2xl font-semibold mb-4">Users</h1>
 
       {/* 🔍 Search bar */}
-      <Input
-        placeholder="Search users..."
-        value={globalFilter}
-        onChange={(e) => setGlobalFilter(e.target.value)}
-        className="max-w-sm mb-4"
-      />
+      <div className="relative max-w-sm mb-4">
+        <span className="absolute inset-y-0 right-3 flex items-center text-gray-400">
+          {/* Adjusted icon positioning */}
+          <Search className="w-4 h-4" />
+        </span>
+        <Input
+          placeholder="Search users..."
+          value={globalFilter}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          className="pl-10" // Adjusted padding left to accommodate the icon
+        />
+      </div>
 
       {/* Users Table */}
       <div className="overflow-x-auto rounded-md border">

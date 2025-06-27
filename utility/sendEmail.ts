@@ -1,3 +1,4 @@
+import AdminSettings from "@/lib/models/AdminSettings";
 import {
   TransactionalEmailsApi,
   SendSmtpEmail,
@@ -23,16 +24,15 @@ const sendAdminEmail = async (designData: any) => {
   const apiInstance = new TransactionalEmailsApi();
   apiInstance.setApiKey(TransactionalEmailsApiApiKeys.apiKey, apiKey);
 
-  // Email data
-  const sender = { email: "cdquery@kelayaa.com" };
+  const settings = await AdminSettings.findOne();
+  const senderEmail = settings?.brevo?.customerJewelrySenderEmail;
+  const recieverEmails = settings?.brevo?.customerJewelryRecipientEmails;
+
+  // Ensure that `senderEmail` is a string and `recieverEmails` is an array of email objects
+  const sender = { email: senderEmail };
 
   // Prepare email data with multiple recipients
-  const toList = [
-    { email: "bharat@metamorfs.com" },
-    { email: "aryan@kelayaa.com" },
-    { email: "arushi@kelayaa.com" },
-    // { email: "nuthan@sigmato.com" },
-  ];
+  const toList = recieverEmails.map((email: any) => ({ email }));
 
   // Format the appointment date to dd-mm-yyyy
   const formattedAppointmentDate = formatDate(

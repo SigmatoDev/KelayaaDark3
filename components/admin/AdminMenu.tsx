@@ -34,7 +34,7 @@ const menuItems = [
   { name: "Orders", href: "/admin/orders", icon: ShoppingBag },
   { name: "Custom Orders", href: "/admin/all-custom-order", icon: ShoppingBag },
   { name: "Users", href: "/admin/users", icon: Users },
-  // { name: "Settings", href: "/admin/settings", icon: Settings },
+  { name: "Settings", href: "/admin/settings", icon: Settings },
   // { name: "Help Center", href: "/admin/help-center", icon: HelpCircle },
   // { name: "FAQ", href: "/admin/faq", icon: FileText },
   // { name: "Privacy Policy", href: "/admin/privacy-policy", icon: Shield },

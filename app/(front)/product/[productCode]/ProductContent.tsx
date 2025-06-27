@@ -690,7 +690,7 @@ const ProductPageContent: FC<ProductPageContentProps> = ({
               <div className="flex justify-start gap-8 items-center my-4">
                 <div className="text-center">
                   <img
-                    src="/images/certificates/gig_certificate.webp"
+                    src="/images/certificates/gig.webp"
                     alt="BIS Logo"
                     className="h-12 mx-auto"
                   />

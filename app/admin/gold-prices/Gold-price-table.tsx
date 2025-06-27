@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { ArrowUpRight, ArrowDownRight, Minus } from "lucide-react";
 
 const GoldPriceTable: React.FC = () => {
-  const { goldPrices, fetchGoldPrices } = useGoldPriceStore();
+  const { goldPrices, fetchGoldPrices, lastUpdated } = useGoldPriceStore();
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -22,11 +22,26 @@ const GoldPriceTable: React.FC = () => {
     }
   }, [goldPrices]);
 
+  // Format last updated time
+  const formattedLastUpdated = lastUpdated
+    ? new Date(lastUpdated).toLocaleString("en-IN", {
+        dateStyle: "medium",
+        timeStyle: "short",
+      })
+    : null;
+
   return (
     <div className="max-w-5xl mx-auto px-4 py-10">
       <h2 className="text-2xl font-semibold text-center text-gray-800 mb-8">
         Live Gold Prices (₹/gram)
       </h2>
+
+      {/* Display Last Updated Time Outside of Price Cards */}
+      {formattedLastUpdated && (
+        <div className="text-center text-md text-gray-500 mb-6">
+          <p>Last Updated: {formattedLastUpdated}</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
         {isLoading
@@ -53,7 +68,7 @@ const GoldPriceTable: React.FC = () => {
               return (
                 <div
                   key={price.karat}
-                  className="rounded-2xl shadow-md bg-white p-6 hover:shadow-lg transition"
+                  className="rounded-2xl shadow-md border bg-white p-6 hover:shadow-lg transition"
                 >
                   <h3 className="text-lg font-medium text-gray-600">
                     {price.karat}

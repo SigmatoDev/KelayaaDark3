@@ -1,28 +1,46 @@
 import { auth } from "@/lib/auth";
 import dbConnect from "@/lib/dbConnect";
+import BanglesProductModel from "@/lib/models/BanglesProductSchema";
+import BeadsProductModel from "@/lib/models/BeadsProductModel";
 import ProductModel from "@/lib/models/ProductModel";
+import SetsProductModel from "@/lib/models/SetsProductsModel";
 
 export const GET = auth(async (...args: any) => {
   const [req, { params }] = args;
+
   if (!req.auth || !req.auth.user?.isAdmin) {
-    return Response.json(
-      { message: "unauthorized" },
-      {
-        status: 401,
-      }
-    );
+    return Response.json({ message: "Unauthorized" }, { status: 401 });
   }
+
   await dbConnect();
-  const product = await ProductModel.findById(params.id);
-  if (!product) {
-    return Response.json(
-      { message: "product not found" },
-      {
-        status: 404,
-      }
-    );
+
+  // Fetch data from all models by product ID
+  const [products, set, bangle, bead] = await Promise.all([
+    ProductModel.findById(params.id),
+    SetsProductModel.findOne({ _id: params.id }),
+    BanglesProductModel.findOne({ _id: params.id }),
+    BeadsProductModel.findOne({ _id: params.id }),
+  ]);
+
+  // If none of the products are found, return 404
+  if (!products && !set && !bangle && !bead) {
+    return Response.json({ message: "Product not found" }, { status: 404 });
   }
-  return Response.json(product);
+
+  // Determine which product to return based on the available data
+  let foundProduct = null;
+
+  if (products) {
+    foundProduct = { ...products.toObject(), type: "product" };
+  } else if (set) {
+    foundProduct = { ...set.toObject(), type: "set" };
+  } else if (bangle) {
+    foundProduct = { ...bangle.toObject(), type: "bangle" };
+  } else if (bead) {
+    foundProduct = { ...bead.toObject(), type: "bead" };
+  }
+
+  return Response.json(foundProduct);
 }) as any;
 
 export const PUT = auth(async (...args: any) => {

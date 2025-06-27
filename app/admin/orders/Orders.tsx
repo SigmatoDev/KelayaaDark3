@@ -25,6 +25,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { Search } from "lucide-react";
 
 export default function Orders() {
   const {
@@ -64,8 +65,13 @@ export default function Orders() {
       {
         accessorKey: "createdAt",
         header: () => <div className="cursor-pointer">ORDER_DATE</div>,
-        cell: ({ row }) =>
-          new Date(row.original.createdAt).toLocaleDateString("en-IN"),
+        cell: ({ row }) => {
+          const date = new Date(row.original.createdAt);
+          return date.toLocaleString("en-IN", {
+            dateStyle: "medium",
+            timeStyle: "short",
+          });
+        },
       },
       {
         accessorKey: "totalPrice",
@@ -115,7 +121,7 @@ export default function Orders() {
         header: "ORDER STATUS",
         cell: ({ row }) => {
           const status = row.original.status;
-          console.log()
+          console.log();
           return (
             <span
               className={`rounded-md px-2 py-1 text-xs ${
@@ -201,12 +207,25 @@ export default function Orders() {
     <div className="py-2 space-y-2 p-4 pt-[25px]">
       <h1 className="text-2xl font-semibold mb-4">Orders</h1>
 
-      <Input
+      <div className="relative max-w-sm mb-4">
+        <span className="absolute inset-y-0 right-3 flex items-center text-gray-400">
+          {/* Adjusted icon positioning */}
+          <Search className="w-4 h-4" />
+        </span>
+        <Input
+          placeholder="Search orders...."
+          value={globalFilter}
+          onChange={(e) => setGlobalFilter(e.target.value)}
+          className="pl-10" // Adjusted padding left to accommodate the icon
+        />
+      </div>
+
+      {/* <Input
         placeholder="Search orders..."
         value={globalFilter}
         onChange={(e) => setGlobalFilter(e.target.value)}
         className="max-w-sm mb-4"
-      />
+      /> */}
 
       <div className="overflow-x-auto rounded-md border">
         <Table className="min-w-[1200px]">
