@@ -1,9 +1,17 @@
+import { NextResponse } from "next/server";
 import dbConnect from "@/lib/dbConnect";
 import AdminSettings from "@/lib/models/AdminSettings";
 import UserModel from "@/lib/models/UserModel";
 import bcrypt from "bcryptjs";
+import { auth } from "@/lib/auth";
 
-export async function PUT(req: Request) {
+// PUT handler (for updating settings)
+export const PUT = auth(async (req: Request) => {
+  // Check if the authenticated user is an admin
+  if (!req?.auth || !req.auth.user?.isAdmin) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   await dbConnect();
   const data = await req.json();
 
@@ -63,24 +71,29 @@ export async function PUT(req: Request) {
       console.warn("⚠️ No admin user found to update");
     }
 
-    return Response.json({ success: true, settings });
+    return NextResponse.json({ success: true, settings });
   } catch (error) {
     console.error("❌ Failed to update settings:", error);
-    return Response.json(
+    return NextResponse.json(
       { error: "Failed to update settings" },
       { status: 500 }
     );
   }
-}
+});
 
-export async function GET() {
+// GET handler (to retrieve settings)
+export const GET = auth(async (req: Request) => {
+  if (!req?.auth || !req?.auth.user?.isAdmin) {
+    return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+  }
+
   await dbConnect();
   const settings = await AdminSettings.findOne();
 
-  if (!settings) return Response.json({});
+  if (!settings) return NextResponse.json({});
 
   // Remove sensitive info before sending to client
   const { adminPassword, ...safeSettings } = settings.toObject();
 
-  return Response.json(safeSettings);
-}
+  return NextResponse.json(safeSettings);
+});
